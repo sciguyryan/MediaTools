@@ -69,6 +69,7 @@ namespace MediaTools
 
             toolStripStatusLabel1.Text = "";
             source.SelectedIndex = 0;
+            options2Resolution.SelectedIndex = 5;
 
             _contextMenuStrip = new ContextMenuStrip();
             var deleteItem = new ToolStripMenuItem("Delete");
@@ -187,15 +188,15 @@ namespace MediaTools
             switch (e)
             {
                 case { Control: true, KeyCode: Keys.F }:
-                {
-                    tabControl1.SelectedIndex = 1;
+                    {
+                        tabControl1.SelectedIndex = 1;
 
-                    var form = new Form2(this);
-                    form.Show();
-                    break;
-                }
+                        var form = new Form2(this);
+                        form.Show();
+                        break;
+                    }
                 case { Control: true, KeyCode: Keys.T }:
-                    MessageBox.Show(@$"Total Media Duration: {SecondsToDurationLong(_totalDuration)}",
+                    MessageBox.Show(@$"Total Media Duration: {SecondsToDuration(_totalDuration, true)}",
                         @"Total Media Duration",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information,
@@ -333,7 +334,7 @@ namespace MediaTools
         {
             UpdateStatus(@"Reloading media file list... ");
 
-            ClearTableSelection();
+            mediaFilesTable.ClearSelection();
             mediaFilesTable.Rows.Clear();
             _totalDuration = 0;
 
@@ -346,10 +347,9 @@ namespace MediaTools
 
         public void FindEntry(string searchStr, bool single)
         {
-            ClearTableSelection();
+            mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
-
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
                 var title = mediaFilesTable.Rows[i].Cells["Title"].Value.ToString();
@@ -373,11 +373,6 @@ namespace MediaTools
                     break;
                 }
             }
-        }
-
-        private void ClearTableSelection()
-        {
-            mediaFilesTable.ClearSelection();
         }
 
         private static double RunMediaInfo(string path)
@@ -405,11 +400,10 @@ namespace MediaTools
 
         private void FillTable()
         {
-            // Iterate over each file in the directory.
             var directoryInfo = new DirectoryInfo(GetMediaPath());
 
+            // Iterate over each file in the directory.
             var i = 0;
-
             foreach (var file in directoryInfo.GetFiles())
             {
                 var dur = RunMediaInfo(file.FullName);
@@ -422,7 +416,12 @@ namespace MediaTools
 
                 var filePath = Path.GetFileNameWithoutExtension(file.FullName);
                 var modified = file.LastWriteTime;
-                mediaFilesTable.Rows.Add([SecondsToDuration(dur), modified, filePath, file.FullName]);
+                mediaFilesTable.Rows.Add([
+                        SecondsToDuration(dur, false),
+                        modified,
+                        filePath,
+                        file.FullName
+                    ]);
 
                 if (TestMode && i == 10)
                 {
@@ -478,20 +477,20 @@ namespace MediaTools
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
             }
 
-            lines.Add(optionAudioOnly.Checked ? "-f ba" : "-f \"bv[height<=1440]+ba/b\"");
+            var targetResolution = options2Resolution
+                .Items[options2Resolution.SelectedIndex]!
+                .ToString()!
+                .Replace("p", "");
+            lines.Add(optionAudioOnly.Checked ? "-f ba" : $"-S \"res:{targetResolution}\"");
 
             // Write the config file.
             File.WriteAllLines(_configPath, lines);
         }
 
-        private static string SecondsToDuration(double seconds)
+        private static string SecondsToDuration(double seconds, bool longFormat)
         {
-            return TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss");
-        }
-
-        private static string SecondsToDurationLong(double seconds)
-        {
-            return TimeSpan.FromSeconds(seconds).ToString(@"dd\:hh\:mm\:ss");
+            var format = longFormat ? @"dd\:hh\:mm\:ss" : @"hh\:mm\:ss";
+            return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
         public void UpdateStatus(string status)

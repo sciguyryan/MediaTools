@@ -30,6 +30,9 @@
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            groupBox2 = new GroupBox();
+            options2Resolution = new ComboBox();
+            label4 = new Label();
             groupBox1 = new GroupBox();
             optionSponsorBlock = new CheckBox();
             optionMarkWatched = new CheckBox();
@@ -49,6 +52,10 @@
             downloadIds = new TextBox();
             tabPage2 = new TabPage();
             mediaFilesTable = new DataGridView();
+            Duration = new DataGridViewTextBoxColumn();
+            LastModified = new DataGridViewTextBoxColumn();
+            Title = new DataGridViewTextBoxColumn();
+            FullPath = new DataGridViewTextBoxColumn();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             showConsoleToolStripMenuItem = new ToolStripMenuItem();
@@ -58,12 +65,9 @@
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            Duration = new DataGridViewTextBoxColumn();
-            LastModified = new DataGridViewTextBoxColumn();
-            Title = new DataGridViewTextBoxColumn();
-            FullPath = new DataGridViewTextBoxColumn();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)mediaFilesTable).BeginInit();
@@ -83,6 +87,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(groupBox1);
             tabPage1.Controls.Add(downloadPlaylist);
             tabPage1.Controls.Add(downloadSingle);
@@ -101,6 +106,36 @@
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox2
+            // 
+            groupBox2.Controls.Add(options2Resolution);
+            groupBox2.Controls.Add(label4);
+            groupBox2.Location = new Point(761, 111);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(218, 241);
+            groupBox2.TabIndex = 13;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Options 2";
+            // 
+            // options2Resolution
+            // 
+            options2Resolution.DropDownStyle = ComboBoxStyle.DropDownList;
+            options2Resolution.FormattingEnabled = true;
+            options2Resolution.Items.AddRange(new object[] { "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "4320p" });
+            options2Resolution.Location = new Point(126, 21);
+            options2Resolution.Name = "options2Resolution";
+            options2Resolution.Size = new Size(86, 28);
+            options2Resolution.TabIndex = 12;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(6, 26);
+            label4.Name = "label4";
+            label4.Size = new Size(114, 20);
+            label4.TabIndex = 0;
+            label4.Text = "Max Resolution:";
+            // 
             // groupBox1
             // 
             groupBox1.Controls.Add(optionSponsorBlock);
@@ -112,7 +147,7 @@
             groupBox1.Controls.Add(optionAudioOnly);
             groupBox1.Location = new Point(537, 111);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(218, 235);
+            groupBox1.Size = new Size(218, 241);
             groupBox1.TabIndex = 6;
             groupBox1.TabStop = false;
             groupBox1.Text = "Options";
@@ -265,10 +300,10 @@
             // 
             // download
             // 
-            download.Location = new Point(537, 352);
+            download.Location = new Point(537, 358);
             download.Name = "download";
             download.Size = new Size(94, 29);
-            download.TabIndex = 12;
+            download.TabIndex = 13;
             download.Text = "Download";
             download.UseVisualStyleBackColor = true;
             download.Click += Download_Click;
@@ -309,6 +344,40 @@
             mediaFilesTable.TabIndex = 3;
             mediaFilesTable.CellContentDoubleClick += MediaFilesTable_CellContentDoubleClick;
             mediaFilesTable.MouseClick += MediaFilesTable_MouseClick;
+            // 
+            // Duration
+            // 
+            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Duration.HeaderText = "Duration";
+            Duration.MinimumWidth = 6;
+            Duration.Name = "Duration";
+            Duration.ReadOnly = true;
+            Duration.Width = 96;
+            // 
+            // LastModified
+            // 
+            LastModified.HeaderText = "Last Modified";
+            LastModified.MinimumWidth = 6;
+            LastModified.Name = "LastModified";
+            LastModified.ReadOnly = true;
+            LastModified.Resizable = DataGridViewTriState.False;
+            LastModified.Width = 150;
+            // 
+            // Title
+            // 
+            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Title.HeaderText = "Title";
+            Title.MinimumWidth = 6;
+            Title.Name = "Title";
+            Title.ReadOnly = true;
+            // 
+            // FullPath
+            // 
+            FullPath.HeaderText = "FullPath";
+            FullPath.MinimumWidth = 6;
+            FullPath.Name = "FullPath";
+            FullPath.Visible = false;
+            FullPath.Width = 125;
             // 
             // menuStrip1
             // 
@@ -376,40 +445,6 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // Duration
-            // 
-            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            Duration.HeaderText = "Duration";
-            Duration.MinimumWidth = 6;
-            Duration.Name = "Duration";
-            Duration.ReadOnly = true;
-            Duration.Width = 96;
-            // 
-            // LastModified
-            // 
-            LastModified.HeaderText = "Last Modified";
-            LastModified.MinimumWidth = 6;
-            LastModified.Name = "LastModified";
-            LastModified.ReadOnly = true;
-            LastModified.Resizable = DataGridViewTriState.False;
-            LastModified.Width = 150;
-            // 
-            // Title
-            // 
-            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Title.HeaderText = "Title";
-            Title.MinimumWidth = 6;
-            Title.Name = "Title";
-            Title.ReadOnly = true;
-            // 
-            // FullPath
-            // 
-            FullPath.HeaderText = "FullPath";
-            FullPath.MinimumWidth = 6;
-            FullPath.Name = "FullPath";
-            FullPath.Visible = false;
-            FullPath.Width = 125;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -426,6 +461,8 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             tabPage2.ResumeLayout(false);
@@ -474,5 +511,8 @@
         private DataGridViewTextBoxColumn LastModified;
         private DataGridViewTextBoxColumn Title;
         private DataGridViewTextBoxColumn FullPath;
+        private GroupBox groupBox2;
+        private Label label4;
+        private ComboBox options2Resolution;
     }
 }
