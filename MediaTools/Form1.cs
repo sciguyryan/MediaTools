@@ -9,7 +9,6 @@ namespace MediaTools
     {
         private Point _contextMenuLocation;
         private readonly ContextMenuStrip _contextMenuStrip;
-
         private readonly string _runFromPath;
         private readonly string _configTemplatePath;
         private readonly string _configPath;
@@ -61,6 +60,8 @@ namespace MediaTools
 
         public Form1(string runFromPath)
         {
+            IconModifier.SetFormIcon(this);
+
             _runFromPath = runFromPath;
             _configTemplatePath = Path.Combine(runFromPath, "yt-dlp.conf-template");
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
@@ -116,7 +117,7 @@ namespace MediaTools
             {
                 EnsureTempExists();
 
-                UpdateStatus(@"Building download config file... ");
+                UpdateStatus("Building download config file... ");
                 SetupConfigFile();
                 UpdateStatus(@"Download config file written!");
 

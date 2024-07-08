@@ -87,7 +87,7 @@
             Name = "Form2";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Hide;
-            Text = "Media Tools";
+            Text = "Media Tools :: Search";
             ResumeLayout(false);
             PerformLayout();
         }

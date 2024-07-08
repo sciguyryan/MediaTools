@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace MediaTools
+﻿namespace MediaTools
 {
     public partial class Form2 : Form
     {
-        private Form1 parent;
+        private readonly Form1 _parent;
 
         public Form2(Form1 parent)
         {
-            this.parent = parent;
+            IconModifier.SetFormIcon(this);
+
+            this._parent = parent;
 
             InitializeComponent();
         }
@@ -28,12 +20,12 @@ namespace MediaTools
 
         private void Find_Click(object sender, EventArgs e)
         {
-            parent.FindEntry(searchString.Text, true);
+            _parent.FindEntry(searchString.Text, true);
         }
 
         private void FindAll_Click(object sender, EventArgs e)
         {
-            parent.FindEntry(searchString.Text, false);
+            _parent.FindEntry(searchString.Text, false);
         }
 
         private void SearchString_KeyPress(object sender, KeyPressEventArgs e)
