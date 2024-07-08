@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace MediaTools
 {
@@ -14,8 +16,10 @@ namespace MediaTools
         private readonly string _configPath;
         private double _totalDuration = 0;
         private bool _consoleShown = true;
-        private const string FFProbePath = @"D:\Projects\Video Encoding\ffmpeg-7.0.1\bin\ffprobe.exe";
+        private bool _isUpdatingMediaList = false;
         private const bool TestMode = false;
+
+        private FileUtils _fileUtils;
 
         #region DLL Imports
 
@@ -32,30 +36,6 @@ namespace MediaTools
         private const int SW_HIDE = 0;
         private const int SW_SHOW = 5;
 
-        private const int FO_DELETE = 0x0003;
-        private const int FOF_ALLOWUNDO = 0x0040; // Preserve undo information, if possible.
-        private const int FOF_NOCONFIRMATION = 0x0010; // Show no confirmation dialog box to the user.
-
-        // Struct which contains information that the SHFileOperation function uses to perform file operations.
-        // See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructw
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct SHFILEOPSTRUCTW
-        {
-            public IntPtr hWnd;
-            [MarshalAs(UnmanagedType.U4)]
-            public int wFunc;
-            public string pFrom;
-            public string pTo;
-            public short fFlags;
-            [MarshalAs(UnmanagedType.Bool)]
-            public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            public string lpszProgressTitle;
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        static extern int SHFileOperationW(ref SHFILEOPSTRUCTW fileOp);
-
         #endregion
 
         public Form1(string runFromPath)
@@ -65,6 +45,7 @@ namespace MediaTools
             _runFromPath = runFromPath;
             _configTemplatePath = Path.Combine(runFromPath, "yt-dlp.conf-template");
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
+            _fileUtils = new FileUtils(runFromPath);
 
             InitializeComponent();
 
@@ -95,9 +76,9 @@ namespace MediaTools
             Process.Start(processStartInfo);
         }
 
-        private void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UpdateMediaTable();
+            await UpdateMediaTable();
         }
 
         private async void Download_Click(object sender, EventArgs e)
@@ -115,18 +96,18 @@ namespace MediaTools
 
             for (var i = 0; i < urls.Length; i++)
             {
-                EnsureTempExists();
+                _fileUtils.EnsureTempExists();
 
                 UpdateStatus("Building download config file... ");
                 SetupConfigFile();
                 UpdateStatus(@"Download config file written!");
 
                 UpdateStatus($@"Downloading video {i + 1} of {urls.Length}...");
-                await RunDownloader(urls[i]);
+                await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
                 UpdateStatus($@"Video {i + 1} successfully downloaded!");
 
                 UpdateStatus(@"Moving downloaded files to specified folder... ");
-                MoveTempFiles(subfolder);
+                _fileUtils.MoveTempFiles(subfolder);
                 UpdateStatus(@"Downloaded files have been successfully moved!");
             }
 
@@ -134,7 +115,7 @@ namespace MediaTools
 
             File.Delete(_configPath);
 
-            UpdateMediaTable();
+            await UpdateMediaTable();
         }
 
         private void OptionAudioOnly_CheckedChanged(object sender, EventArgs e)
@@ -161,9 +142,15 @@ namespace MediaTools
                 .Cells["FullPath"]
                 .Value
                 .ToString();
-            TrashPath(path!);
-
-            Console.WriteLine(@$"File '{path}' has been sent to the trash.");
+            if (FileUtils.TrashPath(path!) != 0)
+            {
+                UpdateStatus("Failed to send file to the trash!");
+                return;
+            }
+            else
+            {
+                Console.WriteLine(@$"File '{path}' has been sent to the trash.");
+            }
 
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
         }
@@ -184,7 +171,7 @@ namespace MediaTools
             _contextMenuStrip.Show(mediaFilesTable, e.Location);
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private async void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e)
             {
@@ -204,24 +191,8 @@ namespace MediaTools
                         MessageBoxDefaultButton.Button1);
                     break;
                 case { Control: true, KeyCode: Keys.R }:
-                    UpdateMediaTable();
+                    await UpdateMediaTable();
                     break;
-            }
-        }
-
-        public void TrashPath(string path)
-        {
-            // Note that the specification requires a double null termination here.
-            // See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructa
-            var fileOp = new SHFILEOPSTRUCTW
-            {
-                wFunc = FO_DELETE,
-                pFrom = $"{path}\0\0",
-                fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION
-            };
-            if (SHFileOperationW(ref fileOp) != 0)
-            {
-                UpdateStatus("Failed to send file to the trash!");
             }
         }
 
@@ -231,93 +202,6 @@ namespace MediaTools
             ShowWindow(GetConsoleWindow(), state);
             _consoleShown = !_consoleShown;
             showConsoleToolStripMenuItem.Text = _consoleShown ? "Hide &Console..." : "Show &Console...";
-        }
-
-        private async Task RunDownloader(string downloadUrl)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            var process = new Process();
-            process.StartInfo.FileName = $"{_runFromPath}\\yt-dlp.exe";
-            process.StartInfo.Arguments = downloadUrl;
-            process.StartInfo.WorkingDirectory = GetTempPath();
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, args) =>
-            {
-                tcs.SetResult(true);
-                process.Dispose();
-            };
-
-            process.Start();
-
-            await tcs.Task;
-        }
-
-        private void MoveTempFiles(string? destFolder)
-        {
-            var mediaDir = GetMediaPath();
-            if (destFolder is not null)
-            {
-                mediaDir = Path.Combine(mediaDir, destFolder);
-            }
-
-            MoveDirectoryContents(GetTempPath(), mediaDir);
-        }
-
-        private void MoveDirectoryContents(string sourceDir, string destDir)
-        {
-            if (!Directory.Exists(sourceDir))
-            {
-                UpdateStatus(@"Error! Source directory does not exist!");
-                return;
-            }
-
-            if (!Directory.Exists(destDir))
-            {
-                Directory.CreateDirectory(destDir);
-            }
-
-            // Move subdirectories recursively.
-            var directories = Directory.GetDirectories(sourceDir);
-            foreach (var directory in directories)
-            {
-                var dirName = Path.GetFileName(directory);
-                var destDirectory = Path.Combine(destDir, dirName);
-
-                MoveDirectoryContents(directory, destDirectory);
-            }
-
-            // Move the individual files.
-            var files = Directory.GetFiles(sourceDir);
-            foreach (var file in files)
-            {
-                var fileName = Path.GetFileName(file);
-                var destFile = Path.Combine(destDir, fileName);
-
-                try
-                {
-                    File.Move(file, destFile, true);
-                }
-                catch (Exception ex)
-                {
-                    UpdateStatus(@$"Error! Failed to move file! {ex.Message}");
-                    return;
-                }
-            }
-
-            if (sourceDir != GetTempPath())
-            {
-                Directory.Delete(sourceDir);
-            }
-        }
-
-        private string GetTempPath()
-        {
-            return Path.Combine(_runFromPath, "temp");
-        }
-
-        private string GetMediaPath()
-        {
-            return Path.GetFullPath(Path.Combine(_runFromPath, "..\\"));
         }
 
         public string[] BuildDownloadUrlList()
@@ -331,19 +215,29 @@ namespace MediaTools
                         : $"https://www.youtube.com/playlist?list={id}").ToArray();
         }
 
-        private void UpdateMediaTable()
+        private async Task UpdateMediaTable()
         {
+            // We do not want to try to update the list, if there is an update in progress.
+            if (_isUpdatingMediaList)
+            {
+                return;
+            }
+
+            _isUpdatingMediaList = true;
+
             UpdateStatus(@"Reloading media file list... ");
 
             mediaFilesTable.ClearSelection();
             mediaFilesTable.Rows.Clear();
             _totalDuration = 0;
 
-            FillTable();
+            await FillTable();
 
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
             UpdateStatus(@"Media list successfully reloaded!");
+
+            _isUpdatingMediaList = false;
         }
 
         public void FindEntry(string searchStr, bool single)
@@ -376,38 +270,17 @@ namespace MediaTools
             }
         }
 
-        private static double RunMediaInfo(string path)
+        private async Task FillTable()
         {
-            var process = new Process();
-            process.StartInfo.FileName = FFProbePath;
-            process.StartInfo.Arguments = $"-show_entries format=duration -v quiet -of csv=\"p=0\" \"{path}\"";
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
+            var results = new List<(string Duration, string LastModified, string Title, string FullPath)>();
 
-            var output = process.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-
-            if (output.Length == 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return double.Parse(output);
-            }
-        }
-
-        private void FillTable()
-        {
-            var directoryInfo = new DirectoryInfo(GetMediaPath());
+            var directoryInfo = new DirectoryInfo(_fileUtils.GetMediaPath());
 
             // Iterate over each file in the directory.
             var i = 0;
             foreach (var file in directoryInfo.GetFiles())
             {
-                var dur = RunMediaInfo(file.FullName);
+                var dur = await ProcessUtils.RunMediaInfo(file.FullName);
                 if (dur == 0)
                 {
                     continue;
@@ -417,12 +290,11 @@ namespace MediaTools
 
                 var filePath = Path.GetFileNameWithoutExtension(file.FullName);
                 var modified = file.LastWriteTime;
-                mediaFilesTable.Rows.Add([
-                        SecondsToDuration(dur, false),
-                        modified,
-                        filePath,
-                        file.FullName
-                    ]);
+                
+                results.Add((SecondsToDuration(dur, false),
+                    modified.ToString(CultureInfo.CurrentCulture),
+                    filePath,
+                    file.FullName));
 
                 if (TestMode && i == 10)
                 {
@@ -431,15 +303,18 @@ namespace MediaTools
 
                 ++i;
             }
-        }
 
-        private void EnsureTempExists()
-        {
-            var tempDir = GetTempPath();
-            if (!Directory.Exists(tempDir))
+            // Ensure we update only on the UI thread.
+            mediaFilesTable.Invoke(() =>
             {
-                Directory.CreateDirectory(tempDir);
-            }
+                foreach (var result in results)
+                {
+                    mediaFilesTable.Rows.Add(
+                        result.Duration,
+                        result.LastModified,
+                        result.Title, result.FullPath);
+                }
+            });
         }
 
         private void SetupConfigFile()
