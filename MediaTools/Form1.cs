@@ -55,7 +55,7 @@ namespace MediaTools
         }
 
         [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        static extern int SHFileOperation(ref SHFILEOPSTRUCTW fileOp);
+        static extern int SHFileOperationW(ref SHFILEOPSTRUCTW fileOp);
 
         #endregion
 
@@ -209,13 +209,15 @@ namespace MediaTools
 
         public void TrashPath(string path)
         {
+            // Note that the specification requires a double null termination here.
+            // See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructa
             var fileOp = new SHFILEOPSTRUCTW
             {
                 wFunc = FO_DELETE,
                 pFrom = $"{path}\0\0",
                 fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION
             };
-            if (SHFileOperation(ref fileOp) != 0)
+            if (SHFileOperationW(ref fileOp) != 0)
             {
                 UpdateStatus("Failed to send file to the trash!");
             }
