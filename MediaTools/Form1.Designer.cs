@@ -52,10 +52,6 @@
             downloadIds = new TextBox();
             tabPage2 = new TabPage();
             mediaFilesTable = new DataGridView();
-            Duration = new DataGridViewTextBoxColumn();
-            LastModified = new DataGridViewTextBoxColumn();
-            Title = new DataGridViewTextBoxColumn();
-            FullPath = new DataGridViewTextBoxColumn();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             showConsoleToolStripMenuItem = new ToolStripMenuItem();
@@ -65,6 +61,11 @@
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            RawDuration = new DataGridViewTextBoxColumn();
+            Duration = new DataGridViewTextBoxColumn();
+            LastModified = new DataGridViewTextBoxColumn();
+            Title = new DataGridViewTextBoxColumn();
+            FullPath = new DataGridViewTextBoxColumn();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -335,7 +336,7 @@
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            mediaFilesTable.Columns.AddRange(new DataGridViewColumn[] { Duration, LastModified, Title, FullPath });
+            mediaFilesTable.Columns.AddRange(new DataGridViewColumn[] { RawDuration, Duration, LastModified, Title, FullPath });
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
             mediaFilesTable.RowHeadersVisible = false;
@@ -344,40 +345,6 @@
             mediaFilesTable.TabIndex = 3;
             mediaFilesTable.CellContentDoubleClick += MediaFilesTable_CellContentDoubleClick;
             mediaFilesTable.MouseClick += MediaFilesTable_MouseClick;
-            // 
-            // Duration
-            // 
-            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            Duration.HeaderText = "Duration";
-            Duration.MinimumWidth = 6;
-            Duration.Name = "Duration";
-            Duration.ReadOnly = true;
-            Duration.Width = 96;
-            // 
-            // LastModified
-            // 
-            LastModified.HeaderText = "Last Modified";
-            LastModified.MinimumWidth = 6;
-            LastModified.Name = "LastModified";
-            LastModified.ReadOnly = true;
-            LastModified.Resizable = DataGridViewTriState.False;
-            LastModified.Width = 150;
-            // 
-            // Title
-            // 
-            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Title.HeaderText = "Title";
-            Title.MinimumWidth = 6;
-            Title.Name = "Title";
-            Title.ReadOnly = true;
-            // 
-            // FullPath
-            // 
-            FullPath.HeaderText = "FullPath";
-            FullPath.MinimumWidth = 6;
-            FullPath.Name = "FullPath";
-            FullPath.Visible = false;
-            FullPath.Width = 125;
             // 
             // menuStrip1
             // 
@@ -445,6 +412,49 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
+            // RawDuration
+            // 
+            RawDuration.HeaderText = "RawDuration";
+            RawDuration.MinimumWidth = 6;
+            RawDuration.Name = "RawDuration";
+            RawDuration.ReadOnly = true;
+            RawDuration.Visible = false;
+            RawDuration.Width = 125;
+            // 
+            // Duration
+            // 
+            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Duration.HeaderText = "Duration";
+            Duration.MinimumWidth = 6;
+            Duration.Name = "Duration";
+            Duration.ReadOnly = true;
+            Duration.Width = 96;
+            // 
+            // LastModified
+            // 
+            LastModified.HeaderText = "Last Modified";
+            LastModified.MinimumWidth = 6;
+            LastModified.Name = "LastModified";
+            LastModified.ReadOnly = true;
+            LastModified.Resizable = DataGridViewTriState.False;
+            LastModified.Width = 150;
+            // 
+            // Title
+            // 
+            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Title.HeaderText = "Title";
+            Title.MinimumWidth = 6;
+            Title.Name = "Title";
+            Title.ReadOnly = true;
+            // 
+            // FullPath
+            // 
+            FullPath.HeaderText = "FullPath";
+            FullPath.MinimumWidth = 6;
+            FullPath.Name = "FullPath";
+            FullPath.Visible = false;
+            FullPath.Width = 125;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -507,12 +517,13 @@
         private CheckBox optionAudioOnly;
         private ToolStripMenuItem showConsoleToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
+        private GroupBox groupBox2;
+        private Label label4;
+        private ComboBox options2Resolution;
+        private DataGridViewTextBoxColumn RawDuration;
         private DataGridViewTextBoxColumn Duration;
         private DataGridViewTextBoxColumn LastModified;
         private DataGridViewTextBoxColumn Title;
         private DataGridViewTextBoxColumn FullPath;
-        private GroupBox groupBox2;
-        private Label label4;
-        private ComboBox options2Resolution;
     }
 }

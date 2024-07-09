@@ -18,8 +18,7 @@ namespace MediaTools
         private bool _consoleShown = true;
         private bool _isUpdatingMediaList = false;
         private const bool TestMode = false;
-
-        private FileUtils _fileUtils;
+        private readonly FileUtils _fileUtils;
 
         #region DLL Imports
 
@@ -43,8 +42,8 @@ namespace MediaTools
             IconModifier.SetFormIcon(this);
 
             _runFromPath = runFromPath;
-            _configTemplatePath = Path.Combine(runFromPath, "yt-dlp.conf-template");
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
+            _configTemplatePath = _configPath + "-template";
             _fileUtils = new FileUtils(runFromPath);
 
             InitializeComponent();
@@ -137,6 +136,11 @@ namespace MediaTools
                 return;
             }
 
+            var duration = (double)mediaFilesTable
+                .Rows[hitTest.RowIndex]
+                .Cells["RawDuration"]
+                .Value;
+
             var path = mediaFilesTable
                 .Rows[hitTest.RowIndex]
                 .Cells["FullPath"]
@@ -153,6 +157,8 @@ namespace MediaTools
             }
 
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+
+            _totalDuration -= duration;
         }
 
         private void MediaFilesTable_MouseClick(object sender, MouseEventArgs e)
@@ -183,8 +189,17 @@ namespace MediaTools
                         form.Show();
                         break;
                     }
-                case { Control: true, KeyCode: Keys.T }:
-                    MessageBox.Show(@$"Total Media Duration: {SecondsToDuration(_totalDuration, true)}",
+                case { Control: true, KeyCode: Keys.I }:
+                    if (mediaFilesTable.RowCount == 0)
+                    {
+                        return;
+                    }
+
+                    var totalMediaFiles = mediaFilesTable.RowCount;
+                    var averageDur = _totalDuration / totalMediaFiles;
+                    var message =
+                        $"There are a total of {totalMediaFiles} files.\r\nThe average duration of a file is {SecondsToDuration(averageDur, false)} and a total length of {SecondsToDuration(_totalDuration, true)}.";
+                    MessageBox.Show(message,
                         @"Total Media Duration",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information,
@@ -272,9 +287,9 @@ namespace MediaTools
 
         private async Task FillTable()
         {
-            var results = new List<(string Duration, string LastModified, string Title, string FullPath)>();
-
             var directoryInfo = new DirectoryInfo(_fileUtils.GetMediaPath());
+
+            var results = new List<(double RawDuration, string Duration, string LastModified, string Title, string FullPath)>();
 
             // Iterate over each file in the directory.
             var i = 0;
@@ -290,8 +305,8 @@ namespace MediaTools
 
                 var filePath = Path.GetFileNameWithoutExtension(file.FullName);
                 var modified = file.LastWriteTime;
-                
-                results.Add((SecondsToDuration(dur, false),
+
+                results.Add((dur, SecondsToDuration(dur, false),
                     modified.ToString(CultureInfo.CurrentCulture),
                     filePath,
                     file.FullName));
@@ -309,12 +324,18 @@ namespace MediaTools
             {
                 foreach (var result in results)
                 {
-                    mediaFilesTable.Rows.Add(
+                    mediaFilesTable.Rows.Add(result.RawDuration,
                         result.Duration,
                         result.LastModified,
                         result.Title, result.FullPath);
                 }
             });
+        }
+
+        private static string SecondsToDuration(double seconds, bool longFormat)
+        {
+            var format = longFormat ? @"dd\:hh\:mm\:ss" : @"hh\:mm\:ss";
+            return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
         private void SetupConfigFile()
@@ -361,12 +382,6 @@ namespace MediaTools
 
             // Write the config file.
             File.WriteAllLines(_configPath, lines);
-        }
-
-        private static string SecondsToDuration(double seconds, bool longFormat)
-        {
-            var format = longFormat ? @"dd\:hh\:mm\:ss" : @"hh\:mm\:ss";
-            return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
         public void UpdateStatus(string status)
