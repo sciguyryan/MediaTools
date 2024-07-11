@@ -152,11 +152,12 @@ namespace MediaTools
                 return;
             }
 
+            var fi = new FileInfo(path!);
             var deleteSuccess = new OutputFormatBuilder()
                 .Foreground(ConsoleColour.Green)
                 .Text("Success:")
                 .ResetForeground()
-                .Text($" file '{path}' has been sent to the trash.");
+                .Text($" file '{fi.Name}' has been sent to the trash.");
             UpdateStatus(ref deleteSuccess);
 
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
