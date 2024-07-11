@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             groupBox2 = new GroupBox();
@@ -52,6 +53,11 @@
             downloadIds = new TextBox();
             tabPage2 = new TabPage();
             mediaFilesTable = new DataGridView();
+            RawDuration = new DataGridViewTextBoxColumn();
+            Duration = new DataGridViewTextBoxColumn();
+            LastModified = new DataGridViewTextBoxColumn();
+            Title = new DataGridViewTextBoxColumn();
+            FullPath = new DataGridViewTextBoxColumn();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             showConsoleToolStripMenuItem = new ToolStripMenuItem();
@@ -59,13 +65,10 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             dataToolStripMenuItem = new ToolStripMenuItem();
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
+            contextMenuStrip = new ContextMenuStrip(components);
+            contextDelete = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            RawDuration = new DataGridViewTextBoxColumn();
-            Duration = new DataGridViewTextBoxColumn();
-            LastModified = new DataGridViewTextBoxColumn();
-            Title = new DataGridViewTextBoxColumn();
-            FullPath = new DataGridViewTextBoxColumn();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -73,6 +76,7 @@
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)mediaFilesTable).BeginInit();
             menuStrip1.SuspendLayout();
+            contextMenuStrip.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -180,8 +184,6 @@
             // optionAddThumbnails
             // 
             optionAddThumbnails.AutoSize = true;
-            optionAddThumbnails.Checked = true;
-            optionAddThumbnails.CheckState = CheckState.Checked;
             optionAddThumbnails.Location = new Point(18, 145);
             optionAddThumbnails.Name = "optionAddThumbnails";
             optionAddThumbnails.Size = new Size(139, 24);
@@ -323,7 +325,7 @@
             tabPage2.Location = new Point(4, 29);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1224, 762);
+            tabPage2.Size = new Size(1224, 734);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Media";
             tabPage2.UseVisualStyleBackColor = true;
@@ -345,6 +347,49 @@
             mediaFilesTable.TabIndex = 3;
             mediaFilesTable.CellContentDoubleClick += MediaFilesTable_CellContentDoubleClick;
             mediaFilesTable.MouseClick += MediaFilesTable_MouseClick;
+            // 
+            // RawDuration
+            // 
+            RawDuration.HeaderText = "RawDuration";
+            RawDuration.MinimumWidth = 6;
+            RawDuration.Name = "RawDuration";
+            RawDuration.ReadOnly = true;
+            RawDuration.Visible = false;
+            RawDuration.Width = 125;
+            // 
+            // Duration
+            // 
+            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Duration.HeaderText = "Duration";
+            Duration.MinimumWidth = 6;
+            Duration.Name = "Duration";
+            Duration.ReadOnly = true;
+            Duration.Width = 96;
+            // 
+            // LastModified
+            // 
+            LastModified.HeaderText = "Last Modified";
+            LastModified.MinimumWidth = 6;
+            LastModified.Name = "LastModified";
+            LastModified.ReadOnly = true;
+            LastModified.Resizable = DataGridViewTriState.False;
+            LastModified.Width = 150;
+            // 
+            // Title
+            // 
+            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Title.HeaderText = "Title";
+            Title.MinimumWidth = 6;
+            Title.Name = "Title";
+            Title.ReadOnly = true;
+            // 
+            // FullPath
+            // 
+            FullPath.HeaderText = "FullPath";
+            FullPath.MinimumWidth = 6;
+            FullPath.Name = "FullPath";
+            FullPath.Visible = false;
+            FullPath.Width = 125;
             // 
             // menuStrip1
             // 
@@ -395,6 +440,20 @@
             reloadMediaFilesToolStripMenuItem.Text = "&Reload Media Files";
             reloadMediaFilesToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
             // 
+            // contextMenuStrip
+            // 
+            contextMenuStrip.ImageScalingSize = new Size(20, 20);
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { contextDelete });
+            contextMenuStrip.Name = "contextMenuStrip1";
+            contextMenuStrip.Size = new Size(123, 28);
+            // 
+            // contextDelete
+            // 
+            contextDelete.Name = "contextDelete";
+            contextDelete.Size = new Size(122, 24);
+            contextDelete.Text = "&Delete";
+            contextDelete.Click += DeleteItem_Click;
+            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
@@ -402,8 +461,7 @@
             statusStrip1.Location = new Point(0, 825);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(1256, 26);
-            statusStrip1.Stretch = false;
-            statusStrip1.TabIndex = 5;
+            statusStrip1.TabIndex = 2;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
@@ -411,49 +469,6 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-            // 
-            // RawDuration
-            // 
-            RawDuration.HeaderText = "RawDuration";
-            RawDuration.MinimumWidth = 6;
-            RawDuration.Name = "RawDuration";
-            RawDuration.ReadOnly = true;
-            RawDuration.Visible = false;
-            RawDuration.Width = 125;
-            // 
-            // Duration
-            // 
-            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            Duration.HeaderText = "Duration";
-            Duration.MinimumWidth = 6;
-            Duration.Name = "Duration";
-            Duration.ReadOnly = true;
-            Duration.Width = 96;
-            // 
-            // LastModified
-            // 
-            LastModified.HeaderText = "Last Modified";
-            LastModified.MinimumWidth = 6;
-            LastModified.Name = "LastModified";
-            LastModified.ReadOnly = true;
-            LastModified.Resizable = DataGridViewTriState.False;
-            LastModified.Width = 150;
-            // 
-            // Title
-            // 
-            Title.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Title.HeaderText = "Title";
-            Title.MinimumWidth = 6;
-            Title.Name = "Title";
-            Title.ReadOnly = true;
-            // 
-            // FullPath
-            // 
-            FullPath.HeaderText = "FullPath";
-            FullPath.MinimumWidth = 6;
-            FullPath.Name = "FullPath";
-            FullPath.Visible = false;
-            FullPath.Width = 125;
             // 
             // Form1
             // 
@@ -466,7 +481,9 @@
             KeyPreview = true;
             MainMenuStrip = menuStrip1;
             Name = "Form1";
+            SizeGripStyle = SizeGripStyle.Hide;
             Text = "Media Tools";
+            Load += Form1_Load;
             KeyDown += Form1_KeyDown;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
@@ -479,6 +496,7 @@
             ((System.ComponentModel.ISupportInitialize)mediaFilesTable).EndInit();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            contextMenuStrip.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -494,10 +512,8 @@
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
-        private StatusStrip statusStrip1;
         private ToolStripMenuItem dataToolStripMenuItem;
         private ToolStripMenuItem reloadMediaFilesToolStripMenuItem;
-        private ToolStripStatusLabel toolStripStatusLabel1;
         private Button download;
         private TextBox downloadIds;
         private Label label2;
@@ -525,5 +541,9 @@
         private DataGridViewTextBoxColumn LastModified;
         private DataGridViewTextBoxColumn Title;
         private DataGridViewTextBoxColumn FullPath;
+        private ContextMenuStrip contextMenuStrip;
+        private ToolStripMenuItem contextDelete;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
     }
 }

@@ -1,16 +1,13 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace MediaTools
 {
     public partial class Form1 : Form
     {
         private Point _contextMenuLocation;
-        private readonly ContextMenuStrip _contextMenuStrip;
         private readonly string _runFromPath;
         private readonly string _configTemplatePath;
         private readonly string _configPath;
@@ -19,23 +16,6 @@ namespace MediaTools
         private bool _isUpdatingMediaList = false;
         private const bool TestMode = false;
         private readonly FileUtils _fileUtils;
-
-        #region DLL Imports
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool AllocConsole();
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOW = 5;
-
-        #endregion
 
         public Form1(string runFromPath)
         {
@@ -48,16 +28,12 @@ namespace MediaTools
 
             InitializeComponent();
 
-            toolStripStatusLabel1.Text = "";
             source.SelectedIndex = 0;
             options2Resolution.SelectedIndex = 5;
+            toolStripStatusLabel1.Text = "";
 
-            _contextMenuStrip = new ContextMenuStrip();
-            var deleteItem = new ToolStripMenuItem("Delete");
-            deleteItem.Click += DeleteItem_Click;
-            _contextMenuStrip.Items.Add(deleteItem);
-
-            AllocConsole();
+            Interop.AllocConsole();
+            Interop.SetConsoleMode();
         }
 
         private void MediaFilesTable_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -85,11 +61,29 @@ namespace MediaTools
             var urls = BuildDownloadUrlList();
             if (urls.Length == 0)
             {
-                UpdateStatus(@"No valid target download URLs specified.");
+                var noUrlError = new OutputFormatBuilder()
+                    .Foreground(ConsoleColour.Red)
+                    .Text("Error:")
+                    .ResetForeground()
+                    .Text(" no valid target download URLs specified.");
+                UpdateStatus(ref noUrlError);
                 return;
             }
 
+            var downloadType = downloadSingle.Checked ? "video" : "playlist";
             download.Enabled = false;
+
+            var configSuccess = new OutputFormatBuilder()
+                .Foreground(ConsoleColour.Green)
+                .Text("Success:")
+                .ResetForeground()
+                .Text(" download config file successfully written!");
+
+            var moveSuccess = new OutputFormatBuilder()
+                .Foreground(ConsoleColour.Green)
+                .Text("Success:")
+                .ResetForeground()
+                .Text(@" downloaded files successfully moved!");
 
             var subfolder = downloadFolder.Text;
 
@@ -97,17 +91,23 @@ namespace MediaTools
             {
                 _fileUtils.EnsureTempExists();
 
-                UpdateStatus("Building download config file... ");
+                UpdateStatus(@"Attempting to write download config file...");
                 SetupConfigFile();
-                UpdateStatus(@"Download config file written!");
+                UpdateStatus(ref configSuccess);
 
-                UpdateStatus($@"Downloading video {i + 1} of {urls.Length}...");
+                UpdateStatus($@"Downloading {downloadType} {i + 1} of {urls.Length}...");
                 await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
-                UpdateStatus($@"Video {i + 1} successfully downloaded!");
 
-                UpdateStatus(@"Moving downloaded files to specified folder... ");
+                var downloadSuccess = new OutputFormatBuilder()
+                    .Foreground(ConsoleColour.Green)
+                    .Text("Success:")
+                    .ResetForeground()
+                    .Text($@" {downloadType} {i + 1} successfully downloaded!");
+                UpdateStatus(ref downloadSuccess);
+
+                UpdateStatus(@"Attempting to move files to specified folder...");
                 _fileUtils.MoveTempFiles(subfolder);
-                UpdateStatus(@"Downloaded files have been successfully moved!");
+                UpdateStatus(ref moveSuccess);
             }
 
             download.Enabled = true;
@@ -136,11 +136,6 @@ namespace MediaTools
                 return;
             }
 
-            var duration = (double)mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["RawDuration"]
-                .Value;
-
             var path = mediaFilesTable
                 .Rows[hitTest.RowIndex]
                 .Cells["FullPath"]
@@ -148,16 +143,28 @@ namespace MediaTools
                 .ToString();
             if (FileUtils.TrashPath(path!) != 0)
             {
-                UpdateStatus("Failed to send file to the trash!");
+                var deleteError = new OutputFormatBuilder()
+                    .Foreground(ConsoleColour.Red)
+                    .Text("Error:")
+                    .ResetForeground()
+                    .Text(" failed to send file to the trash!");
+                UpdateStatus(ref deleteError);
                 return;
             }
-            else
-            {
-                Console.WriteLine(@$"File '{path}' has been sent to the trash.");
-            }
+
+            var deleteSuccess = new OutputFormatBuilder()
+                .Foreground(ConsoleColour.Green)
+                .Text("Success:")
+                .ResetForeground()
+                .Text($" file '{path}' has been sent to the trash.");
+            UpdateStatus(ref deleteSuccess);
 
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
 
+            var duration = (double)mediaFilesTable
+                .Rows[hitTest.RowIndex]
+                .Cells["RawDuration"]
+                .Value;
             _totalDuration -= duration;
         }
 
@@ -174,7 +181,7 @@ namespace MediaTools
             }
 
             _contextMenuLocation = e.Location;
-            _contextMenuStrip.Show(mediaFilesTable, e.Location);
+            contextMenuStrip.Show(mediaFilesTable, e.Location);
         }
 
         private async void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -192,13 +199,15 @@ namespace MediaTools
                 case { Control: true, KeyCode: Keys.I }:
                     if (mediaFilesTable.RowCount == 0)
                     {
-                        return;
+                        break;
                     }
 
                     var totalMediaFiles = mediaFilesTable.RowCount;
                     var averageDur = _totalDuration / totalMediaFiles;
                     var message =
-                        $"There are a total of {totalMediaFiles} files.\r\nThe average duration of a file is {SecondsToDuration(averageDur, false)} and a total length of {SecondsToDuration(_totalDuration, true)}.";
+                        $"There are a total of {totalMediaFiles} files." +
+                        $"The average duration of a file is {Utils.SecondsToDuration(averageDur, false)} " + 
+                        $"and a total length of {Utils.SecondsToDuration(_totalDuration, true)}.";
                     MessageBox.Show(message,
                         @"Total Media Duration",
                         MessageBoxButtons.OK,
@@ -211,10 +220,15 @@ namespace MediaTools
             }
         }
 
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            await UpdateMediaTable();
+        }
+
         private void HideShowConsole()
         {
-            var state = _consoleShown ? SW_HIDE : SW_SHOW;
-            ShowWindow(GetConsoleWindow(), state);
+            var state = _consoleShown ? Interop.SW_HIDE : Interop.SW_SHOW;
+            Interop.ShowWindow(Interop.GetConsoleWindow(), state);
             _consoleShown = !_consoleShown;
             showConsoleToolStripMenuItem.Text = _consoleShown ? "Hide &Console..." : "Show &Console...";
         }
@@ -240,7 +254,7 @@ namespace MediaTools
 
             _isUpdatingMediaList = true;
 
-            UpdateStatus(@"Reloading media file list... ");
+            UpdateStatus(@"Reloading media file list...");
 
             mediaFilesTable.ClearSelection();
             mediaFilesTable.Rows.Clear();
@@ -250,12 +264,17 @@ namespace MediaTools
 
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
-            UpdateStatus(@"Media list successfully reloaded!");
+            var updateListSuccess = new OutputFormatBuilder()
+                .Foreground(ConsoleColour.Green)
+                .Text("Success:")
+                .ResetForeground()
+                .Text(" media list successfully reloaded!");
+            UpdateStatus(ref updateListSuccess);
 
             _isUpdatingMediaList = false;
         }
 
-        public void FindEntry(string searchStr, bool single)
+        public void FindEntry(string searchRegex, bool single)
         {
             mediaFilesTable.ClearSelection();
 
@@ -264,7 +283,7 @@ namespace MediaTools
             {
                 var title = mediaFilesTable.Rows[i].Cells["Title"].Value.ToString();
 
-                var match = Regex.Match(title!, searchStr, RegexOptions.IgnoreCase);
+                var match = Regex.Match(title!, searchRegex, RegexOptions.IgnoreCase);
                 if (!match.Success)
                 {
                     continue;
@@ -306,10 +325,13 @@ namespace MediaTools
                 var filePath = Path.GetFileNameWithoutExtension(file.FullName);
                 var modified = file.LastWriteTime;
 
-                results.Add((dur, SecondsToDuration(dur, false),
+                results.Add((
+                    dur,
+                    Utils.SecondsToDuration(dur, false),
                     modified.ToString(CultureInfo.CurrentCulture),
                     filePath,
-                    file.FullName));
+                    file.FullName
+                ));
 
                 if (TestMode && i == 10)
                 {
@@ -330,12 +352,6 @@ namespace MediaTools
                         result.Title, result.FullPath);
                 }
             });
-        }
-
-        private static string SecondsToDuration(double seconds, bool longFormat)
-        {
-            var format = longFormat ? @"dd\:hh\:mm\:ss" : @"hh\:mm\:ss";
-            return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
         private void SetupConfigFile()
@@ -384,10 +400,16 @@ namespace MediaTools
             File.WriteAllLines(_configPath, lines);
         }
 
-        public void UpdateStatus(string status)
+        private void UpdateStatus(ref OutputFormatBuilder fmt)
         {
-            toolStripStatusLabel1.Text = status;
-            Console.WriteLine(status);
+            toolStripStatusLabel1.Text = fmt.BuildPlain();
+            Console.WriteLine(fmt.Build());
+        }
+
+        private void UpdateStatus(string text)
+        {
+            toolStripStatusLabel1.Text = text;
+            Console.WriteLine(text);
         }
     }
 }
