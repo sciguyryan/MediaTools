@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             groupBox2 = new GroupBox();
@@ -67,6 +68,7 @@
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip = new ContextMenuStrip(components);
             contextDelete = new ToolStripMenuItem();
+            trashToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabControl1.SuspendLayout();
@@ -325,7 +327,7 @@
             tabPage2.Location = new Point(4, 29);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1224, 734);
+            tabPage2.Size = new Size(1224, 762);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Media";
             tabPage2.UseVisualStyleBackColor = true;
@@ -337,6 +339,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Columns.AddRange(new DataGridViewColumn[] { RawDuration, Duration, LastModified, Title, FullPath });
             mediaFilesTable.Location = new Point(6, 6);
@@ -443,9 +453,9 @@
             // contextMenuStrip
             // 
             contextMenuStrip.ImageScalingSize = new Size(20, 20);
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { contextDelete });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { trashToolStripMenuItem, contextDelete });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new Size(123, 28);
+            contextMenuStrip.Size = new Size(123, 52);
             // 
             // contextDelete
             // 
@@ -453,6 +463,13 @@
             contextDelete.Size = new Size(122, 24);
             contextDelete.Text = "&Delete";
             contextDelete.Click += DeleteItem_Click;
+            // 
+            // trashToolStripMenuItem
+            // 
+            trashToolStripMenuItem.Name = "trashToolStripMenuItem";
+            trashToolStripMenuItem.Size = new Size(122, 24);
+            trashToolStripMenuItem.Text = "&Trash";
+            trashToolStripMenuItem.Click += TrashToolStripMenuItem_Click;
             // 
             // statusStrip1
             // 
@@ -545,5 +562,6 @@
         private ToolStripMenuItem contextDelete;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripMenuItem trashToolStripMenuItem;
     }
 }

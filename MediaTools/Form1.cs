@@ -136,29 +136,33 @@ namespace MediaTools
                 return;
             }
 
-            var path = mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["FullPath"]
-                .Value
-                .ToString();
-            if (FileUtils.TrashPath(path!) != 0)
+            if (!DeleteFile(hitTest.RowIndex, false))
             {
-                var deleteError = new OutputFormatBuilder()
-                    .Foreground(ConsoleColour.Red)
-                    .Text("Error:")
-                    .ResetForeground()
-                    .Text(" failed to send file to the trash!");
-                UpdateStatus(ref deleteError);
                 return;
             }
 
-            var fi = new FileInfo(path!);
-            var deleteSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text($" file '{fi.Name}' has been sent to the trash.");
-            UpdateStatus(ref deleteSuccess);
+            mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+
+            var duration = (double)mediaFilesTable
+                .Rows[hitTest.RowIndex]
+                .Cells["RawDuration"]
+                .Value;
+            _totalDuration -= duration;
+        }
+
+        private void TrashToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var pos = _contextMenuLocation;
+            var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
+            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
+            {
+                return;
+            }
+
+            if (!DeleteFile(hitTest.RowIndex, true))
+            {
+                return;
+            }
 
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
 
@@ -207,7 +211,7 @@ namespace MediaTools
                     var averageDur = _totalDuration / totalMediaFiles;
                     var message =
                         $"There are a total of {totalMediaFiles} files." +
-                        $"The average duration of a file is {Utils.SecondsToDuration(averageDur, false)} " + 
+                        $"The average duration of a file is {Utils.SecondsToDuration(averageDur, false)} " +
                         $"and a total length of {Utils.SecondsToDuration(_totalDuration, true)}.";
                     MessageBox.Show(message,
                         @"Total Media Duration",
@@ -224,6 +228,52 @@ namespace MediaTools
         private async void Form1_Load(object sender, EventArgs e)
         {
             await UpdateMediaTable();
+        }
+
+        private bool DeleteFile(int rowId, bool trash)
+        {
+            var path = mediaFilesTable
+                .Rows[rowId]
+                .Cells["FullPath"]
+                .Value
+                .ToString();
+
+            if (trash)
+            {
+                if (FileUtils.TrashPath(path!) == 0)
+                {
+                    return true;
+                }
+
+                var trashError = new OutputFormatBuilder()
+                    .Foreground(ConsoleColour.Red)
+                    .Text("Error:")
+                    .ResetForeground()
+                    .Text(" failed to send file to the trash!");
+                UpdateStatus(ref trashError);
+
+                return false;
+            }
+            else
+            {
+                var deleteError = new OutputFormatBuilder()
+                    .Foreground(ConsoleColour.Red)
+                    .Text("Error:")
+                    .ResetForeground()
+                    .Text(" failed to delete file!");
+
+                try
+                {
+                    File.Delete(path!);
+                }
+                catch
+                {
+                    UpdateStatus(ref deleteError);
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void HideShowConsole()
@@ -257,7 +307,6 @@ namespace MediaTools
 
             UpdateStatus(@"Reloading media file list...");
 
-            mediaFilesTable.ClearSelection();
             mediaFilesTable.Rows.Clear();
             _totalDuration = 0;
 
