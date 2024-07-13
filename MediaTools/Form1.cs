@@ -87,13 +87,13 @@ namespace MediaTools
 
             var subfolder = downloadFolder.Text;
 
+            UpdateStatus(@"Attempting to write download config file...");
+            SetupConfigFile();
+            UpdateStatus(ref configSuccess);
+
             for (var i = 0; i < urls.Length; i++)
             {
                 _fileUtils.EnsureTempExists();
-
-                UpdateStatus(@"Attempting to write download config file...");
-                SetupConfigFile();
-                UpdateStatus(ref configSuccess);
 
                 UpdateStatus($@"Downloading {downloadType} {i + 1} of {urls.Length}...");
                 await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
