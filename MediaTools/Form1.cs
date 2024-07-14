@@ -119,7 +119,10 @@ namespace MediaTools
 
         private void OptionAudioOnly_CheckedChanged(object sender, EventArgs e)
         {
-            optionAddThumbnails.Checked = !optionAudioOnly.Checked;
+            if (optionAddThumbnails.Checked)
+            {
+                optionAddThumbnails.Checked = false;
+            }
         }
 
         private void ShowConsoleToolStripMenuItem_Click(object sender, EventArgs e)
