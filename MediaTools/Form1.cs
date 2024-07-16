@@ -1,8 +1,10 @@
+using System;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
+using static MediaTools.Form1;
 
 namespace MediaTools
 {
@@ -311,11 +313,13 @@ namespace MediaTools
 
             UpdateStatus(@"Reloading media file list...");
 
-            // Preserve the selected item.
-            var selectedItem = 
-                (mediaFilesTable.SelectedRows.Count > 0) ? 
-                    mediaFilesTable.SelectedRows[0].Cells["FullPath"].Value.ToString()! :
-                    "";
+            // Preserve any selected rows.
+            var selectedPaths = new HashSet<string>();
+            foreach (DataGridViewCell cell in mediaFilesTable.SelectedCells)
+            {
+                var row = mediaFilesTable.Rows[cell.RowIndex];
+                selectedPaths.Add(row.Cells["FullPath"].Value.ToString()!);
+            }
 
             mediaFilesTable.Rows.Clear();
             _totalDuration = 0;
@@ -325,7 +329,7 @@ namespace MediaTools
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
             // Restore the selected item.
-            FindEntry(selectedItem, "FullPath", true, FindType.Text);
+            RestoreRowSelections(selectedPaths);
 
             var updateListSuccess = new OutputFormatBuilder()
                 .Foreground(ConsoleColour.Green)
@@ -343,27 +347,29 @@ namespace MediaTools
             Text
         }
 
-        public void FindEntry(string searchString, string column, bool single, FindType findType)
+        public void FindEntry(string searchString, string column, FindType findType, bool single, bool scrollToEntry = true)
         {
+            if (searchString == "")
+            {
+                return;
+            }
+
             mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
                 var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString()!;
+                bool isMatch;
 
-                var isMatch = false;
                 switch (findType)
                 {
                     case FindType.Regex:
                         var match = Regex.Match(title, searchString, RegexOptions.IgnoreCase);
-                        if (!match.Success)
-                        {
-                            continue;
-                        }
+                        isMatch = match.Success;
                         break;
                     case FindType.Text:
-                        isMatch = string.Equals(title, searchString, StringComparison.InvariantCultureIgnoreCase);
+                        isMatch = string.Equals(title, searchString, StringComparison.CurrentCultureIgnoreCase);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(findType), findType, null);
@@ -376,7 +382,7 @@ namespace MediaTools
 
                 mediaFilesTable.Rows[i].Selected = true;
 
-                if (!hasChangedRow)
+                if (!hasChangedRow && scrollToEntry)
                 {
                     mediaFilesTable.FirstDisplayedScrollingRowIndex = i;
                     hasChangedRow = true;
@@ -386,6 +392,36 @@ namespace MediaTools
                 {
                     break;
                 }
+            }
+        }
+
+        private void RestoreRowSelections(HashSet<string> items)
+        {
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            mediaFilesTable.ClearSelection();
+
+            var hasChangedRow = false;
+            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            {
+                var path = mediaFilesTable.Rows[i].Cells["FullPath"].Value.ToString()!;
+                if (!items.Contains(path))
+                {
+                    continue;
+                }
+
+                mediaFilesTable.Rows[i].Selected = true;
+
+                if (hasChangedRow)
+                {
+                    continue;
+                }
+
+                mediaFilesTable.FirstDisplayedScrollingRowIndex = i;
+                hasChangedRow = true;
             }
         }
 
