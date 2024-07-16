@@ -325,7 +325,7 @@ namespace MediaTools
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
             // Restore the selected item.
-            FindEntry(selectedItem, "FullPath", true);
+            FindEntry(selectedItem, "FullPath", true, FindType.Text);
 
             var updateListSuccess = new OutputFormatBuilder()
                 .Foreground(ConsoleColour.Green)
@@ -337,17 +337,39 @@ namespace MediaTools
             _isUpdatingMediaList = false;
         }
 
-        public void FindEntry(string searchRegex, string column, bool single)
+        public enum FindType
+        {
+            Regex,
+            Text
+        }
+
+        public void FindEntry(string searchString, string column, bool single, FindType findType)
         {
             mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
-                var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString();
+                var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString()!;
 
-                var match = Regex.Match(title!, searchRegex, RegexOptions.IgnoreCase);
-                if (!match.Success)
+                var isMatch = false;
+                switch (findType)
+                {
+                    case FindType.Regex:
+                        var match = Regex.Match(title, searchString, RegexOptions.IgnoreCase);
+                        if (!match.Success)
+                        {
+                            continue;
+                        }
+                        break;
+                    case FindType.Text:
+                        isMatch = string.Equals(title, searchString, StringComparison.InvariantCultureIgnoreCase);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(findType), findType, null);
+                }
+
+                if (!isMatch)
                 {
                     continue;
                 }
