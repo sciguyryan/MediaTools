@@ -20,12 +20,12 @@
 
         private void Find_Click(object sender, EventArgs e)
         {
-            _parent.FindEntry(searchString.Text, true);
+            _parent.FindEntry(searchString.Text, "Title", true);
         }
 
         private void FindAll_Click(object sender, EventArgs e)
         {
-            _parent.FindEntry(searchString.Text, false);
+            _parent.FindEntry(searchString.Text, "Title", false);
         }
 
         private void SearchString_KeyPress(object sender, KeyPressEventArgs e)

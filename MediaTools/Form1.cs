@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace MediaTools
 {
@@ -310,12 +311,21 @@ namespace MediaTools
 
             UpdateStatus(@"Reloading media file list...");
 
+            // Preserve the selected item.
+            var selectedItem = 
+                (mediaFilesTable.SelectedRows.Count > 0) ? 
+                    mediaFilesTable.SelectedRows[0].Cells["FullPath"].Value.ToString()! :
+                    "";
+
             mediaFilesTable.Rows.Clear();
             _totalDuration = 0;
 
             await FillTable();
 
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
+
+            // Restore the selected item.
+            FindEntry(selectedItem, "FullPath", true);
 
             var updateListSuccess = new OutputFormatBuilder()
                 .Foreground(ConsoleColour.Green)
@@ -327,14 +337,14 @@ namespace MediaTools
             _isUpdatingMediaList = false;
         }
 
-        public void FindEntry(string searchRegex, bool single)
+        public void FindEntry(string searchRegex, string column, bool single)
         {
             mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
-                var title = mediaFilesTable.Rows[i].Cells["Title"].Value.ToString();
+                var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString();
 
                 var match = Regex.Match(title!, searchRegex, RegexOptions.IgnoreCase);
                 if (!match.Success)
