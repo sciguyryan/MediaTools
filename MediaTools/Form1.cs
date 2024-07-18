@@ -107,6 +107,10 @@ namespace MediaTools
                     .Text($@" {downloadType} {i + 1} successfully downloaded!");
                 UpdateStatus(ref downloadSuccess);
 
+                // We could move all the files at the end instead, but if
+                // something went wrong then some of the files would be stuck
+                // in the temporary folder. It seems to make more sense to move
+                // them as and when needed.
                 UpdateStatus(@"Attempting to move files to specified folder...");
                 _fileUtils.MoveTempFiles(subfolder);
                 UpdateStatus(ref moveSuccess);
