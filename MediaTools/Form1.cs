@@ -1,10 +1,7 @@
-using System;
 using System.ComponentModel;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using static MediaTools.Form1;
 
 namespace MediaTools
 {
@@ -19,6 +16,8 @@ namespace MediaTools
         private bool _isUpdatingMediaList = false;
         private const bool TestMode = false;
         private readonly FileUtils _fileUtils;
+
+        private Dictionary<string, int> _searchIndices = new();
 
         public Form1(string runFromPath)
         {
@@ -314,11 +313,12 @@ namespace MediaTools
             UpdateStatus(@"Reloading media file list...");
 
             // Preserve any selected rows.
-            var selectedPaths = new HashSet<string>();
+            var selectedPaths = new List<string>();
             foreach (DataGridViewCell cell in mediaFilesTable.SelectedCells)
             {
                 var row = mediaFilesTable.Rows[cell.RowIndex];
-                selectedPaths.Add(row.Cells["FullPath"].Value.ToString()!);
+                var path = row.Cells["FullPath"].Value.ToString()!;
+                selectedPaths.Add(Utils.ComputeSha384Hash(path));
             }
 
             mediaFilesTable.Rows.Clear();
@@ -328,8 +328,8 @@ namespace MediaTools
 
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
-            // Restore the selected item.
-            RestoreRowSelections(selectedPaths);
+            // Restore the selected rows.
+            RestoreRowSelections(ref selectedPaths);
 
             var updateListSuccess = new OutputFormatBuilder()
                 .Foreground(ConsoleColour.Green)
@@ -395,7 +395,7 @@ namespace MediaTools
             }
         }
 
-        private void RestoreRowSelections(HashSet<string> items)
+        private void RestoreRowSelections(ref List<string> items)
         {
             if (items.Count == 0)
             {
@@ -403,30 +403,35 @@ namespace MediaTools
             }
 
             mediaFilesTable.ClearSelection();
+            mediaFilesTable.FirstDisplayedScrollingRowIndex = 0;
 
-            var hasChangedRow = false;
-            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            var selectIndex = -1;
+            foreach (var item in items)
             {
-                var path = mediaFilesTable.Rows[i].Cells["FullPath"].Value.ToString()!;
-                if (!items.Contains(path))
+                try
+                {
+                    var index = _searchIndices[item];
+                    mediaFilesTable.Rows[index].Selected = true;
+                    selectIndex = index;
+                }
+                catch
+                {
+                    // Ignored.
+                }
+
+                if (selectIndex > -1)
                 {
                     continue;
                 }
 
-                mediaFilesTable.Rows[i].Selected = true;
-
-                if (hasChangedRow)
-                {
-                    continue;
-                }
-
-                mediaFilesTable.FirstDisplayedScrollingRowIndex = i;
-                hasChangedRow = true;
+                mediaFilesTable.FirstDisplayedScrollingRowIndex = selectIndex;
             }
         }
 
         private async Task FillTable()
         {
+            this._searchIndices.Clear();
+
             var directoryInfo = new DirectoryInfo(_fileUtils.GetMediaPath());
 
             var results = new List<(double RawDuration, string Duration, string LastModified, string Title, string FullPath)>();
@@ -453,6 +458,9 @@ namespace MediaTools
                     filePath,
                     file.FullName
                 ));
+
+                var hash = Utils.ComputeSha384Hash(file.FullName);
+                this._searchIndices.Add(hash, i);
 
                 if (TestMode && i == 10)
                 {
