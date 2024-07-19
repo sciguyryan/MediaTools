@@ -11,7 +11,7 @@ namespace MediaTools
             return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
-        public static string ComputeMD5Hash(string input)
+        public static string ComputeMd5Hash(string input)
         {
             var hashBytes = MD5.HashData((Encoding.UTF8.GetBytes(input)));
             var hash = new StringBuilder();

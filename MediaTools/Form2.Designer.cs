@@ -32,13 +32,14 @@
             find = new Button();
             cancel = new Button();
             findAll = new Button();
+            regularExpression = new CheckBox();
             SuspendLayout();
             // 
             // searchString
             // 
             searchString.Location = new Point(12, 12);
             searchString.Name = "searchString";
-            searchString.Size = new Size(402, 27);
+            searchString.Size = new Size(294, 27);
             searchString.TabIndex = 0;
             searchString.KeyPress += SearchString_KeyPress;
             // 
@@ -72,11 +73,22 @@
             findAll.UseVisualStyleBackColor = true;
             findAll.Click += FindAll_Click;
             // 
+            // regularExpression
+            // 
+            regularExpression.AutoSize = true;
+            regularExpression.Location = new Point(12, 82);
+            regularExpression.Name = "regularExpression";
+            regularExpression.Size = new Size(191, 24);
+            regularExpression.TabIndex = 4;
+            regularExpression.Text = "&Use Regular Expression?";
+            regularExpression.UseVisualStyleBackColor = true;
+            // 
             // Form2
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(426, 88);
+            ClientSize = new Size(318, 114);
+            Controls.Add(regularExpression);
             Controls.Add(findAll);
             Controls.Add(cancel);
             Controls.Add(find);
@@ -98,5 +110,6 @@
         private Button find;
         private Button cancel;
         private Button findAll;
+        private CheckBox regularExpression;
     }
 }

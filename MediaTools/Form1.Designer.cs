@@ -67,8 +67,8 @@
             dataToolStripMenuItem = new ToolStripMenuItem();
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip = new ContextMenuStrip(components);
-            contextDelete = new ToolStripMenuItem();
             trashToolStripMenuItem = new ToolStripMenuItem();
+            contextDelete = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabControl1.SuspendLayout();
@@ -421,19 +421,19 @@
             // showConsoleToolStripMenuItem
             // 
             showConsoleToolStripMenuItem.Name = "showConsoleToolStripMenuItem";
-            showConsoleToolStripMenuItem.Size = new Size(194, 26);
-            showConsoleToolStripMenuItem.Text = "Show &Console...";
+            showConsoleToolStripMenuItem.Size = new Size(224, 26);
+            showConsoleToolStripMenuItem.Text = "Hide &Console";
             showConsoleToolStripMenuItem.Click += ShowConsoleToolStripMenuItem_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(191, 6);
+            toolStripMenuItem1.Size = new Size(221, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(194, 26);
+            exitToolStripMenuItem.Size = new Size(224, 26);
             exitToolStripMenuItem.Text = "E&xit";
             // 
             // dataToolStripMenuItem
@@ -457,19 +457,19 @@
             contextMenuStrip.Name = "contextMenuStrip1";
             contextMenuStrip.Size = new Size(123, 52);
             // 
-            // contextDelete
-            // 
-            contextDelete.Name = "contextDelete";
-            contextDelete.Size = new Size(122, 24);
-            contextDelete.Text = "&Delete";
-            contextDelete.Click += DeleteItem_Click;
-            // 
             // trashToolStripMenuItem
             // 
             trashToolStripMenuItem.Name = "trashToolStripMenuItem";
             trashToolStripMenuItem.Size = new Size(122, 24);
             trashToolStripMenuItem.Text = "&Trash";
             trashToolStripMenuItem.Click += TrashToolStripMenuItem_Click;
+            // 
+            // contextDelete
+            // 
+            contextDelete.Name = "contextDelete";
+            contextDelete.Size = new Size(122, 24);
+            contextDelete.Text = "&Delete";
+            contextDelete.Click += DeleteItem_Click;
             // 
             // statusStrip1
             // 
