@@ -78,22 +78,13 @@
             .Text(ErrorDeleteFileTail);
 
         public static readonly OutputFormatBuilder AttemptWriteConfig = new OutputFormatBuilder()
-            .Foreground(ConsoleColour.Blue)
-            .Text(AttemptWriteConfigText)
-            .ResetForeground();
+            .Text(AttemptWriteConfigText);
         public static readonly OutputFormatBuilder AttemptingDownload = new OutputFormatBuilder()
-            .Foreground(ConsoleColour.Blue)
-            .Text(AttemptingDownloadText)
-            .ResetForeground();
+            .Text(AttemptingDownloadText);
         public static readonly OutputFormatBuilder AttemptingMoveDownloads = new OutputFormatBuilder()
-            .Foreground(ConsoleColour.Blue)
-            .Text(AttemptingMoveDownloadsText)
-            .ResetForeground();
+            .Text(AttemptingMoveDownloadsText);
         public static readonly OutputFormatBuilder ReloadingMediaFiles = new OutputFormatBuilder()
-            .Foreground(ConsoleColour.Blue)
-            .Text(ReloadingMediaFilesText)
-            .ResetForeground();
-
+            .Text(ReloadingMediaFilesText);
         public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
             .Text(MediaInfoDurationText);
 
