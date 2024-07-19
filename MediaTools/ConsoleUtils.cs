@@ -202,14 +202,34 @@ namespace MediaTools
             return this;
         }
 
-        public string Build()
+        public (string, string) HandleBinds(ReadOnlySpan<object> binds = new())
         {
-            return _output.ToString();
+            var outFormatted = _output;
+            var outPlain = _outputText;
+
+            for (var i = 0; i < binds.Length; i++)
+            {
+                var str = binds[i].ToString();
+
+                outFormatted = outFormatted.Replace($"[{i}]", str);
+                outPlain = outPlain.Replace($"[{i}]", str);
+            }
+
+            return (outFormatted.ToString(), outPlain.ToString());
         }
 
-        public string BuildPlain()
+        public string Build(ReadOnlySpan<object> binds = new())
         {
-            return _outputText.ToString();
+            var (outFormatted, _) = HandleBinds(binds);
+
+            return outFormatted;
+        }
+
+        public string BuildPlain(ReadOnlySpan<object> binds = new())
+        {
+            var (_, outPlain) = HandleBinds(binds);
+
+            return outPlain;
         }
     }
 }

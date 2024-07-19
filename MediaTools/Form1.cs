@@ -1,9 +1,7 @@
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace MediaTools
 {
@@ -19,7 +17,7 @@ namespace MediaTools
         private const bool TestMode = false;
         private readonly FileUtils _fileUtils;
 
-        private Dictionary<string, (int Index, double Duration)> _cache = new();
+        private readonly Dictionary<string, (int Index, double Duration)> _cache = new();
 
         public Form1(string runFromPath)
         {
@@ -65,57 +63,34 @@ namespace MediaTools
             var urls = BuildDownloadUrlList();
             if (urls.Length == 0)
             {
-                var noUrlError = new OutputFormatBuilder()
-                    .Foreground(ConsoleColour.Red)
-                    .Text("Error:")
-                    .ResetForeground()
-                    .Text(" no valid target download URLs specified.");
-                UpdateStatus(ref noUrlError);
+                UpdateStatus(DisplayBuilders.ErrorNoValidUrls);
                 return;
             }
 
             var downloadType = downloadSingle.Checked ? "video" : "playlist";
             download.Enabled = false;
 
-            var configSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text(" download config file successfully written!");
-
-            var moveSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text(@" downloaded files successfully moved!");
-
             var subfolder = downloadFolder.Text;
 
-            UpdateStatus(@"Attempting to write download config file...");
+            UpdateStatus(DisplayBuilders.AttemptWriteConfig);
             SetupConfigFile();
-            UpdateStatus(ref configSuccess);
+            UpdateStatus(DisplayBuilders.SuccessConfigWrite);
 
             for (var i = 0; i < urls.Length; i++)
             {
                 _fileUtils.EnsureTempExists();
 
-                UpdateStatus($@"Downloading {downloadType} {i + 1} of {urls.Length}...");
+                UpdateStatus(DisplayBuilders.AttemptingDownload, [downloadType, i + 1, urls.Length]);
                 await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
-
-                var downloadSuccess = new OutputFormatBuilder()
-                    .Foreground(ConsoleColour.Green)
-                    .Text("Success:")
-                    .ResetForeground()
-                    .Text($@" {downloadType} {i + 1} successfully downloaded!");
-                UpdateStatus(ref downloadSuccess);
+                UpdateStatus(DisplayBuilders.SuccessDownload, [downloadType, i + 1]);
 
                 // We could move all the files at the end instead, but if
                 // something went wrong then some of the files would be stuck
-                // in the temporary folder. It seems to make more sense to move
-                // them as and when needed.
-                UpdateStatus(@"Attempting to move files to specified folder...");
+                // in the temporary folder.
+                // It seems to make more sense to move them as needed.
+                UpdateStatus(DisplayBuilders.AttemptingMoveDownloads);
                 _fileUtils.MoveTempFiles(subfolder);
-                UpdateStatus(ref moveSuccess);
+                UpdateStatus(DisplayBuilders.SuccessMoveDownloads);
             }
 
             download.Enabled = true;
@@ -169,13 +144,13 @@ namespace MediaTools
             switch (e)
             {
                 case { Control: true, KeyCode: Keys.F }:
-                {
-                    tabControl1.SelectedIndex = 1;
+                    {
+                        tabControl1.SelectedIndex = 1;
 
-                    var form = new Form2(this);
-                    form.Show();
-                    break;
-                }
+                        var form = new Form2(this);
+                        form.Show();
+                        break;
+                    }
                 case { Control: true, KeyCode: Keys.I }:
                     if (mediaFilesTable.RowCount == 0)
                     {
@@ -184,13 +159,16 @@ namespace MediaTools
 
                     var totalMediaFiles = mediaFilesTable.RowCount;
                     var averageDur = _totalDuration / totalMediaFiles;
-                    var message =
-                        $"There are a total of {totalMediaFiles} files."
-                        + $"The average duration of a file is {Utils.SecondsToDuration(averageDur, false)} "
-                        + $"and a total length of {Utils.SecondsToDuration(_totalDuration, true)}.";
+                    var message = DisplayBuilders.MediaInfoDuration.BuildPlain(
+                        [
+                            totalMediaFiles,
+                            Utils.SecondsToDuration(averageDur, false),
+                            Utils.SecondsToDuration(_totalDuration, true)
+                        ]
+                    );
                     MessageBox.Show(
                         message,
-                        @"Total Media Duration",
+                        DisplayBuilders.MediaInfoDurationTitle,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information,
                         MessageBoxDefaultButton.Button1
@@ -239,36 +217,16 @@ namespace MediaTools
             }
 
             var fi = new FileInfo(path);
-            var trashSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text($" file '{fi.Name}' has been sent to the trash!");
-            var trashError = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Red)
-                .Text("Error:")
-                .ResetForeground()
-                .Text(" failed to send file to the trash!");
-            var deleteSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text($" file '{fi.Name}' has been deleted!");
-            var deleteError = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Red)
-                .Text("Error:")
-                .ResetForeground()
-                .Text(" failed to delete the file!");
 
             if (trash)
             {
                 if (success)
                 {
-                    UpdateStatus(ref trashSuccess);
+                    UpdateStatus(DisplayBuilders.SuccessTrashFile, [fi.Name]);
                 }
                 else
                 {
-                    UpdateStatus(ref trashError);
+                    UpdateStatus(DisplayBuilders.ErrorTrashFile, [fi.Name]);
                     return;
                 }
             }
@@ -276,11 +234,11 @@ namespace MediaTools
             {
                 if (success)
                 {
-                    UpdateStatus(ref deleteSuccess);
+                    UpdateStatus(DisplayBuilders.SuccessDeleteFile, [fi.Name]);
                 }
                 else
                 {
-                    UpdateStatus(ref deleteError);
+                    UpdateStatus(DisplayBuilders.ErrorDeleteFile, [fi.Name]);
                     return;
                 }
             }
@@ -335,7 +293,7 @@ namespace MediaTools
             // Disable downloading while the list is being refreshed.
             download.Enabled = false;
 
-            UpdateStatus(@"Reloading media file list...");
+            UpdateStatus(DisplayBuilders.ReloadingMediaFiles);
 
             // Preserve any selected rows.
             var selectedPaths = (
@@ -358,12 +316,7 @@ namespace MediaTools
             // Restore the selected rows.
             RestoreRowSelections(ref selectedPaths);
 
-            var updateListSuccess = new OutputFormatBuilder()
-                .Foreground(ConsoleColour.Green)
-                .Text("Success:")
-                .ResetForeground()
-                .Text(" media list successfully reloaded!");
-            UpdateStatus(ref updateListSuccess);
+            UpdateStatus(DisplayBuilders.SuccessReload);
 
             _isUpdatingMediaList = false;
 
@@ -606,16 +559,16 @@ namespace MediaTools
             File.WriteAllLines(_configPath, lines);
         }
 
-        private void UpdateStatus(ref OutputFormatBuilder fmt)
+        private void UpdateStatus(OutputFormatBuilder fmt)
         {
-            toolStripStatusLabel1.Text = fmt.BuildPlain();
-            Console.WriteLine(fmt.Build());
+            toolStripStatusLabel1.Text = fmt.BuildPlain([]);
+            Console.WriteLine(fmt.Build([]));
         }
 
-        private void UpdateStatus(string text)
+        private void UpdateStatus(OutputFormatBuilder fmt, object[] binds)
         {
-            toolStripStatusLabel1.Text = text;
-            Console.WriteLine(text);
+            toolStripStatusLabel1.Text = fmt.BuildPlain(binds);
+            Console.WriteLine(fmt.Build(binds));
         }
     }
 }
