@@ -332,6 +332,9 @@ namespace MediaTools
 
             _isUpdatingMediaList = true;
 
+            // Disable downloading while the list is being refreshed.
+            download.Enabled = false;
+
             UpdateStatus(@"Reloading media file list...");
 
             // Preserve any selected rows.
@@ -363,6 +366,8 @@ namespace MediaTools
             UpdateStatus(ref updateListSuccess);
 
             _isUpdatingMediaList = false;
+
+            download.Enabled = true;
         }
 
         private void UpdateCache()
