@@ -203,6 +203,10 @@ namespace MediaTools
 
         public (string, string) HandleBinds(ReadOnlySpan<object> binds)
         {
+            // Ensure we always clear the formatting, so it doesn't bleed into other
+            // following entries in the console window...
+            Clear();
+
             var outFormatted = new StringBuilder(_output.ToString());
             var outPlain = new StringBuilder(StripFormatting());
 

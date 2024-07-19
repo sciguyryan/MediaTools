@@ -17,10 +17,10 @@
         private const string ErrorTrashFileTail = " failed to send file '[0]' to the trash!";
         private const string ErrorDeleteFileTail = " failed to delete file '[0]'!";
 
-        private const string AttemptWriteConfigText = "Attempting to write download config file…";
-        private const string AttemptingDownloadText = "Downloading [0] [1] of [2]…";
-        private const string AttemptingMoveDownloadsText = "Attempting to move files to specified folder…";
-        private const string ReloadingMediaFilesText = "Reloading media file list…";
+        private const string AttemptWriteConfigText = "Attempting to write download config file...";
+        private const string AttemptingDownloadText = "Downloading [0] [1] of [2]...";
+        private const string AttemptingMoveDownloadsText = "Attempting to move files to specified folder...";
+        private const string ReloadingMediaFilesText = "Reloading media file list...";
 
         public const string MediaInfoDurationTitle = "Total Media Duration";
         public const string MediaInfoDurationText =
