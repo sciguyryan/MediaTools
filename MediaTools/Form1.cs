@@ -140,62 +140,12 @@ namespace MediaTools
 
         private void DeleteItem_Click(object? sender, EventArgs e)
         {
-            var pos = _contextMenuLocation;
-            var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
-            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
-            {
-                return;
-            }
-
-            var path = mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["FullPath"]
-                .Value
-                .ToString()!;
-            if (!DeleteFile(path, false))
-            {
-                return;
-            }
-
-            _cache.Remove(Utils.ComputeMD5Hash(path));
-
-            var duration = (double)mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["RawDuration"]
-                .Value;
-            _totalDuration -= duration;
-
-            mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+            HandleDeleteFile(false);
         }
 
         private void TrashToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var pos = _contextMenuLocation;
-            var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
-            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
-            {
-                return;
-            }
-
-            var path = mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["FullPath"]
-                .Value
-                .ToString()!;
-            if (!DeleteFile(path, true))
-            {
-                return;
-            }
-
-            _cache.Remove(Utils.ComputeMD5Hash(path));
-
-            var duration = (double)mediaFilesTable
-                .Rows[hitTest.RowIndex]
-                .Cells["RawDuration"]
-                .Value;
-            _totalDuration -= duration;
-
-            mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+            HandleDeleteFile(true);
         }
 
         private void MediaFilesTable_MouseClick(object sender, MouseEventArgs e)
@@ -255,44 +205,74 @@ namespace MediaTools
             await UpdateMediaTable();
         }
 
-        private bool DeleteFile(string path, bool trash)
+        private void HandleDeleteFile(bool trash)
         {
+            var pos = _contextMenuLocation;
+            var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
+            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
+            {
+                return;
+            }
+
+            var index = hitTest.RowIndex;
+            var path = mediaFilesTable
+                .Rows[index]
+                .Cells["FullPath"]
+                .Value
+                .ToString()!;
+
+            var success = true;
             if (trash)
             {
-                if (FileUtils.TrashPath(path!) == 0)
+                if (FileUtils.TrashPath(path!) != 0)
                 {
-                    return true;
+                    var trashError = new OutputFormatBuilder()
+                        .Foreground(ConsoleColour.Red)
+                        .Text("Error:")
+                        .ResetForeground()
+                        .Text(" failed to send file to the trash!");
+                    UpdateStatus(ref trashError);
+                    success = false;
                 }
-
-                var trashError = new OutputFormatBuilder()
-                    .Foreground(ConsoleColour.Red)
-                    .Text("Error:")
-                    .ResetForeground()
-                    .Text(" failed to send file to the trash!");
-                UpdateStatus(ref trashError);
-
-                return false;
             }
             else
             {
-                var deleteError = new OutputFormatBuilder()
-                    .Foreground(ConsoleColour.Red)
-                    .Text("Error:")
-                    .ResetForeground()
-                    .Text(" failed to delete file!");
-
                 try
                 {
                     File.Delete(path!);
                 }
                 catch
                 {
+                    var deleteError = new OutputFormatBuilder()
+                        .Foreground(ConsoleColour.Red)
+                        .Text("Error:")
+                        .ResetForeground()
+                        .Text(" failed to delete file!");
                     UpdateStatus(ref deleteError);
-                    return false;
+                    success = false;
                 }
             }
 
-            return true;
+            if (!success)
+            {
+                return;
+            }
+
+            // Remove the cache entry for the file.
+            _cache.Remove(Utils.ComputeMD5Hash(path));
+
+            // Update the duration counter.
+            var duration = (double)mediaFilesTable
+                .Rows[index]
+                .Cells["RawDuration"]
+                .Value;
+            _totalDuration -= duration;
+
+            // Remove the table row.
+            mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+
+            // Update the cache.
+            UpdateCache();
         }
 
         private void HideShowConsole()
@@ -343,15 +323,7 @@ namespace MediaTools
             mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
 
             // Update the index table.
-            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
-            {
-                var row = mediaFilesTable.Rows[i];
-                var path = row.Cells["FullPath"].Value.ToString()!;
-                var hash = Utils.ComputeMD5Hash(path);
-
-                var entry = _cache[hash];
-                _cache[hash] = (i, entry.Duration);
-            }
+            UpdateCache();
 
             // Restore the selected rows.
             RestoreRowSelections(ref selectedPaths);
@@ -364,6 +336,19 @@ namespace MediaTools
             UpdateStatus(ref updateListSuccess);
 
             _isUpdatingMediaList = false;
+        }
+
+        private void UpdateCache()
+        {
+            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            {
+                var row = mediaFilesTable.Rows[i];
+                var path = row.Cells["FullPath"].Value.ToString()!;
+                var hash = Utils.ComputeMD5Hash(path);
+
+                var entry = _cache[hash];
+                _cache[hash] = (i, entry.Duration);
+            }
         }
 
         public enum FindType
