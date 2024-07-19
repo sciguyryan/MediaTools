@@ -6,7 +6,7 @@ namespace MediaTools
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var folderIndex = Array.FindIndex(args, x => x is "-f");
             var folder = (folderIndex > -1 && folderIndex < args.Length) ? args[folderIndex] : ".\\";

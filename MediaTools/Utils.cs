@@ -11,11 +11,9 @@ namespace MediaTools
             return TimeSpan.FromSeconds(seconds).ToString(format);
         }
 
-        public static string ComputeSha384Hash(string input)
+        public static string ComputeMD5Hash(string input)
         {
-            using var sha384 = SHA3_384.Create();
-
-            var hashBytes = sha384.ComputeHash(Encoding.UTF8.GetBytes(input));
+            var hashBytes = MD5.HashData((Encoding.UTF8.GetBytes(input)));
             var hash = new StringBuilder();
             foreach (var b in hashBytes)
             {
