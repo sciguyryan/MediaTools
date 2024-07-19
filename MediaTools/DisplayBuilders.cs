@@ -17,10 +17,10 @@
         private const string ErrorTrashFileTail = " failed to send file '[0]' to the trash!";
         private const string ErrorDeleteFileTail = " failed to delete file '[0]'!";
 
-        private const string AttemptWriteConfigText = "Attempting to write download config file...";
-        private const string AttemptingDownloadText = "Downloading [0] [1] of [2]...";
-        private const string AttemptingMoveDownloadsText = "Attempting to move files to specified folder...";
-        private const string ReloadingMediaFilesText = "Reloading media file list...";
+        private const string AttemptWriteConfigText = "Attempting to write download config file…";
+        private const string AttemptingDownloadText = "Downloading [0] [1] of [2]…";
+        private const string AttemptingMoveDownloadsText = "Attempting to move files to specified folder…";
+        private const string ReloadingMediaFilesText = "Reloading media file list…";
 
         public const string MediaInfoDurationTitle = "Total Media Duration";
         public const string MediaInfoDurationText =
@@ -78,13 +78,21 @@
             .Text(ErrorDeleteFileTail);
 
         public static readonly OutputFormatBuilder AttemptWriteConfig = new OutputFormatBuilder()
-            .Text(AttemptWriteConfigText);
+            .Foreground(ConsoleColour.Blue)
+            .Text(AttemptWriteConfigText)
+            .ResetForeground();
         public static readonly OutputFormatBuilder AttemptingDownload = new OutputFormatBuilder()
-            .Text(AttemptingDownloadText);
+            .Foreground(ConsoleColour.Blue)
+            .Text(AttemptingDownloadText)
+            .ResetForeground();
         public static readonly OutputFormatBuilder AttemptingMoveDownloads = new OutputFormatBuilder()
-            .Text(AttemptingMoveDownloadsText);
+            .Foreground(ConsoleColour.Blue)
+            .Text(AttemptingMoveDownloadsText)
+            .ResetForeground();
         public static readonly OutputFormatBuilder ReloadingMediaFiles = new OutputFormatBuilder()
-            .Text(ReloadingMediaFilesText);
+            .Foreground(ConsoleColour.Blue)
+            .Text(ReloadingMediaFilesText)
+            .ResetForeground();
 
         public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
             .Text(MediaInfoDurationText);

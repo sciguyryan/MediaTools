@@ -202,15 +202,14 @@ namespace MediaTools
             return this;
         }
 
-        public (string, string) HandleBinds(ReadOnlySpan<object> binds = new())
+        public (string, string) HandleBinds(ReadOnlySpan<object> binds)
         {
-            var outFormatted = _output;
-            var outPlain = _outputText;
+            var outFormatted = new StringBuilder(_output.ToString());
+            var outPlain = new StringBuilder(_outputText.ToString());
 
             for (var i = 0; i < binds.Length; i++)
             {
                 var str = binds[i].ToString();
-
                 outFormatted = outFormatted.Replace($"[{i}]", str);
                 outPlain = outPlain.Replace($"[{i}]", str);
             }
@@ -218,14 +217,14 @@ namespace MediaTools
             return (outFormatted.ToString(), outPlain.ToString());
         }
 
-        public string Build(ReadOnlySpan<object> binds = new())
+        public string Build(ReadOnlySpan<object> binds)
         {
             var (outFormatted, _) = HandleBinds(binds);
 
             return outFormatted;
         }
 
-        public string BuildPlain(ReadOnlySpan<object> binds = new())
+        public string BuildPlain(ReadOnlySpan<object> binds)
         {
             var (_, outPlain) = HandleBinds(binds);
 
