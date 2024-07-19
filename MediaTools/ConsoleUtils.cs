@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MediaTools
 {
@@ -22,15 +23,13 @@ namespace MediaTools
         White
     }
 
-    internal class OutputFormatBuilder
+    internal partial class OutputFormatBuilder
     {
         private readonly StringBuilder _output = new();
-        private readonly StringBuilder _outputText = new();
 
         public OutputFormatBuilder Text(string s)
         {
             _output.Append(s);
-            _outputText.Append(s);
             return this;
         }
 
@@ -205,7 +204,7 @@ namespace MediaTools
         public (string, string) HandleBinds(ReadOnlySpan<object> binds)
         {
             var outFormatted = new StringBuilder(_output.ToString());
-            var outPlain = new StringBuilder(_outputText.ToString());
+            var outPlain = new StringBuilder(StripFormatting());
 
             for (var i = 0; i < binds.Length; i++)
             {
@@ -229,6 +228,15 @@ namespace MediaTools
             var (_, outPlain) = HandleBinds(binds);
 
             return outPlain;
+        }
+
+        [GeneratedRegex(@"\x1b\[[^m]+m", RegexOptions.None, "en-US")]
+        private static partial Regex StripAnsiFormattingRegex();
+
+        private string StripFormatting()
+        {
+            var str = _output.ToString();
+            return StripAnsiFormattingRegex().Replace(str, "");
         }
     }
 }
