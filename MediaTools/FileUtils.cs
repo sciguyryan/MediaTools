@@ -4,7 +4,7 @@ namespace MediaTools
 {
     internal class FileUtils
     {
-        private string _basePath;
+        private readonly string _basePath;
 
         #region DLL Imports
 

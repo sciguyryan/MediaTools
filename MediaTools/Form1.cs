@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaTools
@@ -11,13 +12,13 @@ namespace MediaTools
         private readonly string _runFromPath;
         private readonly string _configTemplatePath;
         private readonly string _configPath;
-        private double _totalDuration = 0;
+        private readonly string _cachePath;
+        private readonly FileUtils _fileUtils;
+        private readonly Dictionary<string, (int Index, int Duration)> _cache = new();
         private bool _consoleShown = true;
         private bool _isUpdatingMediaList = false;
-        private const bool TestMode = false;
-        private readonly FileUtils _fileUtils;
-
-        private readonly Dictionary<string, (int Index, double Duration)> _cache = new();
+        private bool _isFirstSort = true;
+        private const string SerializeDelimiter = @"//";
 
         public Form1(string runFromPath)
         {
@@ -26,6 +27,7 @@ namespace MediaTools
             _runFromPath = runFromPath;
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
             _configTemplatePath = _configPath + "-template";
+            _cachePath = Path.Combine(runFromPath, "cache.dat");
             _fileUtils = new FileUtils(runFromPath);
 
             InitializeComponent();
@@ -36,6 +38,11 @@ namespace MediaTools
 
             Interop.AllocConsole();
             Interop.SetConsoleMode();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            WriteCacheData();
         }
 
         private void MediaFilesTable_CellContentDoubleClick(
@@ -51,6 +58,14 @@ namespace MediaTools
             var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value.ToString()!;
             var processStartInfo = new ProcessStartInfo(file) { UseShellExecute = true };
             Process.Start(processStartInfo);
+        }
+
+        private void MediaFilesTable_Sorted(object sender, EventArgs e)
+        {
+            // Update the index table.
+            UpdateCache();
+
+            _isFirstSort = false;
         }
 
         private async void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -80,7 +95,10 @@ namespace MediaTools
             {
                 _fileUtils.EnsureTempExists();
 
-                UpdateStatus(DisplayBuilders.AttemptingDownload, [downloadType, i + 1, urls.Length]);
+                UpdateStatus(
+                    DisplayBuilders.AttemptingDownload,
+                    [downloadType, i + 1, urls.Length]
+                );
                 await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
                 UpdateStatus(DisplayBuilders.SuccessDownload, [downloadType, i + 1]);
 
@@ -113,7 +131,7 @@ namespace MediaTools
             HideShowConsole();
         }
 
-        private void DeleteItem_Click(object? sender, EventArgs e)
+        private void DeleteToolStripMenuItem_Click(object? sender, EventArgs e)
         {
             HandleDeleteFile(false);
         }
@@ -121,6 +139,11 @@ namespace MediaTools
         private void TrashToolStripMenuItem_Click(object sender, EventArgs e)
         {
             HandleDeleteFile(true);
+        }
+
+        private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("here");
         }
 
         private void MediaFilesTable_MouseClick(object sender, MouseEventArgs e)
@@ -157,13 +180,20 @@ namespace MediaTools
                         break;
                     }
 
+                    var totalDuration = 0;
+                    foreach (var entry in _cache.Values)
+                    {
+                        var (_, dur) = entry;
+                        totalDuration += dur;
+                    }
+
                     var totalMediaFiles = mediaFilesTable.RowCount;
-                    var averageDur = _totalDuration / totalMediaFiles;
+                    var averageDur = totalDuration / totalMediaFiles;
                     var message = DisplayBuilders.MediaInfoDuration.BuildPlain(
                         [
                             totalMediaFiles,
                             Utils.SecondsToDuration(averageDur, false),
-                            Utils.SecondsToDuration(_totalDuration, true)
+                            Utils.SecondsToDuration(totalDuration, true)
                         ]
                     );
                     MessageBox.Show(
@@ -183,6 +213,8 @@ namespace MediaTools
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+            LoadCacheData();
+
             await UpdateMediaTable();
         }
 
@@ -246,10 +278,6 @@ namespace MediaTools
             // Remove the cache entry for the file.
             _cache.Remove(Utils.ComputeMd5Hash(path));
 
-            // Update the duration counter.
-            var duration = (double)mediaFilesTable.Rows[index].Cells["RawDuration"].Value;
-            _totalDuration -= duration;
-
             // Remove the table row.
             mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
 
@@ -303,15 +331,9 @@ namespace MediaTools
                 select Utils.ComputeMd5Hash(path)
             ).ToList();
 
-            mediaFilesTable.Rows.Clear();
-            _totalDuration = 0;
-
             await FillTable();
 
-            mediaFilesTable.Sort(mediaFilesTable.Columns["Duration"]!, ListSortDirection.Ascending);
-
-            // Update the index table.
-            UpdateCache();
+            SortTable();
 
             // Restore the selected rows.
             RestoreRowSelections(ref selectedPaths);
@@ -321,6 +343,28 @@ namespace MediaTools
             _isUpdatingMediaList = false;
 
             download.Enabled = true;
+        }
+
+        private void SortTable()
+        {
+            string sortCol;
+            ListSortDirection sortOrder;
+
+            if (_isFirstSort)
+            {
+                sortCol = "Duration";
+                sortOrder = ListSortDirection.Ascending;
+            }
+            else
+            {
+                sortCol = mediaFilesTable.SortedColumn.Name!;
+                sortOrder =
+                    mediaFilesTable.SortOrder == SortOrder.Ascending
+                        ? ListSortDirection.Ascending
+                        : ListSortDirection.Descending;
+            }
+
+            mediaFilesTable.Sort(mediaFilesTable.Columns[sortCol]!, sortOrder);
         }
 
         private void UpdateCache()
@@ -440,7 +484,7 @@ namespace MediaTools
 
             var results =
                 new List<(
-                    double RawDuration,
+                    int RawDuration,
                     string Duration,
                     string LastModified,
                     string Title,
@@ -448,16 +492,19 @@ namespace MediaTools
                 )>();
 
             // Iterate over each file in the directory.
-            var i = 0;
             foreach (var file in directoryInfo.GetFiles())
             {
                 var hash = Utils.ComputeMd5Hash(file.FullName);
+                if (_cache.ContainsKey(hash))
+                {
+                    continue;
+                }
 
                 // Cache the durations to avoid the performance overhead of running the info
                 // tool when we already have the information at hand.
                 // Note that we DO NOT want to update the indices here as they will need to be
                 // recomputed after sorting either way.
-                double duration = 0;
+                int duration;
                 if (_cache.TryGetValue(hash, out var entry))
                 {
                     duration = entry.Duration;
@@ -470,12 +517,10 @@ namespace MediaTools
                     _cache.Add(hash, (0, duration));
                 }
 
-                if (duration < 0.1)
+                if (duration == 0)
                 {
                     continue;
                 }
-
-                _totalDuration += duration;
 
                 var filePath = Path.GetFileNameWithoutExtension(file.FullName);
                 var modified = file.LastWriteTime;
@@ -489,13 +534,6 @@ namespace MediaTools
                         file.FullName
                     )
                 );
-
-                if (TestMode && i == 10)
-                {
-                    break;
-                }
-
-                ++i;
             }
 
             // Ensure we update only on the UI thread.
@@ -569,6 +607,69 @@ namespace MediaTools
         {
             toolStripStatusLabel1.Text = fmt.BuildPlain(binds);
             Console.WriteLine(fmt.Build(binds));
+        }
+
+        private void WriteCacheData()
+        {
+            using var writer = File.CreateText(_cachePath);
+
+            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            {
+                var row = mediaFilesTable.Rows[i];
+
+                var lastModified = row.Cells["LastModified"].Value.ToString()!;
+                var date = DateTime.Parse(lastModified).ToBinary().ToString("X");
+                var path = row.Cells["FullPath"].Value.ToString()!;
+
+                var line = new StringBuilder();
+                line.Append(path);
+                line.Append(SerializeDelimiter);
+                line.Append(row.Cells["RawDuration"].Value);
+                line.Append(SerializeDelimiter);
+                line.Append(date);
+
+                writer.WriteLine(line.ToString());
+            }
+        }
+
+        private void LoadCacheData()
+        {
+            if (!Path.Exists(_cachePath))
+            {
+                return;
+            }
+
+            var rows = File.ReadAllLines(_cachePath);
+
+            for (var i = 0; i < rows.Length; i++)
+            {
+                var bits = rows[i].Split(SerializeDelimiter);
+
+                var path = bits[0];
+                if (!Path.Exists(path))
+                {
+                    continue;
+                }
+
+                var hash = Utils.ComputeMd5Hash(path);
+                var duration = int.Parse(bits[1]);
+                var modifiedDate = DateTime.FromBinary(long.Parse(bits[2], NumberStyles.HexNumber));
+
+                var fi = new FileInfo(path);
+                var title = Path.GetFileNameWithoutExtension(fi.FullName);
+
+                // Populate the display table.
+                mediaFilesTable.Rows.Add(
+                    duration,
+                    Utils.SecondsToDuration(duration, false),
+                    modifiedDate.ToString(CultureInfo.CurrentCulture),
+                    title,
+                    path
+                );
+
+                // Add the corresponding cache entry.
+                _cache.Add(hash, (i, duration));
+            }
         }
     }
 }

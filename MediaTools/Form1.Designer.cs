@@ -69,6 +69,7 @@
             contextMenuStrip = new ContextMenuStrip(components);
             trashToolStripMenuItem = new ToolStripMenuItem();
             contextDelete = new ToolStripMenuItem();
+            renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabControl1.SuspendLayout();
@@ -356,6 +357,7 @@
             mediaFilesTable.Size = new Size(1212, 750);
             mediaFilesTable.TabIndex = 3;
             mediaFilesTable.CellContentDoubleClick += MediaFilesTable_CellContentDoubleClick;
+            mediaFilesTable.Sorted += MediaFilesTable_Sorted;
             mediaFilesTable.MouseClick += MediaFilesTable_MouseClick;
             // 
             // RawDuration
@@ -421,19 +423,19 @@
             // showConsoleToolStripMenuItem
             // 
             showConsoleToolStripMenuItem.Name = "showConsoleToolStripMenuItem";
-            showConsoleToolStripMenuItem.Size = new Size(224, 26);
+            showConsoleToolStripMenuItem.Size = new Size(181, 26);
             showConsoleToolStripMenuItem.Text = "Hide &Console";
             showConsoleToolStripMenuItem.Click += ShowConsoleToolStripMenuItem_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(221, 6);
+            toolStripMenuItem1.Size = new Size(178, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(224, 26);
+            exitToolStripMenuItem.Size = new Size(181, 26);
             exitToolStripMenuItem.Text = "E&xit";
             // 
             // dataToolStripMenuItem
@@ -453,23 +455,30 @@
             // contextMenuStrip
             // 
             contextMenuStrip.ImageScalingSize = new Size(20, 20);
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { trashToolStripMenuItem, contextDelete });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { trashToolStripMenuItem, contextDelete, renameToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new Size(123, 52);
+            contextMenuStrip.Size = new Size(211, 104);
             // 
             // trashToolStripMenuItem
             // 
             trashToolStripMenuItem.Name = "trashToolStripMenuItem";
-            trashToolStripMenuItem.Size = new Size(122, 24);
+            trashToolStripMenuItem.Size = new Size(210, 24);
             trashToolStripMenuItem.Text = "&Trash";
             trashToolStripMenuItem.Click += TrashToolStripMenuItem_Click;
             // 
             // contextDelete
             // 
             contextDelete.Name = "contextDelete";
-            contextDelete.Size = new Size(122, 24);
+            contextDelete.Size = new Size(210, 24);
             contextDelete.Text = "&Delete";
-            contextDelete.Click += DeleteItem_Click;
+            contextDelete.Click += DeleteToolStripMenuItem_Click;
+            // 
+            // renameToolStripMenuItem
+            // 
+            renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+            renameToolStripMenuItem.Size = new Size(210, 24);
+            renameToolStripMenuItem.Text = "&Rename...";
+            renameToolStripMenuItem.Click += RenameToolStripMenuItem_Click;
             // 
             // statusStrip1
             // 
@@ -500,6 +509,7 @@
             Name = "Form1";
             SizeGripStyle = SizeGripStyle.Hide;
             Text = "Media Tools";
+            FormClosed += Form1_FormClosed;
             Load += Form1_Load;
             KeyDown += Form1_KeyDown;
             tabControl1.ResumeLayout(false);
@@ -553,15 +563,16 @@
         private GroupBox groupBox2;
         private Label label4;
         private ComboBox options2Resolution;
-        private DataGridViewTextBoxColumn RawDuration;
-        private DataGridViewTextBoxColumn Duration;
-        private DataGridViewTextBoxColumn LastModified;
-        private DataGridViewTextBoxColumn Title;
-        private DataGridViewTextBoxColumn FullPath;
         private ContextMenuStrip contextMenuStrip;
         private ToolStripMenuItem contextDelete;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStripMenuItem trashToolStripMenuItem;
+        private DataGridViewTextBoxColumn RawDuration;
+        private DataGridViewTextBoxColumn Duration;
+        private DataGridViewTextBoxColumn LastModified;
+        private DataGridViewTextBoxColumn Title;
+        private DataGridViewTextBoxColumn FullPath;
+        private ToolStripMenuItem renameToolStripMenuItem;
     }
 }

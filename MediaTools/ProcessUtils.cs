@@ -6,7 +6,7 @@ namespace MediaTools
     {
         private const string FfProbePath = @"D:\Projects\Video Encoding\ffmpeg-7.0.1\bin\ffprobe.exe";
 
-        public static async Task<double> RunMediaInfo(string path)
+        public static async Task<int> RunMediaInfo(string path)
         {
             var process = new Process();
             process.StartInfo.FileName = FfProbePath;
@@ -18,7 +18,7 @@ namespace MediaTools
             var output = await process.StandardOutput.ReadToEndAsync();
             await process.WaitForExitAsync();
 
-            return output.Length > 0 ? double.Parse(output) : 0;
+            return output.Length > 0 ? (int)Math.Round(double.Parse(output)) : 0;
         }
 
         public static async Task RunDownloader(string downloadUrl, string basePath, string tempPath)
