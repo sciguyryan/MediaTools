@@ -11,11 +11,14 @@
         private const string SuccessDownloadTail = " [0] [1] successfully downloaded!";
         private const string SuccessTrashFileTail = " file '[0]' has been sent to the trash!";
         private const string SuccessDeleteFileTail = " file '[0]' has been deleted!";
+        private const string SuccessRenameFileTail = " file '[0]' has been renamed to '[1]'!";
 
         private const string Error = "Error:";
         private const string ErrorNoValidUrlsTail = " no valid target download URLs specified.";
         private const string ErrorTrashFileTail = " failed to send file '[0]' to the trash!";
         private const string ErrorDeleteFileTail = " failed to delete file '[0]'!";
+        private const string ErrorInvalidFileNameText = " the file name contains one or more invalid characters!";
+        private const string ErrorRenameFileTail = " failed to rename the file '[0]'!";
 
         private const string AttemptWriteConfigText = "Attempting to write download config file...";
         private const string AttemptingDownloadText = "Downloading [0] [1] of [2]...";
@@ -25,6 +28,7 @@
         public const string MediaInfoDurationTitle = "Total Media Duration";
         public const string MediaInfoDurationText =
             "There are a total of [0] files. The average duration of a file is [1] and a total length of [2].";
+        public const string InvalidFileNameTitleText = "Invalid File Name";
 
         #endregion
 
@@ -60,6 +64,11 @@
             .Text(Success)
             .ResetForeground()
             .Text(SuccessDeleteFileTail);
+        public static readonly OutputFormatBuilder SuccessRenameFile = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Green)
+            .Text(Success)
+            .ResetForeground()
+            .Text(SuccessRenameFileTail);
 
         public static readonly OutputFormatBuilder ErrorNoValidUrls = new OutputFormatBuilder()
             .Foreground(ConsoleColour.Red)
@@ -76,6 +85,16 @@
             .Text(Error)
             .ResetForeground()
             .Text(ErrorDeleteFileTail);
+        public static readonly OutputFormatBuilder ErrorInvalidFileName = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorInvalidFileNameText);
+        public static readonly OutputFormatBuilder ErrorRenameFile = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorRenameFileTail);
 
         public static readonly OutputFormatBuilder AttemptWriteConfig = new OutputFormatBuilder()
             .Text(AttemptWriteConfigText);
@@ -87,6 +106,8 @@
             .Text(ReloadingMediaFilesText);
         public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
             .Text(MediaInfoDurationText);
+        public static readonly OutputFormatBuilder InvalidFileNameTitle = new OutputFormatBuilder()
+            .Text(InvalidFileNameTitleText);
 
         #endregion
     }

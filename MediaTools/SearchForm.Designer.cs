@@ -1,6 +1,6 @@
 ﻿namespace MediaTools
 {
-    partial class Form2
+    partial class SearchForm
     {
         /// <summary>
         /// Required designer variable.
@@ -33,6 +33,7 @@
             cancel = new Button();
             findAll = new Button();
             regularExpression = new CheckBox();
+            exactMatch = new CheckBox();
             SuspendLayout();
             // 
             // searchString
@@ -82,21 +83,34 @@
             regularExpression.TabIndex = 4;
             regularExpression.Text = "&Use Regular Expression?";
             regularExpression.UseVisualStyleBackColor = true;
+            regularExpression.CheckedChanged += RegularExpression_CheckedChanged;
             // 
-            // Form2
+            // exactMatch
+            // 
+            exactMatch.AutoSize = true;
+            exactMatch.Location = new Point(12, 107);
+            exactMatch.Name = "exactMatch";
+            exactMatch.Size = new Size(118, 24);
+            exactMatch.TabIndex = 5;
+            exactMatch.Text = "&Exact Match?";
+            exactMatch.UseVisualStyleBackColor = true;
+            // 
+            // SearchForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(318, 114);
+            ClientSize = new Size(318, 143);
+            Controls.Add(exactMatch);
             Controls.Add(regularExpression);
             Controls.Add(findAll);
             Controls.Add(cancel);
             Controls.Add(find);
             Controls.Add(searchString);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             KeyPreview = true;
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "Form2";
+            Name = "SearchForm";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Hide;
             Text = "Media Tools :: Search";
@@ -111,5 +125,6 @@
         private Button cancel;
         private Button findAll;
         private CheckBox regularExpression;
+        private CheckBox exactMatch;
     }
 }

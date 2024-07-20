@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace MediaTools
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         private Point _contextMenuLocation;
         private readonly string _runFromPath;
@@ -16,11 +16,11 @@ namespace MediaTools
         private readonly FileUtils _fileUtils;
         private readonly Dictionary<string, (int Index, int Duration)> _cache = new();
         private bool _consoleShown = true;
-        private bool _isUpdatingMediaList = false;
+        private bool _isUpdatingMediaList;
         private bool _isFirstSort = true;
         private const string SerializeDelimiter = @"//";
 
-        public Form1(string runFromPath)
+        public MainForm(string runFromPath)
         {
             IconModifier.SetFormIcon(this);
 
@@ -71,6 +71,11 @@ namespace MediaTools
         private async void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await UpdateMediaTable();
+        }
+
+        private void ClearCacheToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            using var f = File.Open(_cachePath, FileMode.Truncate);
         }
 
         private async void Download_Click(object sender, EventArgs e)
@@ -143,7 +148,7 @@ namespace MediaTools
 
         private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("here");
+            HandleFileRename();
         }
 
         private void MediaFilesTable_MouseClick(object sender, MouseEventArgs e)
@@ -170,39 +175,18 @@ namespace MediaTools
                     {
                         tabControl1.SelectedIndex = 1;
 
-                        var form = new Form2(this);
+                        var form = new SearchForm(this)
+                        {
+                            StartPosition = FormStartPosition.CenterParent
+                        };
                         form.Show();
                         break;
                     }
                 case { Control: true, KeyCode: Keys.I }:
-                    if (mediaFilesTable.RowCount == 0)
-                    {
-                        break;
-                    }
-
-                    var totalDuration = 0;
-                    foreach (var entry in _cache.Values)
-                    {
-                        var (_, dur) = entry;
-                        totalDuration += dur;
-                    }
-
-                    var totalMediaFiles = mediaFilesTable.RowCount;
-                    var averageDur = totalDuration / totalMediaFiles;
-                    var message = DisplayBuilders.MediaInfoDuration.BuildPlain(
-                        [
-                            totalMediaFiles,
-                            Utils.SecondsToDuration(averageDur, false),
-                            Utils.SecondsToDuration(totalDuration, true)
-                        ]
-                    );
-                    MessageBox.Show(
-                        message,
-                        DisplayBuilders.MediaInfoDurationTitle,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information,
-                        MessageBoxDefaultButton.Button1
-                    );
+                    MediaInfoDialog();
+                    break;
+                case { KeyCode: Keys.F2 }:
+                    HandleFileRename();
                     break;
                 case { Control: true, KeyCode: Keys.R }:
                 case { KeyCode: Keys.F5 }:
@@ -216,6 +200,64 @@ namespace MediaTools
             LoadCacheData();
 
             await UpdateMediaTable();
+        }
+
+        private void HandleFileRename()
+        {
+            var pos = _contextMenuLocation;
+            var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
+            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
+            {
+                return;
+            }
+
+            var index = hitTest.RowIndex;
+            var oldPath = mediaFilesTable.Rows[index].Cells["FullPath"].Value.ToString()!;
+            var oldName = mediaFilesTable.Rows[index].Cells["Title"].Value.ToString()!;
+            var oldHash = Utils.ComputeMd5Hash(oldPath);
+
+            var rename = new RenameFileForm(oldName)
+            {
+                StartPosition = FormStartPosition.CenterParent
+            };
+            rename.ShowDialog();
+
+            // Build the new file path.
+            var oldFi = new FileInfo(oldPath);
+            var newName = $"{rename.NewFileName}{oldFi.Extension}";
+            var newPath = Path.Combine(oldFi.DirectoryName!, newName);
+            var newHash = Utils.ComputeMd5Hash(newPath);
+
+            // Attempt to move the file.
+            var success = false;
+            try
+            {
+                File.Move(oldPath, newPath);
+                success = true;
+            }
+            catch
+            {
+                // Do nothing.
+            }
+
+            if (success)
+            {
+                UpdateStatus(DisplayBuilders.SuccessRenameFile, [oldName, rename.NewFileName]);
+            }
+            else
+            {
+                UpdateStatus(DisplayBuilders.ErrorRenameFile, [oldName]);
+                return;
+            }
+
+            // Rename the entry in the table.
+            mediaFilesTable.Rows[index].Cells["FullPath"].Value = newPath;
+            mediaFilesTable.Rows[index].Cells["Title"].Value = rename.NewFileName;
+
+            // Update the cache.
+            var cacheEntry = _cache[oldHash];
+            _cache.Remove(oldHash);
+            _cache.Add(newHash, cacheEntry);
         }
 
         private void HandleDeleteFile(bool trash)
@@ -233,13 +275,13 @@ namespace MediaTools
             var success = false;
             if (trash)
             {
-                success = (FileUtils.TrashPath(path!) == 0);
+                success = (FileUtils.TrashPath(path) == 0);
             }
             else
             {
                 try
                 {
-                    File.Delete(path!);
+                    File.Delete(path);
                     success = true;
                 }
                 catch
@@ -248,17 +290,17 @@ namespace MediaTools
                 }
             }
 
-            var fi = new FileInfo(path);
+            var fileName = Path.GetFileNameWithoutExtension(path);
 
             if (trash)
             {
                 if (success)
                 {
-                    UpdateStatus(DisplayBuilders.SuccessTrashFile, [fi.Name]);
+                    UpdateStatus(DisplayBuilders.SuccessTrashFile, [fileName]);
                 }
                 else
                 {
-                    UpdateStatus(DisplayBuilders.ErrorTrashFile, [fi.Name]);
+                    UpdateStatus(DisplayBuilders.ErrorTrashFile, [fileName]);
                     return;
                 }
             }
@@ -266,11 +308,11 @@ namespace MediaTools
             {
                 if (success)
                 {
-                    UpdateStatus(DisplayBuilders.SuccessDeleteFile, [fi.Name]);
+                    UpdateStatus(DisplayBuilders.SuccessDeleteFile, [fileName]);
                 }
                 else
                 {
-                    UpdateStatus(DisplayBuilders.ErrorDeleteFile, [fi.Name]);
+                    UpdateStatus(DisplayBuilders.ErrorDeleteFile, [fileName]);
                     return;
                 }
             }
@@ -391,6 +433,7 @@ namespace MediaTools
             string column,
             FindType findType,
             bool single,
+            bool exactMatch,
             bool scrollToEntry = true
         )
         {
@@ -405,26 +448,7 @@ namespace MediaTools
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
                 var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString()!;
-                bool isMatch;
-
-                switch (findType)
-                {
-                    case FindType.Regex:
-                        var match = Regex.Match(title, searchString, RegexOptions.IgnoreCase);
-                        isMatch = match.Success;
-                        break;
-                    case FindType.Text:
-                        isMatch = string.Equals(
-                            title,
-                            searchString,
-                            StringComparison.CurrentCultureIgnoreCase
-                        );
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(findType), findType, null);
-                }
-
-                if (!isMatch)
+                if (!IsMatch(title, searchString, findType, exactMatch))
                 {
                     continue;
                 }
@@ -442,6 +466,42 @@ namespace MediaTools
                     break;
                 }
             }
+        }
+
+        private static bool IsMatch(
+            string tester,
+            string searchFor,
+            FindType findType,
+            bool exactMatch)
+        {
+            bool success;
+            switch (findType)
+            {
+                case FindType.Regex:
+                    var match = Regex.Match(tester, searchFor, RegexOptions.IgnoreCase);
+                    success = match.Success;
+                    break;
+                case FindType.Text:
+                    if (exactMatch)
+                    {
+                        success = string.Equals(tester,
+                            searchFor,
+                            StringComparison.CurrentCultureIgnoreCase
+                        );
+                    }
+                    else
+                    {
+                        success = tester.Contains(
+                            searchFor,
+                            StringComparison.CurrentCultureIgnoreCase
+                        );
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(findType), findType, null);
+            }
+
+            return success;
         }
 
         private void RestoreRowSelections(ref List<string> items)
@@ -619,12 +679,13 @@ namespace MediaTools
 
                 var lastModified = row.Cells["LastModified"].Value.ToString()!;
                 var date = DateTime.Parse(lastModified).ToBinary().ToString("X");
+                var duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!).ToString("X");
                 var path = row.Cells["FullPath"].Value.ToString()!;
 
                 var line = new StringBuilder();
                 line.Append(path);
                 line.Append(SerializeDelimiter);
-                line.Append(row.Cells["RawDuration"].Value);
+                line.Append(duration);
                 line.Append(SerializeDelimiter);
                 line.Append(date);
 
@@ -652,7 +713,7 @@ namespace MediaTools
                 }
 
                 var hash = Utils.ComputeMd5Hash(path);
-                var duration = int.Parse(bits[1]);
+                var duration = int.Parse(bits[1], NumberStyles.HexNumber);
                 var modifiedDate = DateTime.FromBinary(long.Parse(bits[2], NumberStyles.HexNumber));
 
                 var fi = new FileInfo(path);
@@ -670,6 +731,38 @@ namespace MediaTools
                 // Add the corresponding cache entry.
                 _cache.Add(hash, (i, duration));
             }
+        }
+
+        private void MediaInfoDialog()
+        {
+            if (mediaFilesTable.RowCount == 0)
+            {
+                return;
+            }
+
+            var totalDuration = 0;
+            foreach (var entry in _cache.Values)
+            {
+                var (_, dur) = entry;
+                totalDuration += dur;
+            }
+
+            var totalMediaFiles = mediaFilesTable.RowCount;
+            var averageDur = totalDuration / totalMediaFiles;
+            var message = DisplayBuilders.MediaInfoDuration.BuildPlain(
+                [
+                    totalMediaFiles,
+                    Utils.SecondsToDuration(averageDur, false),
+                    Utils.SecondsToDuration(totalDuration, true)
+                ]
+            );
+            MessageBox.Show(
+                message,
+                DisplayBuilders.MediaInfoDurationTitle,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1
+            );
         }
     }
 }
