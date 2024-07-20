@@ -457,26 +457,26 @@
             contextMenuStrip.ImageScalingSize = new Size(20, 20);
             contextMenuStrip.Items.AddRange(new ToolStripItem[] { trashToolStripMenuItem, contextDelete, renameToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new Size(211, 104);
+            contextMenuStrip.Size = new Size(142, 76);
             // 
             // trashToolStripMenuItem
             // 
             trashToolStripMenuItem.Name = "trashToolStripMenuItem";
-            trashToolStripMenuItem.Size = new Size(210, 24);
+            trashToolStripMenuItem.Size = new Size(141, 24);
             trashToolStripMenuItem.Text = "&Trash";
             trashToolStripMenuItem.Click += TrashToolStripMenuItem_Click;
             // 
             // contextDelete
             // 
             contextDelete.Name = "contextDelete";
-            contextDelete.Size = new Size(210, 24);
+            contextDelete.Size = new Size(141, 24);
             contextDelete.Text = "&Delete";
             contextDelete.Click += DeleteToolStripMenuItem_Click;
             // 
             // renameToolStripMenuItem
             // 
             renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-            renameToolStripMenuItem.Size = new Size(210, 24);
+            renameToolStripMenuItem.Size = new Size(141, 24);
             renameToolStripMenuItem.Text = "&Rename...";
             renameToolStripMenuItem.Click += RenameToolStripMenuItem_Click;
             // 
@@ -487,6 +487,7 @@
             statusStrip1.Location = new Point(0, 825);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(1256, 26);
+            statusStrip1.SizingGrip = false;
             statusStrip1.TabIndex = 2;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -504,8 +505,11 @@
             Controls.Add(statusStrip1);
             Controls.Add(tabControl1);
             Controls.Add(menuStrip1);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             KeyPreview = true;
             MainMenuStrip = menuStrip1;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "Form1";
             SizeGripStyle = SizeGripStyle.Hide;
             Text = "Media Tools";
