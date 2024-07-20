@@ -197,7 +197,11 @@ namespace MediaTools
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             LoadCacheData();
+
+            MessageBox.Show(watch.ElapsedMilliseconds.ToString());
 
             await UpdateMediaTable();
         }
@@ -692,9 +696,7 @@ namespace MediaTools
                 text.Append(Environment.NewLine);
             }
 
-            var bytes = Encoding.UTF8.GetBytes(text.ToString());
-            var compressedBytes = Utils.Compress(ref bytes);
-            File.WriteAllBytes(_cachePath, compressedBytes);
+            File.WriteAllText(_cachePath, text.ToString());
         }
 
         private void LoadCacheData()
@@ -704,24 +706,7 @@ namespace MediaTools
                 return;
             }
 
-            var compressed = File.ReadAllBytes(_cachePath);
-            if (compressed.Length == 0)
-            {
-                return;
-            }
-
-            string[] rows;
-            try
-            {
-                var decompressed = Utils.Decompress(ref compressed);
-                var text = Encoding.UTF8.GetString(decompressed);
-                rows = text.Split(Environment.NewLine);
-            }
-            catch
-            {
-                FileUtils.TruncateFile(_cachePath);
-                return;
-            }
+            var rows = File.ReadAllLines(_cachePath);
 
             for (var i = 0; i < rows.Length; i++)
             {
