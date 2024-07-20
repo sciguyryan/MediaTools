@@ -75,7 +75,7 @@ namespace MediaTools
 
         private void ClearCacheToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            using var f = File.Open(_cachePath, FileMode.Truncate);
+            FileUtils.TruncateFile(_cachePath);
         }
 
         private async void Download_Click(object sender, EventArgs e)
@@ -671,26 +671,30 @@ namespace MediaTools
 
         private void WriteCacheData()
         {
-            using var writer = File.CreateText(_cachePath);
+            var text = new StringBuilder();
 
             for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
             {
                 var row = mediaFilesTable.Rows[i];
 
                 var lastModified = row.Cells["LastModified"].Value.ToString()!;
-                var date = DateTime.Parse(lastModified).ToBinary().ToString("X");
-                var duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!).ToString("X");
+                var date = 
+                    DateTime.Parse(lastModified).ToBinary().ToString("X");
+                var duration = 
+                    int.Parse(row.Cells["RawDuration"].Value.ToString()!).ToString("X");
                 var path = row.Cells["FullPath"].Value.ToString()!;
 
-                var line = new StringBuilder();
-                line.Append(path);
-                line.Append(SerializeDelimiter);
-                line.Append(duration);
-                line.Append(SerializeDelimiter);
-                line.Append(date);
-
-                writer.WriteLine(line.ToString());
+                text.Append(path);
+                text.Append(SerializeDelimiter);
+                text.Append(duration);
+                text.Append(SerializeDelimiter);
+                text.Append(date);
+                text.Append(Environment.NewLine);
             }
+
+            var bytes = Encoding.UTF8.GetBytes(text.ToString());
+            var compressedBytes = Utils.Compress(ref bytes);
+            File.WriteAllBytes(_cachePath, compressedBytes);
         }
 
         private void LoadCacheData()
@@ -700,10 +704,32 @@ namespace MediaTools
                 return;
             }
 
-            var rows = File.ReadAllLines(_cachePath);
+            var compressed = File.ReadAllBytes(_cachePath);
+            if (compressed.Length == 0)
+            {
+                return;
+            }
+
+            string[] rows;
+            try
+            {
+                var decompressed = Utils.Decompress(ref compressed);
+                var text = Encoding.UTF8.GetString(decompressed);
+                rows = text.Split(Environment.NewLine);
+            }
+            catch
+            {
+                FileUtils.TruncateFile(_cachePath);
+                return;
+            }
 
             for (var i = 0; i < rows.Length; i++)
             {
+                if (!rows[i].Contains(SerializeDelimiter))
+                {
+                    continue;
+                }
+
                 var bits = rows[i].Split(SerializeDelimiter);
 
                 var path = bits[0];

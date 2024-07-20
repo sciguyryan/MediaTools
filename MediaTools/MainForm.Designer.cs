@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             groupBox2 = new GroupBox();
@@ -65,7 +65,8 @@
             toolStripMenuItem1 = new ToolStripSeparator();
             exitToolStripMenuItem = new ToolStripMenuItem();
             clearCacheToolStripMenuItem = new ToolStripMenuItem();
-            dataToolStripMenuItem = new ToolStripMenuItem();
+            reloadMediaListToolStripMenuItem = new ToolStripMenuItem();
+            clearCacheToolStripMenuItem1 = new ToolStripMenuItem();
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip = new ContextMenuStrip(components);
             trashToolStripMenuItem = new ToolStripMenuItem();
@@ -73,8 +74,6 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            reloadMediaListToolStripMenuItem = new ToolStripMenuItem();
-            clearCacheToolStripMenuItem1 = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -343,14 +342,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Columns.AddRange(new DataGridViewColumn[] { RawDuration, Duration, LastModified, Title, FullPath });
             mediaFilesTable.Location = new Point(6, 6);
@@ -409,7 +408,7 @@
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, clearCacheToolStripMenuItem, dataToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, clearCacheToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(1256, 28);
@@ -426,19 +425,19 @@
             // showConsoleToolStripMenuItem
             // 
             showConsoleToolStripMenuItem.Name = "showConsoleToolStripMenuItem";
-            showConsoleToolStripMenuItem.Size = new Size(181, 26);
+            showConsoleToolStripMenuItem.Size = new Size(224, 26);
             showConsoleToolStripMenuItem.Text = "Hide &Console";
             showConsoleToolStripMenuItem.Click += ShowConsoleToolStripMenuItem_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(178, 6);
+            toolStripMenuItem1.Size = new Size(221, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(181, 26);
+            exitToolStripMenuItem.Size = new Size(224, 26);
             exitToolStripMenuItem.Text = "E&xit";
             // 
             // clearCacheToolStripMenuItem
@@ -448,10 +447,19 @@
             clearCacheToolStripMenuItem.Size = new Size(58, 24);
             clearCacheToolStripMenuItem.Text = "&Tools";
             // 
-            // dataToolStripMenuItem
+            // reloadMediaListToolStripMenuItem
             // 
-            dataToolStripMenuItem.Name = "dataToolStripMenuItem";
-            dataToolStripMenuItem.Size = new Size(14, 24);
+            reloadMediaListToolStripMenuItem.Name = "reloadMediaListToolStripMenuItem";
+            reloadMediaListToolStripMenuItem.Size = new Size(211, 26);
+            reloadMediaListToolStripMenuItem.Text = "&Reload Media List";
+            reloadMediaListToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
+            // 
+            // clearCacheToolStripMenuItem1
+            // 
+            clearCacheToolStripMenuItem1.Name = "clearCacheToolStripMenuItem1";
+            clearCacheToolStripMenuItem1.Size = new Size(211, 26);
+            clearCacheToolStripMenuItem1.Text = "&Clear Cache";
+            clearCacheToolStripMenuItem1.Click += ClearCacheToolStripMenuItem1_Click;
             // 
             // reloadMediaFilesToolStripMenuItem
             // 
@@ -505,20 +513,6 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // reloadMediaListToolStripMenuItem
-            // 
-            reloadMediaListToolStripMenuItem.Name = "reloadMediaListToolStripMenuItem";
-            reloadMediaListToolStripMenuItem.Size = new Size(224, 26);
-            reloadMediaListToolStripMenuItem.Text = "&Reload Media List";
-            reloadMediaListToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
-            // 
-            // clearCacheToolStripMenuItem1
-            // 
-            clearCacheToolStripMenuItem1.Name = "clearCacheToolStripMenuItem1";
-            clearCacheToolStripMenuItem1.Size = new Size(224, 26);
-            clearCacheToolStripMenuItem1.Text = "&Clear Cache";
-            clearCacheToolStripMenuItem1.Click += ClearCacheToolStripMenuItem1_Click;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -565,7 +559,6 @@
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
-        private ToolStripMenuItem dataToolStripMenuItem;
         private ToolStripMenuItem reloadMediaFilesToolStripMenuItem;
         private Button download;
         private TextBox downloadIds;

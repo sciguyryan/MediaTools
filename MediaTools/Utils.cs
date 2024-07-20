@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace MediaTools
@@ -21,6 +22,25 @@ namespace MediaTools
             }
 
             return hash.ToString();
+        }
+
+        public static byte[] Compress(ref byte[] bytes)
+        {
+            using var memoryStream = new MemoryStream();
+            using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal);
+            gzipStream.Write(bytes, 0, bytes.Length);
+            gzipStream.Flush();
+            return memoryStream.ToArray();
+        }
+
+        public static byte[] Decompress(ref byte[] bytes)
+        {
+            using var memoryStream = new MemoryStream(bytes);
+            using var outputStream = new MemoryStream();
+            using var decompressStream = new GZipStream(memoryStream, CompressionMode.Decompress);
+            decompressStream.CopyTo(outputStream);
+            decompressStream.Flush();
+            return outputStream.ToArray();
         }
     }
 }

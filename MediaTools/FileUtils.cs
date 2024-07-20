@@ -150,5 +150,10 @@ namespace MediaTools
         {
             return Path.GetFullPath(Path.Combine(_basePath, "..\\"));
         }
+
+        public static void TruncateFile(string path)
+        {
+            using var f = File.Open(path, FileMode.Truncate);
+        }
     }
 }
