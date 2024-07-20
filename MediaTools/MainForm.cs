@@ -197,12 +197,7 @@ namespace MediaTools
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             LoadCacheData();
-
-            MessageBox.Show(watch.ElapsedMilliseconds.ToString());
-
             await UpdateMediaTable();
         }
 
