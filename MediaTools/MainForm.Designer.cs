@@ -74,6 +74,7 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStripMenuItem2 = new ToolStripSeparator();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -425,19 +426,19 @@
             // showConsoleToolStripMenuItem
             // 
             showConsoleToolStripMenuItem.Name = "showConsoleToolStripMenuItem";
-            showConsoleToolStripMenuItem.Size = new Size(224, 26);
+            showConsoleToolStripMenuItem.Size = new Size(181, 26);
             showConsoleToolStripMenuItem.Text = "Hide &Console";
             showConsoleToolStripMenuItem.Click += ShowConsoleToolStripMenuItem_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(221, 6);
+            toolStripMenuItem1.Size = new Size(178, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(224, 26);
+            exitToolStripMenuItem.Size = new Size(181, 26);
             exitToolStripMenuItem.Text = "E&xit";
             // 
             // clearCacheToolStripMenuItem
@@ -471,9 +472,9 @@
             // contextMenuStrip
             // 
             contextMenuStrip.ImageScalingSize = new Size(20, 20);
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { trashToolStripMenuItem, contextDelete, renameToolStripMenuItem });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { contextDelete, trashToolStripMenuItem, toolStripMenuItem2, renameToolStripMenuItem });
             contextMenuStrip.Name = "contextMenuStrip1";
-            contextMenuStrip.Size = new Size(142, 76);
+            contextMenuStrip.Size = new Size(142, 82);
             // 
             // trashToolStripMenuItem
             // 
@@ -512,6 +513,11 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(138, 6);
             // 
             // MainForm
             // 
@@ -596,5 +602,6 @@
         private ToolStripMenuItem clearCacheToolStripMenuItem;
         private ToolStripMenuItem reloadMediaListToolStripMenuItem;
         private ToolStripMenuItem clearCacheToolStripMenuItem1;
+        private ToolStripSeparator toolStripMenuItem2;
     }
 }

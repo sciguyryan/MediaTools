@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace MediaTools
@@ -18,7 +18,6 @@ namespace MediaTools
         private bool _consoleShown = true;
         private bool _isUpdatingMediaList;
         private bool _isFirstSort = true;
-        private const string SerializeDelimiter = @"//";
 
         public MainForm(string runFromPath)
         {
@@ -172,16 +171,16 @@ namespace MediaTools
             switch (e)
             {
                 case { Control: true, KeyCode: Keys.F }:
-                    {
-                        tabControl1.SelectedIndex = 1;
+                {
+                    tabControl1.SelectedIndex = 1;
 
-                        var form = new SearchForm(this)
-                        {
-                            StartPosition = FormStartPosition.CenterParent
-                        };
-                        form.Show();
-                        break;
-                    }
+                    var form = new SearchForm(this)
+                    {
+                        StartPosition = FormStartPosition.CenterParent
+                    };
+                    form.Show();
+                    break;
+                }
                 case { Control: true, KeyCode: Keys.I }:
                     MediaInfoDialog();
                     break;
@@ -471,7 +470,8 @@ namespace MediaTools
             string tester,
             string searchFor,
             FindType findType,
-            bool exactMatch)
+            bool exactMatch
+        )
         {
             bool success;
             switch (findType)
@@ -483,7 +483,8 @@ namespace MediaTools
                 case FindType.Text:
                     if (exactMatch)
                     {
-                        success = string.Equals(tester,
+                        success = string.Equals(
+                            tester,
                             searchFor,
                             StringComparison.CurrentCultureIgnoreCase
                         );
@@ -670,28 +671,24 @@ namespace MediaTools
 
         private void WriteCacheData()
         {
-            var text = new StringBuilder();
+            var entries = new List<CacheEntry>(mediaFilesTable.Rows.Count);
 
-            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            foreach (DataGridViewRow row in mediaFilesTable.Rows)
             {
-                var row = mediaFilesTable.Rows[i];
-
                 var lastModified = row.Cells["LastModified"].Value.ToString()!;
-                var date = 
-                    DateTime.Parse(lastModified).ToBinary().ToString("X");
-                var duration = 
-                    int.Parse(row.Cells["RawDuration"].Value.ToString()!).ToString("X");
+                var date = DateTime.Parse(lastModified, CultureInfo.CurrentCulture).ToBinary();
+                var duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!);
                 var path = row.Cells["FullPath"].Value.ToString()!;
 
-                text.Append(path);
-                text.Append(SerializeDelimiter);
-                text.Append(duration);
-                text.Append(SerializeDelimiter);
-                text.Append(date);
-                text.Append(Environment.NewLine);
+                entries.Add(new CacheEntry(date, duration, path));
             }
 
-            File.WriteAllText(_cachePath, text.ToString());
+            var span = CollectionsMarshal.AsSpan(entries);
+            if (!CacheFile.WriteCacheFile(span, _cachePath))
+            {
+                // TODO - do something to notify the user here.
+                // TODO - I'm not sure what since this occurs as the application is closing...
+            }
         }
 
         private void LoadCacheData()
@@ -701,41 +698,34 @@ namespace MediaTools
                 return;
             }
 
-            var rows = File.ReadAllLines(_cachePath);
-
-            for (var i = 0; i < rows.Length; i++)
+            var rows = CacheFile.ReadCacheFile(_cachePath);
+            var i = 0;
+            foreach (var row in rows)
             {
-                if (!rows[i].Contains(SerializeDelimiter))
-                {
-                    continue;
-                }
-
-                var bits = rows[i].Split(SerializeDelimiter);
-
-                var path = bits[0];
+                var path = row.Path;
                 if (!Path.Exists(path))
                 {
                     continue;
                 }
 
                 var hash = Utils.ComputeMd5Hash(path);
-                var duration = int.Parse(bits[1], NumberStyles.HexNumber);
-                var modifiedDate = DateTime.FromBinary(long.Parse(bits[2], NumberStyles.HexNumber));
-
                 var fi = new FileInfo(path);
                 var title = Path.GetFileNameWithoutExtension(fi.FullName);
+                var modifiedDate = DateTime.FromBinary(row.LastModified);
 
-                // Populate the display table.
+                // Populate the GridView.
                 mediaFilesTable.Rows.Add(
-                    duration,
-                    Utils.SecondsToDuration(duration, false),
+                    row.Duration,
+                    Utils.SecondsToDuration(row.Duration, false),
                     modifiedDate.ToString(CultureInfo.CurrentCulture),
                     title,
                     path
                 );
 
                 // Add the corresponding cache entry.
-                _cache.Add(hash, (i, duration));
+                _cache.Add(hash, (i, row.Duration));
+
+                i++;
             }
         }
 

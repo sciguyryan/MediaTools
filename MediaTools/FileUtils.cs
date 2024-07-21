@@ -18,11 +18,13 @@ namespace MediaTools
         private struct SHFILEOPSTRUCTW
         {
             public IntPtr hWnd;
+
             [MarshalAs(UnmanagedType.U4)]
             public int wFunc;
             public string pFrom;
             public string pTo;
             public short fFlags;
+
             [MarshalAs(UnmanagedType.Bool)]
             public bool fAnyOperationsAborted;
             public IntPtr hNameMappings;
@@ -89,7 +91,9 @@ namespace MediaTools
                 }
                 catch
                 {
-                    Console.WriteLine(@$"Error! Failed to create destination directory '{destDir}'!");
+                    Console.WriteLine(
+                        @$"Error! Failed to create destination directory '{destDir}'!"
+                    );
                     return false;
                 }
             }

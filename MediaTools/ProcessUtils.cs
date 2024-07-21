@@ -4,13 +4,15 @@ namespace MediaTools
 {
     internal class ProcessUtils
     {
-        private const string FfProbePath = @"D:\Projects\Video Encoding\ffmpeg-7.0.1\bin\ffprobe.exe";
+        private const string FfProbePath =
+            @"D:\Projects\Video Encoding\ffmpeg-7.0.1\bin\ffprobe.exe";
 
         public static async Task<int> RunMediaInfo(string path)
         {
             var process = new Process();
             process.StartInfo.FileName = FfProbePath;
-            process.StartInfo.Arguments = $"-show_entries format=duration -v quiet -of csv=\"p=0\" \"{path}\"";
+            process.StartInfo.Arguments =
+                $"-show_entries format=duration -v quiet -of csv=\"p=0\" \"{path}\"";
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.CreateNoWindow = true;
             process.Start();

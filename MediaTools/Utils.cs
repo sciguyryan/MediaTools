@@ -24,7 +24,7 @@ namespace MediaTools
             return hash.ToString();
         }
 
-        public static byte[] Compress(ref byte[] bytes)
+        public static byte[] Compress(byte[] bytes)
         {
             using var memoryStream = new MemoryStream();
             using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal);
@@ -33,7 +33,7 @@ namespace MediaTools
             return memoryStream.ToArray();
         }
 
-        public static byte[] Decompress(ref byte[] bytes)
+        public static byte[] Decompress(byte[] bytes)
         {
             using var memoryStream = new MemoryStream(bytes);
             using var outputStream = new MemoryStream();
