@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace MediaTools
@@ -91,7 +90,7 @@ namespace MediaTools
 
             var subfolder = downloadFolder.Text;
 
-            UpdateStatus(DisplayBuilders.AttemptWriteConfig);
+            UpdateStatus(DisplayBuilders.InfoAttemptWriteConfig);
             SetupConfigFile();
             UpdateStatus(DisplayBuilders.SuccessConfigWrite);
 
@@ -100,7 +99,7 @@ namespace MediaTools
                 _fileUtils.EnsureTempExists();
 
                 UpdateStatus(
-                    DisplayBuilders.AttemptingDownload,
+                    DisplayBuilders.InfoAttemptDownload,
                     [downloadType, i + 1, urls.Length]
                 );
                 await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
@@ -110,7 +109,7 @@ namespace MediaTools
                 // something went wrong then some of the files would be stuck
                 // in the temporary folder.
                 // It seems to make more sense to move them as needed.
-                UpdateStatus(DisplayBuilders.AttemptingMoveDownloads);
+                UpdateStatus(DisplayBuilders.InfoAttemptMoveDownloads);
                 _fileUtils.MoveTempFiles(subfolder);
                 UpdateStatus(DisplayBuilders.SuccessMoveDownloads);
             }
@@ -269,26 +268,37 @@ namespace MediaTools
 
             var index = hitTest.RowIndex;
             var path = mediaFilesTable.Rows[index].Cells["FullPath"].Value.ToString()!;
+            var fileName = Path.GetFileNameWithoutExtension(path);
 
-            var success = false;
+            var success = true;
             if (trash)
             {
                 success = (FileUtils.TrashPath(path) == 0);
             }
             else
             {
+                var result = MessageBox.Show(
+                    DisplayBuilders.ConfirmDeleteFile.BuildPlain(),
+                    DisplayBuilders.ConfirmDeleteFileTitle.BuildPlain([fileName]),
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1
+                );
+                if (result != DialogResult.OK)
+                {
+                    UpdateStatus(DisplayBuilders.InfoAbortDeleteFile, [fileName]);
+                    return;
+                }
+
                 try
                 {
                     File.Delete(path);
-                    success = true;
                 }
                 catch
                 {
-                    // Do nothing.
+                    success = false;
                 }
             }
-
-            var fileName = Path.GetFileNameWithoutExtension(path);
 
             if (trash)
             {
@@ -659,8 +669,8 @@ namespace MediaTools
 
         private void UpdateStatus(OutputFormatBuilder fmt)
         {
-            toolStripStatusLabel1.Text = fmt.BuildPlain([]);
-            Console.WriteLine(fmt.Build([]));
+            toolStripStatusLabel1.Text = fmt.BuildPlain();
+            Console.WriteLine(fmt.Build());
         }
 
         private void UpdateStatus(OutputFormatBuilder fmt, object[] binds)
@@ -671,20 +681,16 @@ namespace MediaTools
 
         private void WriteCacheData()
         {
-            var entries = new List<CacheEntry>(mediaFilesTable.Rows.Count);
+            var entries = (
+                from DataGridViewRow row in mediaFilesTable.Rows
+                let lastModified = row.Cells["LastModified"].Value.ToString()!
+                let date = DateTime.Parse(lastModified, CultureInfo.CurrentCulture).ToBinary()
+                let duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!)
+                let path = row.Cells["FullPath"].Value.ToString()!
+                select new CacheEntry(date, duration, path)
+            ).ToArray();
 
-            foreach (DataGridViewRow row in mediaFilesTable.Rows)
-            {
-                var lastModified = row.Cells["LastModified"].Value.ToString()!;
-                var date = DateTime.Parse(lastModified, CultureInfo.CurrentCulture).ToBinary();
-                var duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!);
-                var path = row.Cells["FullPath"].Value.ToString()!;
-
-                entries.Add(new CacheEntry(date, duration, path));
-            }
-
-            var span = CollectionsMarshal.AsSpan(entries);
-            if (!CacheFile.WriteCacheFile(span, _cachePath))
+            if (!CacheFile.WriteCacheFile(entries, _cachePath))
             {
                 // TODO - do something to notify the user here.
                 // TODO - I'm not sure what since this occurs as the application is closing...
@@ -699,6 +705,12 @@ namespace MediaTools
             }
 
             var rows = CacheFile.ReadCacheFile(_cachePath);
+            if (rows.Length == 0)
+            {
+                // The file may be corrupted and will need to be rebuilt.
+                FileUtils.TruncateFile(_cachePath);
+            }
+
             var i = 0;
             foreach (var row in rows)
             {
@@ -723,9 +735,7 @@ namespace MediaTools
                 );
 
                 // Add the corresponding cache entry.
-                _cache.Add(hash, (i, row.Duration));
-
-                i++;
+                _cache.Add(hash, (i++, row.Duration));
             }
         }
 
@@ -754,7 +764,7 @@ namespace MediaTools
             );
             MessageBox.Show(
                 message,
-                DisplayBuilders.MediaInfoDurationTitle,
+                DisplayBuilders.MediaInfoDurationTitle.BuildPlain(),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1

@@ -220,11 +220,21 @@ namespace MediaTools
             return (outFormatted.ToString(), outPlain.ToString());
         }
 
+        public string Build()
+        {
+            return Build([]);
+        }
+
         public string Build(ReadOnlySpan<object> binds)
         {
             var (outFormatted, _) = HandleBinds(binds);
 
             return outFormatted;
+        }
+
+        public string BuildPlain()
+        {
+            return BuildPlain([]);
         }
 
         public string BuildPlain(ReadOnlySpan<object> binds)
