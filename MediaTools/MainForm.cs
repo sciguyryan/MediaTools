@@ -43,6 +43,12 @@ namespace MediaTools
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             WriteCacheData();
+
+            // Ensure everything doesn't close until the file is written.
+            while (Utils.IsFileLocked(_cachePath))
+            {
+                Thread.Sleep(50);
+            }
         }
 
         private void MediaFilesTable_CellContentDoubleClick(

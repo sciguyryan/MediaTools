@@ -52,5 +52,25 @@ namespace MediaTools
             decompressStream.Flush();
             return outputStream.ToArray();
         }
+
+        public static bool IsFileLocked(string path)
+        {
+            FileStream stream = null;
+
+            try
+            {
+                stream = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                return true;
+            }
+            finally
+            {
+                stream?.Close();
+            }
+
+            return false;
+        }
     }
 }
