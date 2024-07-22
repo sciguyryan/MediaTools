@@ -8,10 +8,9 @@ namespace MediaTools
         [STAThread]
         private static void Main(string[] args)
         {
-            //var folderIndex = Array.FindIndex(args, x => x is "-f");
-            //var folder = (folderIndex > -1 && folderIndex < args.Length) ? args[folderIndex] : ".\\";
-            //var path = Path.GetFullPath(folder);
-            var path = @"D:\\Downloads\\YouTube\\tools";
+            var folderIndex = Array.FindIndex(args, x => x is "-f");
+            var folder = (folderIndex > -1 && folderIndex < args.Length) ? args[folderIndex] : ".\\";
+            var path = Path.GetFullPath(folder);
             if (!Directory.Exists(path))
             {
                 Console.WriteLine(@"The specified folder doesn't exist.");

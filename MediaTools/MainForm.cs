@@ -278,15 +278,15 @@ namespace MediaTools
             else
             {
                 var result = MessageBox.Show(
-                    DisplayBuilders.ConfirmDeleteFile.BuildPlain(),
-                    DisplayBuilders.ConfirmDeleteFileTitle.BuildPlain([fileName]),
+                    DisplayBuilders.ConfirmDeleteFile.BuildPlain([fileName]),
+                    DisplayBuilders.ConfirmDeleteFileTitle.BuildPlain(),
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Question,
                     MessageBoxDefaultButton.Button1
                 );
                 if (result != DialogResult.OK)
                 {
-                    UpdateStatus(DisplayBuilders.InfoAbortDeleteFile, [fileName]);
+                    UpdateStatus(DisplayBuilders.InfoAbortDeleteFile, [fileName], true);
                     return;
                 }
 
@@ -371,7 +371,7 @@ namespace MediaTools
             // Disable downloading while the list is being refreshed.
             download.Enabled = false;
 
-            UpdateStatus(DisplayBuilders.ReloadingMediaFiles);
+            UpdateStatus(DisplayBuilders.InfoMediaListReloaded);
 
             // Preserve any selected rows.
             var selectedPaths = (
@@ -388,7 +388,7 @@ namespace MediaTools
             // Restore the selected rows.
             RestoreRowSelections(ref selectedPaths);
 
-            UpdateStatus(DisplayBuilders.SuccessReload);
+            UpdateStatus(DisplayBuilders.InfoMediaListReloading);
 
             _isUpdatingMediaList = false;
 
@@ -669,13 +669,16 @@ namespace MediaTools
 
         private void UpdateStatus(OutputFormatBuilder fmt)
         {
-            toolStripStatusLabel1.Text = fmt.BuildPlain();
-            Console.WriteLine(fmt.Build());
+            UpdateStatus(fmt, []);
         }
 
-        private void UpdateStatus(OutputFormatBuilder fmt, object[] binds)
+        private void UpdateStatus(OutputFormatBuilder fmt, object[] binds, bool consoleOnly = false)
         {
-            toolStripStatusLabel1.Text = fmt.BuildPlain(binds);
+            if (!consoleOnly)
+            {
+                toolStripStatusLabel1.Text = fmt.BuildPlain(binds);
+            }
+
             Console.WriteLine(fmt.Build(binds));
         }
 

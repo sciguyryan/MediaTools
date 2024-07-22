@@ -2,10 +2,8 @@
 
 namespace MediaTools
 {
-    internal class FileUtils
+    internal class FileUtils(string basePath)
     {
-        private readonly string _basePath;
-
         #region DLL Imports
 
         private const int FO_DELETE = 0x0003;
@@ -18,11 +16,13 @@ namespace MediaTools
         private struct SHFILEOPSTRUCTW
         {
             public IntPtr hWnd;
-
             [MarshalAs(UnmanagedType.U4)]
             public int wFunc;
+            [MarshalAs(UnmanagedType.LPWStr)]
             public string pFrom;
+            [MarshalAs(UnmanagedType.LPWStr)]
             public string pTo;
+            [MarshalAs(UnmanagedType.U2)]
             public short fFlags;
 
             [MarshalAs(UnmanagedType.Bool)]
@@ -31,13 +31,8 @@ namespace MediaTools
             public string lpszProgressTitle;
         }
 
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        private static extern int SHFileOperationW(ref SHFILEOPSTRUCTW fileOp);
-
-        public FileUtils(string basePath)
-        {
-            _basePath = basePath;
-        }
+        [DllImport("shell32.dll", EntryPoint = "SHFileOperationW", SetLastError = true)]
+        private static extern int SHFileOperationW(ref SHFILEOPSTRUCTW lpFileOp);
 
         #endregion
 
@@ -147,12 +142,12 @@ namespace MediaTools
 
         public string GetTempPath()
         {
-            return Path.Combine(_basePath, "temp");
+            return Path.Combine(basePath, "temp");
         }
 
         public string GetMediaPath()
         {
-            return Path.GetFullPath(Path.Combine(_basePath, "..\\"));
+            return Path.GetFullPath(Path.Combine(basePath, "..\\"));
         }
 
         public static void TruncateFile(string path)
