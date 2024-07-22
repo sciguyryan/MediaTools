@@ -45,7 +45,7 @@ namespace MediaTools
             WriteCacheData();
 
             // Ensure everything doesn't close until the file is written.
-            while (Utils.IsFileLocked(_cachePath))
+            while (FileUtils.IsFileLocked(_cachePath))
             {
                 Thread.Sleep(50);
             }
