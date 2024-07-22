@@ -13,14 +13,20 @@
             InitializeComponent();
         }
 
-        private void Cancel_Click(object sender, EventArgs e) { Close(); }
+        private void Next_Click(object sender, EventArgs e)
+        {
+            var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
+
+            _parent.FindEntry(searchString.Text, "Title", findType, true,
+                exactMatch.Checked, ignoreCase.Checked, true, true);
+        }
 
         private void Find_Click(object sender, EventArgs e)
         {
             var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
 
             _parent.FindEntry(searchString.Text, "Title", findType, true,
-                exactMatch.Checked);
+                exactMatch.Checked, ignoreCase.Checked);
         }
 
         private void FindAll_Click(object sender, EventArgs e)
@@ -28,7 +34,7 @@
             var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
 
             _parent.FindEntry(searchString.Text, "Title", findType, false,
-                exactMatch.Checked);
+                exactMatch.Checked, ignoreCase.Checked);
         }
 
         private void SearchString_KeyPress(object sender, KeyPressEventArgs e)
@@ -48,10 +54,14 @@
             {
                 exactMatch.Checked = false;
                 exactMatch.Enabled = false;
+
+                ignoreCase.Checked = false;
+                ignoreCase.Enabled = false;
             }
             else
             {
                 exactMatch.Enabled = true;
+                ignoreCase.Enabled = true;
             }
         }
     }

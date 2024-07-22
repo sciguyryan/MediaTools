@@ -13,7 +13,9 @@ namespace MediaTools
         private readonly string _configPath;
         private readonly string _cachePath;
         private readonly FileUtils _fileUtils;
+#pragma warning disable IDE0028
         private readonly Dictionary<string, (int Index, int Duration)> _cache = new();
+#pragma warning restore IDE0028
         private bool _consoleShown = true;
         private bool _isUpdatingMediaList;
         private bool _isFirstSort = true;
@@ -329,7 +331,7 @@ namespace MediaTools
             _cache.Remove(Utils.ComputeMd5Hash(path));
 
             // Remove the table row.
-            mediaFilesTable.Rows.RemoveAt(hitTest.RowIndex);
+            mediaFilesTable.Rows.RemoveAt(index);
 
             // Update the cache.
             UpdateCache();
@@ -379,14 +381,14 @@ namespace MediaTools
                 select mediaFilesTable.Rows[cell.RowIndex] into row
                 select row.Cells["FullPath"].Value.ToString()! into path
                 select Utils.ComputeMd5Hash(path)
-            ).ToList();
+            ).ToArray();
 
             await FillTable();
 
             SortTable();
 
             // Restore the selected rows.
-            RestoreRowSelections(ref selectedPaths);
+            RestoreRowSelections(selectedPaths);
 
             UpdateStatus(DisplayBuilders.InfoMediaListReloading);
 
@@ -442,7 +444,9 @@ namespace MediaTools
             FindType findType,
             bool single,
             bool exactMatch,
-            bool scrollToEntry = true
+            bool ignoreCase,
+            bool scrollToEntry = true,
+            bool findNextEntry = false
         )
         {
             if (searchString == "")
@@ -450,13 +454,21 @@ namespace MediaTools
                 return;
             }
 
+            var i = 0;
+            if (findNextEntry && mediaFilesTable.SelectedRows.Count > 0)
+            {
+                // Start on the index after the first selection.
+                // This isn't intended to work with find all, what would be the point?
+                i = mediaFilesTable.SelectedRows[0].Index + 1;
+            }
+
             mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
-            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
+            for (; i < mediaFilesTable.Rows.Count; i++)
             {
                 var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString()!;
-                if (!IsMatch(title, searchString, findType, exactMatch))
+                if (!IsMatch(title, searchString, findType, exactMatch, ignoreCase))
                 {
                     continue;
                 }
@@ -480,32 +492,26 @@ namespace MediaTools
             string tester,
             string searchFor,
             FindType findType,
-            bool exactMatch
+            bool exactMatch,
+            bool ignoreCase
         )
         {
+            var regExSearchOptions = ignoreCase ? 
+                RegexOptions.IgnoreCase : RegexOptions.None;
+            var textSearchOptions = ignoreCase ? 
+                StringComparison.CurrentCultureIgnoreCase : StringComparison.Ordinal;
+
             bool success;
             switch (findType)
             {
                 case FindType.Regex:
-                    var match = Regex.Match(tester, searchFor, RegexOptions.IgnoreCase);
+                    var match = Regex.Match(tester, searchFor, regExSearchOptions);
                     success = match.Success;
                     break;
                 case FindType.Text:
-                    if (exactMatch)
-                    {
-                        success = string.Equals(
-                            tester,
-                            searchFor,
-                            StringComparison.CurrentCultureIgnoreCase
-                        );
-                    }
-                    else
-                    {
-                        success = tester.Contains(
-                            searchFor,
-                            StringComparison.CurrentCultureIgnoreCase
-                        );
-                    }
+                    success = exactMatch ? 
+                        string.Equals(tester,  searchFor, textSearchOptions) : 
+                        tester.Contains(searchFor, textSearchOptions);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(findType), findType, null);
@@ -514,9 +520,9 @@ namespace MediaTools
             return success;
         }
 
-        private void RestoreRowSelections(ref List<string> items)
+        private void RestoreRowSelections(ReadOnlySpan<string> items)
         {
-            if (items.Count == 0)
+            if (items.Length == 0)
             {
                 return;
             }

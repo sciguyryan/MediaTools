@@ -69,12 +69,12 @@
             clearCacheToolStripMenuItem1 = new ToolStripMenuItem();
             reloadMediaFilesToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip = new ContextMenuStrip(components);
-            trashToolStripMenuItem = new ToolStripMenuItem();
             contextDelete = new ToolStripMenuItem();
+            trashToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem2 = new ToolStripSeparator();
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            toolStripMenuItem2 = new ToolStripSeparator();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -443,7 +443,7 @@
             // 
             // clearCacheToolStripMenuItem
             // 
-            clearCacheToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { reloadMediaListToolStripMenuItem, clearCacheToolStripMenuItem1 });
+            clearCacheToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearCacheToolStripMenuItem1, reloadMediaListToolStripMenuItem });
             clearCacheToolStripMenuItem.Name = "clearCacheToolStripMenuItem";
             clearCacheToolStripMenuItem.Size = new Size(58, 24);
             clearCacheToolStripMenuItem.Text = "&Tools";
@@ -451,14 +451,14 @@
             // reloadMediaListToolStripMenuItem
             // 
             reloadMediaListToolStripMenuItem.Name = "reloadMediaListToolStripMenuItem";
-            reloadMediaListToolStripMenuItem.Size = new Size(211, 26);
+            reloadMediaListToolStripMenuItem.Size = new Size(224, 26);
             reloadMediaListToolStripMenuItem.Text = "&Reload Media List";
             reloadMediaListToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
             // 
             // clearCacheToolStripMenuItem1
             // 
             clearCacheToolStripMenuItem1.Name = "clearCacheToolStripMenuItem1";
-            clearCacheToolStripMenuItem1.Size = new Size(211, 26);
+            clearCacheToolStripMenuItem1.Size = new Size(224, 26);
             clearCacheToolStripMenuItem1.Text = "&Clear Cache";
             clearCacheToolStripMenuItem1.Click += ClearCacheToolStripMenuItem1_Click;
             // 
@@ -476,6 +476,13 @@
             contextMenuStrip.Name = "contextMenuStrip1";
             contextMenuStrip.Size = new Size(142, 82);
             // 
+            // contextDelete
+            // 
+            contextDelete.Name = "contextDelete";
+            contextDelete.Size = new Size(141, 24);
+            contextDelete.Text = "&Delete";
+            contextDelete.Click += DeleteToolStripMenuItem_Click;
+            // 
             // trashToolStripMenuItem
             // 
             trashToolStripMenuItem.Name = "trashToolStripMenuItem";
@@ -483,12 +490,10 @@
             trashToolStripMenuItem.Text = "&Trash";
             trashToolStripMenuItem.Click += TrashToolStripMenuItem_Click;
             // 
-            // contextDelete
+            // toolStripMenuItem2
             // 
-            contextDelete.Name = "contextDelete";
-            contextDelete.Size = new Size(141, 24);
-            contextDelete.Text = "&Delete";
-            contextDelete.Click += DeleteToolStripMenuItem_Click;
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(138, 6);
             // 
             // renameToolStripMenuItem
             // 
@@ -513,11 +518,6 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-            // 
-            // toolStripMenuItem2
-            // 
-            toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(138, 6);
             // 
             // MainForm
             // 

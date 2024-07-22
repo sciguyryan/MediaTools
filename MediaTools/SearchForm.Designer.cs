@@ -30,10 +30,11 @@
         {
             searchString = new TextBox();
             find = new Button();
-            cancel = new Button();
+            next = new Button();
             findAll = new Button();
             regularExpression = new CheckBox();
             exactMatch = new CheckBox();
+            ignoreCase = new CheckBox();
             SuspendLayout();
             // 
             // searchString
@@ -54,19 +55,19 @@
             find.UseVisualStyleBackColor = true;
             find.Click += Find_Click;
             // 
-            // cancel
+            // next
             // 
-            cancel.Location = new Point(212, 47);
-            cancel.Name = "cancel";
-            cancel.Size = new Size(94, 29);
-            cancel.TabIndex = 3;
-            cancel.Text = "&Cancel";
-            cancel.UseVisualStyleBackColor = true;
-            cancel.Click += Cancel_Click;
+            next.Location = new Point(109, 45);
+            next.Name = "next";
+            next.Size = new Size(94, 29);
+            next.TabIndex = 3;
+            next.Text = "&Next";
+            next.UseVisualStyleBackColor = true;
+            next.Click += Next_Click;
             // 
             // findAll
             // 
-            findAll.Location = new Point(112, 47);
+            findAll.Location = new Point(209, 45);
             findAll.Name = "findAll";
             findAll.Size = new Size(94, 29);
             findAll.TabIndex = 2;
@@ -95,15 +96,28 @@
             exactMatch.Text = "&Exact Match?";
             exactMatch.UseVisualStyleBackColor = true;
             // 
+            // ignoreCase
+            // 
+            ignoreCase.AutoSize = true;
+            ignoreCase.Checked = true;
+            ignoreCase.CheckState = CheckState.Checked;
+            ignoreCase.Location = new Point(12, 135);
+            ignoreCase.Name = "ignoreCase";
+            ignoreCase.Size = new Size(116, 24);
+            ignoreCase.TabIndex = 6;
+            ignoreCase.Text = "&Ignore Case?";
+            ignoreCase.UseVisualStyleBackColor = true;
+            // 
             // SearchForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(318, 143);
+            ClientSize = new Size(318, 171);
+            Controls.Add(ignoreCase);
             Controls.Add(exactMatch);
             Controls.Add(regularExpression);
             Controls.Add(findAll);
-            Controls.Add(cancel);
+            Controls.Add(next);
             Controls.Add(find);
             Controls.Add(searchString);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -122,9 +136,10 @@
 
         private TextBox searchString;
         private Button find;
-        private Button cancel;
+        private Button next;
         private Button findAll;
         private CheckBox regularExpression;
         private CheckBox exactMatch;
+        private CheckBox ignoreCase;
     }
 }
