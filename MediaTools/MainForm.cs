@@ -357,7 +357,7 @@ namespace MediaTools
                 select isSingle
                     ? $"https://www.youtube.com/watch?v={id}"
                     : $"https://www.youtube.com/playlist?list={id}"
-            ).ToArray();
+            ).Distinct().ToArray();
         }
 
         private async Task UpdateMediaTable()
