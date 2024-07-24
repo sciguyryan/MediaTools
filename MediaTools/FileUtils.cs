@@ -74,7 +74,8 @@ namespace MediaTools
         {
             if (!Directory.Exists(sourceDir))
             {
-                Console.WriteLine(@$"Error! Source directory path '{sourceDir}' doesn't exist!");
+                var builder = DisplayBuilders.ErrorSourceDirectoryMissing;
+                Console.WriteLine(builder.Build([sourceDir]));
                 return false;
             }
 
@@ -86,9 +87,8 @@ namespace MediaTools
                 }
                 catch
                 {
-                    Console.WriteLine(
-                        @$"Error! Failed to create destination directory '{destDir}'!"
-                    );
+                    var builder = DisplayBuilders.ErrorFailedCreateDirectory;
+                    Console.WriteLine(builder.Build([destDir]));
                     return false;
                 }
             }
@@ -99,7 +99,6 @@ namespace MediaTools
             {
                 var dirName = Path.GetFileName(directory);
                 var destDirectory = Path.Combine(destDir, dirName);
-
                 if (!MoveDirectoryContents(directory, destDirectory))
                 {
                     return false;
@@ -119,7 +118,9 @@ namespace MediaTools
                 }
                 catch
                 {
-                    Console.WriteLine(@$"Error! Unable to move file '{file}' to '{destFile}'!");
+
+                    var builder = DisplayBuilders.ErrorFileMoveFailed;
+                    Console.WriteLine(builder.Build([file, destFile]));
                     return false;
                 }
             }
@@ -133,7 +134,8 @@ namespace MediaTools
             }
             catch
             {
-                Console.WriteLine(@"Error! Unable to delete the directory!");
+                var builder = DisplayBuilders.ErrorDeleteDirectoryFailed;
+                Console.WriteLine(builder.Build([sourceDir]));
                 return false;
             }
 

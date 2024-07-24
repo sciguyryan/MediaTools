@@ -42,6 +42,19 @@ namespace MediaTools
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
+            if (FileUtils.IsFileLocked(_cachePath))
+            {
+                MessageBox.Show(
+                    DisplayBuilders.ErrorCacheFileOpen.BuildPlain(),
+                    DisplayBuilders.ErrorCacheFileOpenTitle.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1
+                );
+
+                return;
+            }
+
             WriteCacheData();
 
             // Ensure everything doesn't close until the file is written.

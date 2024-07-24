@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MediaTools
 {
-    internal partial class Utils
+    internal class Utils
     {
         public static string SecondsToDuration(double seconds, bool longFormat)
         {

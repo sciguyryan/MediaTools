@@ -16,17 +16,11 @@
         private const string ErrorNoValidUrlsTail = "no valid target download URLs specified.";
         private const string ErrorTrashFileTail = "failed to send the file '[0]' to the trash!";
         private const string ErrorDeleteFileTail = "failed to delete the file '[0]'!";
-        private const string ErrorInvalidFileNameText = "the file name contains one or more invalid characters!";
         private const string ErrorRenameFileTail = "failed to rename the the file '[0]'!";
-
-        private const string MediaInfoDurationTitleText = "Total Media Duration";
-        private const string MediaInfoDurationText =
-            "There are a total of [0] files. The average duration of a file is [1] and a total length of [2].";
-        private const string InvalidFileNameTitleText = "Invalid File Name";
-        
-        private const string ConfirmDeleteFileTitleText = "Delete File?";
-        private const string ConfirmDeleteFileText =
-            "Are you sure you wish to permenantly delete the file '[0]'?";
+        private const string ErrorSourceDirectoryMissingTail = "the source directory path '[0]' doesn't exist!";
+        private const string ErrorFailedCreateDirectoryTail = "the destination path '[0]' could not be created!";
+        private const string ErrorFileMoveFailedTail = "failed to move the file at '[0]' to '[1]'!";
+        private const string ErrorDeleteDirectoryFailedTail = "failed to delete the directory at '[0]'!";
 
         private const string Information = "Information: ";
         private const string InfoAttemptWriteConfigTail = "attempting to write download config file...";
@@ -36,6 +30,21 @@
         private const string InfoMediaListReloadingTail = "media list successfully reloaded!";
         private const string InfoAbortDeleteFileTail =
             "deletion of the file '[0]' has been aborted.";
+
+        private const string MediaInfoDurationTitleText = "Total Media Duration";
+        private const string MediaInfoDurationText =
+            "There are a total of [0] files. The average duration of a file is [1] and a total length of [2].";
+
+        private const string InvalidFileNameTitleText = "Invalid File Name";
+        private const string InvalidFileNameTailText = "The file name contains one or more invalid characters!";
+
+        private const string ConfirmDeleteFileTitleText = "Delete File?";
+        private const string ConfirmDeleteFileText =
+            "Are you sure you wish to permenantly delete the file '[0]'?";
+
+        private const string ErrorCacheFileOpenTitleText = "Cache File Already Open";
+        private const string ErrorCacheFileOpenText =
+            "the cache file is open in another application and can't be updated!";
 
         #endregion
 
@@ -87,28 +96,31 @@
             .Text(Error)
             .ResetForeground()
             .Text(ErrorDeleteFileTail);
-        public static readonly OutputFormatBuilder ErrorInvalidFileName = new OutputFormatBuilder()
-            .Foreground(ConsoleColour.Red)
-            .Text(Error)
-            .ResetForeground()
-            .Text(ErrorInvalidFileNameText);
         public static readonly OutputFormatBuilder ErrorRenameFile = new OutputFormatBuilder()
             .Foreground(ConsoleColour.Red)
             .Text(Error)
             .ResetForeground()
             .Text(ErrorRenameFileTail);
-
-        public static readonly OutputFormatBuilder MediaInfoDurationTitle = new OutputFormatBuilder()
-            .Text(MediaInfoDurationTitleText);
-        public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
-            .Text(MediaInfoDurationText);
-        public static readonly OutputFormatBuilder InvalidFileNameTitle = new OutputFormatBuilder()
-            .Text(InvalidFileNameTitleText);
-
-        public static readonly OutputFormatBuilder ConfirmDeleteFileTitle = new OutputFormatBuilder()
-            .Text(ConfirmDeleteFileTitleText);
-        public static readonly OutputFormatBuilder ConfirmDeleteFile = new OutputFormatBuilder()
-            .Text(ConfirmDeleteFileText);
+        public static readonly OutputFormatBuilder ErrorSourceDirectoryMissing = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorSourceDirectoryMissingTail);
+        public static readonly OutputFormatBuilder ErrorFailedCreateDirectory = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorFailedCreateDirectoryTail);
+        public static readonly OutputFormatBuilder ErrorFileMoveFailed = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorFileMoveFailedTail);
+        public static readonly OutputFormatBuilder ErrorDeleteDirectoryFailed = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorDeleteDirectoryFailedTail);
 
         public static readonly OutputFormatBuilder InfoMediaListReloading = new OutputFormatBuilder()
             .Foreground(ConsoleColour.Blue)
@@ -140,6 +152,30 @@
             .Text(Information)
             .ResetForeground()
             .Text(InfoAbortDeleteFileTail);
+
+        public static readonly OutputFormatBuilder MediaInfoDurationTitle = new OutputFormatBuilder()
+            .Text(MediaInfoDurationTitleText);
+        public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
+            .Text(MediaInfoDurationText);
+
+
+        public static readonly OutputFormatBuilder InvalidFileNameTitle = new OutputFormatBuilder()
+            .Text(InvalidFileNameTitleText);
+        public static readonly OutputFormatBuilder InvalidFileName = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(InvalidFileNameTailText);
+
+        public static readonly OutputFormatBuilder ConfirmDeleteFileTitle = new OutputFormatBuilder()
+            .Text(ConfirmDeleteFileTitleText);
+        public static readonly OutputFormatBuilder ConfirmDeleteFile = new OutputFormatBuilder()
+            .Text(ConfirmDeleteFileText);
+
+        public static readonly OutputFormatBuilder ErrorCacheFileOpenTitle = new OutputFormatBuilder()
+            .Text(ErrorCacheFileOpenTitleText);
+        public static readonly OutputFormatBuilder ErrorCacheFileOpen = new OutputFormatBuilder()
+            .Text(ErrorCacheFileOpenText);
 
         #endregion
     }
