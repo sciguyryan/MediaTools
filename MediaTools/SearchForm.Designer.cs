@@ -127,6 +127,7 @@
             Name = "SearchForm";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Hide;
+            StartPosition = FormStartPosition.CenterParent;
             Text = "Media Tools :: Search";
             ResumeLayout(false);
             PerformLayout();

@@ -37,20 +37,35 @@ namespace MediaTools
         public static byte[] Compress(byte[] bytes)
         {
             using var memoryStream = new MemoryStream();
-            using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal);
-            gzipStream.Write(bytes, 0, bytes.Length);
-            gzipStream.Flush();
+            using (var gzipStream = new DeflateStream(memoryStream, CompressionLevel.Optimal))
+            {
+                gzipStream.Write(bytes, 0, bytes.Length);
+            }
+
             return memoryStream.ToArray();
         }
 
         public static byte[] Decompress(byte[] bytes)
         {
-            using var memoryStream = new MemoryStream(bytes);
-            using var outputStream = new MemoryStream();
-            using var decompressStream = new GZipStream(memoryStream, CompressionMode.Decompress);
-            decompressStream.CopyTo(outputStream);
-            decompressStream.Flush();
-            return outputStream.ToArray();
+            var compressedStream = new MemoryStream(bytes);
+
+            using var decompressorStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
+            using var decompressedStream = new MemoryStream();
+            decompressorStream.CopyTo(decompressedStream);
+
+            var decompressedBytes = decompressedStream.ToArray();
+
+            return decompressedBytes;
+        }
+
+        public static string TruncateString(string str, int maxLength = 32)
+        {
+            if (str.Length <= maxLength)
+            {
+                return str;
+            }
+
+            return string.Concat(str.Take(maxLength - 3)) + "...";
         }
     }
 }

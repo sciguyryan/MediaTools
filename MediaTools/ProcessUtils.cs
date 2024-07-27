@@ -20,7 +20,14 @@ namespace MediaTools
             var output = await process.StandardOutput.ReadToEndAsync();
             await process.WaitForExitAsync();
 
-            return output.Length > 0 ? (int)Math.Round(double.Parse(output)) : 0;
+            if (!double.TryParse(output, out var duration))
+            {
+                return 0;
+            }
+            else
+            {
+                return (int)Math.Round(duration);
+            }
         }
 
         public static async Task RunDownloader(string downloadUrl, string basePath, string tempPath)

@@ -2,6 +2,8 @@ namespace MediaTools
 {
     internal static class Program
     {
+        public static Settings AppSettings = Settings.ReadSettings();
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>

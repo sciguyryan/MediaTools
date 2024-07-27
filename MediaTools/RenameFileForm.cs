@@ -18,8 +18,21 @@
             if (!IsValidFileName(fileName.Text))
             {
                 MessageBox.Show(
-                    DisplayBuilders.InvalidFileName.BuildPlain([]),
-                    DisplayBuilders.InvalidFileNameTitle.BuildPlain([]),
+                    DisplayBuilders.InvalidFileName.BuildPlain(),
+                    DisplayBuilders.InvalidFileNameTitle.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1
+                );
+
+                return;
+            }
+
+            if (fileName.Text.Length == 0)
+            {
+                MessageBox.Show(
+                    DisplayBuilders.InvalidFileName.BuildPlain(),
+                    DisplayBuilders.EmptyFileName.BuildPlain(),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1

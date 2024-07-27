@@ -1,5 +1,5 @@
-using System.ComponentModel;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -11,14 +11,13 @@ namespace MediaTools
         private readonly string _runFromPath;
         private readonly string _configTemplatePath;
         private readonly string _configPath;
-        private readonly string _cachePath;
+        private SortColumn _sortColumn = SortColumn.Duration;
+        private SortDirection _sortOrder = SortDirection.Ascending;
         private readonly FileUtils _fileUtils;
-#pragma warning disable IDE0028
-        private readonly Dictionary<string, (int Index, int Duration)> _cache = new();
-#pragma warning restore IDE0028
         private bool _consoleShown = true;
         private bool _isUpdatingMediaList;
-        private bool _isFirstSort = true;
+        private bool _isDirty = !CacheFile.Exists();
+        private List<MediaFileEntry> _fileEntries = [];
 
         public MainForm(string runFromPath)
         {
@@ -27,7 +26,6 @@ namespace MediaTools
             _runFromPath = runFromPath;
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
             _configTemplatePath = _configPath + "-template";
-            _cachePath = Path.Combine(runFromPath, "cache.dat");
             _fileUtils = new FileUtils(runFromPath);
 
             InitializeComponent();
@@ -36,32 +34,17 @@ namespace MediaTools
             options2Resolution.SelectedIndex = 5;
             toolStripStatusLabel1.Text = "";
 
+            SetFoldersColumnVisibility(Program.AppSettings.ShowFolders);
+
             Interop.AllocConsole();
             Interop.SetConsoleMode();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (FileUtils.IsFileLocked(_cachePath))
-            {
-                MessageBox.Show(
-                    DisplayBuilders.ErrorCacheFileOpen.BuildPlain(),
-                    DisplayBuilders.ErrorCacheFileOpenTitle.BuildPlain(),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error,
-                    MessageBoxDefaultButton.Button1
-                );
-
-                return;
-            }
+            Program.AppSettings.WriteSettings();
 
             WriteCacheData();
-
-            // Ensure everything doesn't close until the file is written.
-            while (FileUtils.IsFileLocked(_cachePath))
-            {
-                Thread.Sleep(50);
-            }
         }
 
         private void MediaFilesTable_CellContentDoubleClick(
@@ -79,22 +62,9 @@ namespace MediaTools
             Process.Start(processStartInfo);
         }
 
-        private void MediaFilesTable_Sorted(object sender, EventArgs e)
-        {
-            // Update the index table.
-            UpdateCache();
-
-            _isFirstSort = false;
-        }
-
         private async void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            await UpdateMediaTable();
-        }
-
-        private void ClearCacheToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            FileUtils.TruncateFile(_cachePath);
+            await UpdateMediaTable(false);
         }
 
         private async void Download_Click(object sender, EventArgs e)
@@ -139,7 +109,7 @@ namespace MediaTools
 
             File.Delete(_configPath);
 
-            await UpdateMediaTable();
+            await UpdateMediaTable(true);
         }
 
         private void OptionAudioOnly_CheckedChanged(object sender, EventArgs e)
@@ -172,12 +142,15 @@ namespace MediaTools
 
         private void MediaFilesTable_MouseClick(object sender, MouseEventArgs e)
         {
+            var hit = mediaFilesTable.HitTest(e.X, e.Y);
+            var hitType = hit.Type;
+
             if (e.Button != MouseButtons.Right)
             {
                 return;
             }
 
-            if (mediaFilesTable.HitTest(e.X, e.Y).Type == DataGridViewHitTestType.ColumnHeader)
+            if (hitType == DataGridViewHitTestType.ColumnHeader)
             {
                 return;
             }
@@ -191,16 +164,16 @@ namespace MediaTools
             switch (e)
             {
                 case { Control: true, KeyCode: Keys.F }:
-                {
-                    tabControl1.SelectedIndex = 1;
-
-                    var form = new SearchForm(this)
                     {
-                        StartPosition = FormStartPosition.CenterParent
-                    };
-                    form.Show();
-                    break;
-                }
+                        tabControl1.SelectedIndex = 1;
+
+                        var form = new SearchForm(this)
+                        {
+                            StartPosition = FormStartPosition.CenterParent
+                        };
+                        form.Show();
+                        break;
+                    }
                 case { Control: true, KeyCode: Keys.I }:
                     MediaInfoDialog();
                     break;
@@ -209,18 +182,101 @@ namespace MediaTools
                     break;
                 case { Control: true, KeyCode: Keys.R }:
                 case { KeyCode: Keys.F5 }:
-                    await UpdateMediaTable();
+                    await UpdateMediaTable(false);
                     break;
             }
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void MediaFilesTable_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            LoadCacheData();
-            await UpdateMediaTable();
+            if (e.Button == MouseButtons.Right)
+            {
+                return;
+            }
+
+            var column = mediaFilesTable.Columns[e.ColumnIndex];
+            var validColumn =
+                Enum.TryParse(column.Name, out SortColumn newColumn);
+            if (!validColumn)
+            {
+                return;
+            }
+
+            if (newColumn == _sortColumn)
+            {
+                // Swap the sorting order.
+                _sortOrder =
+                    (_sortOrder == SortDirection.Ascending) ?
+                        SortDirection.Descending : SortDirection.Ascending;
+            }
+
+            // Get the header title.
+            _sortColumn = newColumn;
+
+            SortEntries();
         }
 
-        private void HandleFileRename()
+        private void SetUpColumns()
+        {
+            if (mediaFilesTable.Columns["RawDuration"] == null ||
+                mediaFilesTable.Columns["FullPath"] == null ||
+                mediaFilesTable.Columns["Duration"] == null ||
+                mediaFilesTable.Columns["LastModified"] == null ||
+                mediaFilesTable.Columns["Folder"] == null ||
+                mediaFilesTable.Columns["Title"] == null ||
+                mediaFilesTable.Columns["Hash"] == null)
+            {
+                return;
+            }
+
+            mediaFilesTable.Columns["RawDuration"]!.HeaderText = "Raw Duration";
+            mediaFilesTable.Columns["RawDuration"]!.Visible = false;
+
+            mediaFilesTable.Columns["FullPath"]!.HeaderText = "Full Path";
+            mediaFilesTable.Columns["FullPath"]!.Visible = false;
+
+            mediaFilesTable.Columns["Duration"]!.AutoSizeMode =
+                DataGridViewAutoSizeColumnMode.AllCells;
+            mediaFilesTable.Columns["Duration"]!.Width = 96;
+
+            mediaFilesTable.Columns["LastModified"]!.HeaderText = "Last Modified";
+            mediaFilesTable.Columns["LastModified"]!.Width = 150;
+
+            mediaFilesTable.Columns["Folder"]!.AutoSizeMode =
+                DataGridViewAutoSizeColumnMode.AllCells;
+            mediaFilesTable.Columns["Folder"]!.Width = 80;
+
+            mediaFilesTable.Columns["Title"]!.AutoSizeMode =
+                DataGridViewAutoSizeColumnMode.Fill;
+
+            mediaFilesTable.Columns["Hash"]!.Visible = false;
+        }
+
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            Program.AppSettings = Settings.ReadSettings();
+
+            LoadCachedData();
+            await UpdateMediaTable(true);
+        }
+
+        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var optionsForm = new OptionsForm(this);
+            optionsForm.ShowDialog();
+        }
+
+        public void SetFoldersColumnVisibility(bool visible)
+        {
+            if (mediaFilesTable.Columns["Folder"] is null)
+            {
+                return;
+            }
+
+            mediaFilesTable.Columns["Folder"]!.Visible = visible;
+        }
+
+        private async void HandleFileRename()
         {
             var pos = _contextMenuLocation;
             var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
@@ -232,19 +288,14 @@ namespace MediaTools
             var index = hitTest.RowIndex;
             var oldPath = mediaFilesTable.Rows[index].Cells["FullPath"].Value.ToString()!;
             var oldName = mediaFilesTable.Rows[index].Cells["Title"].Value.ToString()!;
-            var oldHash = Utils.ComputeMd5Hash(oldPath);
 
-            var rename = new RenameFileForm(oldName)
-            {
-                StartPosition = FormStartPosition.CenterParent
-            };
+            var rename = new RenameFileForm(oldName);
             rename.ShowDialog();
 
             // Build the new file path.
             var oldFi = new FileInfo(oldPath);
             var newName = $"{rename.NewFileName}{oldFi.Extension}";
             var newPath = Path.Combine(oldFi.DirectoryName!, newName);
-            var newHash = Utils.ComputeMd5Hash(newPath);
 
             // Attempt to move the file.
             var success = false;
@@ -252,6 +303,7 @@ namespace MediaTools
             {
                 File.Move(oldPath, newPath);
                 success = true;
+                _isDirty = true;
             }
             catch
             {
@@ -268,14 +320,7 @@ namespace MediaTools
                 return;
             }
 
-            // Rename the entry in the table.
-            mediaFilesTable.Rows[index].Cells["FullPath"].Value = newPath;
-            mediaFilesTable.Rows[index].Cells["Title"].Value = rename.NewFileName;
-
-            // Update the cache.
-            var cacheEntry = _cache[oldHash];
-            _cache.Remove(oldHash);
-            _cache.Add(newHash, cacheEntry);
+            await UpdateMediaTable(true);
         }
 
         private void HandleDeleteFile(bool trash)
@@ -287,8 +332,27 @@ namespace MediaTools
                 return;
             }
 
-            var index = hitTest.RowIndex;
-            var path = mediaFilesTable.Rows[index].Cells["FullPath"].Value.ToString()!;
+            var success = true;
+            var path =
+                mediaFilesTable.Rows[hitTest.RowIndex].Cells["FullPath"].Value.ToString();
+            if (Path.Exists(path))
+            {
+                success = HandleDelete(path, trash);
+            }
+            
+            if (!success)
+            {
+                return;
+            }
+
+            // Remove the table row.
+            _fileEntries.RemoveAll(r => r.FullPath == path);
+
+            RebindMediaEntries();
+        }
+
+        private bool HandleDelete(string path, bool trash)
+        {
             var fileName = Path.GetFileNameWithoutExtension(path);
 
             var success = true;
@@ -299,7 +363,7 @@ namespace MediaTools
             else
             {
                 var result = MessageBox.Show(
-                    DisplayBuilders.ConfirmDeleteFile.BuildPlain([fileName]),
+                    DisplayBuilders.ConfirmDeleteFile.BuildPlain([path]),
                     DisplayBuilders.ConfirmDeleteFileTitle.BuildPlain(),
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Question,
@@ -307,8 +371,8 @@ namespace MediaTools
                 );
                 if (result != DialogResult.OK)
                 {
-                    UpdateStatus(DisplayBuilders.InfoAbortDeleteFile, [fileName], true);
-                    return;
+                    UpdateStatus(DisplayBuilders.InfoAbortDeleteFile, [path], true);
+                    return false;
                 }
 
                 try
@@ -321,39 +385,21 @@ namespace MediaTools
                 }
             }
 
+            if (success)
+            {
+                _isDirty = true;
+            }
+
             if (trash)
             {
-                if (success)
-                {
-                    UpdateStatus(DisplayBuilders.SuccessTrashFile, [fileName]);
-                }
-                else
-                {
-                    UpdateStatus(DisplayBuilders.ErrorTrashFile, [fileName]);
-                    return;
-                }
+                UpdateStatus(success ? DisplayBuilders.SuccessTrashFile : DisplayBuilders.ErrorTrashFile, [path]);
             }
             else
             {
-                if (success)
-                {
-                    UpdateStatus(DisplayBuilders.SuccessDeleteFile, [fileName]);
-                }
-                else
-                {
-                    UpdateStatus(DisplayBuilders.ErrorDeleteFile, [fileName]);
-                    return;
-                }
+                UpdateStatus(success ? DisplayBuilders.SuccessDeleteFile : DisplayBuilders.ErrorDeleteFile, [fileName]);
             }
 
-            // Remove the cache entry for the file.
-            _cache.Remove(Utils.ComputeMd5Hash(path));
-
-            // Remove the table row.
-            mediaFilesTable.Rows.RemoveAt(index);
-
-            // Update the cache.
-            UpdateCache();
+            return success;
         }
 
         private void HideShowConsole()
@@ -379,7 +425,7 @@ namespace MediaTools
             ).Distinct().ToArray();
         }
 
-        private async Task UpdateMediaTable()
+        public async Task UpdateMediaTable(bool suppressMessages)
         {
             // We do not want to try to update the list, if there is an update in progress.
             if (_isUpdatingMediaList)
@@ -392,7 +438,10 @@ namespace MediaTools
             // Disable downloading while the list is being refreshed.
             download.Enabled = false;
 
-            UpdateStatus(DisplayBuilders.InfoMediaListReloaded);
+            if (!suppressMessages)
+            {
+                UpdateStatus(DisplayBuilders.InfoMediaListReloaded);
+            }
 
             // Preserve any selected rows.
             var selectedPaths = (
@@ -402,53 +451,64 @@ namespace MediaTools
                 select Utils.ComputeMd5Hash(path)
             ).ToArray();
 
-            await FillTable();
+            await UpdateSourceList();
 
-            SortTable();
+            RebindMediaEntries();
+            SetUpColumns();
 
             // Restore the selected rows.
             RestoreRowSelections(selectedPaths);
 
-            UpdateStatus(DisplayBuilders.InfoMediaListReloading);
+            if (!suppressMessages)
+            {
+                UpdateStatus(DisplayBuilders.InfoMediaListReloading);
+            }
 
             _isUpdatingMediaList = false;
 
             download.Enabled = true;
         }
 
-        private void SortTable()
+        public enum SortColumn
         {
-            string sortCol;
-            ListSortDirection sortOrder;
-
-            if (_isFirstSort)
-            {
-                sortCol = "Duration";
-                sortOrder = ListSortDirection.Ascending;
-            }
-            else
-            {
-                sortCol = mediaFilesTable.SortedColumn.Name!;
-                sortOrder =
-                    mediaFilesTable.SortOrder == SortOrder.Ascending
-                        ? ListSortDirection.Ascending
-                        : ListSortDirection.Descending;
-            }
-
-            mediaFilesTable.Sort(mediaFilesTable.Columns[sortCol]!, sortOrder);
+            Duration,
+            LastModified,
+            Folder,
+            Title
         }
 
-        private void UpdateCache()
+        private void SortEntries()
         {
-            for (var i = 0; i < mediaFilesTable.Rows.Count; i++)
-            {
-                var row = mediaFilesTable.Rows[i];
-                var path = row.Cells["FullPath"].Value.ToString()!;
-                var hash = Utils.ComputeMd5Hash(path);
+            _fileEntries = SortByColumn(_sortColumn, _sortOrder).ToList();
+            RebindMediaEntries();
+        }
 
-                var entry = _cache[hash];
-                _cache[hash] = (i, entry.Duration);
-            }
+        private IOrderedEnumerable<MediaFileEntry> SortByColumn(SortColumn column, SortDirection sortOrder)
+        {
+            return column switch
+            {
+                SortColumn.Duration => SortBy(_fileEntries, f => f.RawDuration, sortOrder),
+                SortColumn.LastModified => SortBy(_fileEntries, f => f.LastModified, sortOrder),
+                SortColumn.Folder => SortBy(_fileEntries, f => f.Folder, sortOrder),
+                SortColumn.Title => SortBy(_fileEntries, f => f.Title, sortOrder),
+                _ => throw new ArgumentOutOfRangeException(nameof(column), column, null)
+            };
+        }
+
+        private static IOrderedEnumerable<T> SortBy<T, TKey>(
+            IEnumerable<T> source,
+            Func<T, TKey> keySelector,
+            SortDirection sortOrder)
+        {
+            return sortOrder == SortDirection.Ascending
+                ? source.OrderBy(keySelector)
+                : source.OrderByDescending(keySelector);
+        }
+
+        public void RebindMediaEntries()
+        {
+            mediaFilesTable.DataSource = _fileEntries;
+            mediaFilesTable.Refresh();
         }
 
         public enum FindType
@@ -515,9 +575,9 @@ namespace MediaTools
             bool ignoreCase
         )
         {
-            var regExSearchOptions = ignoreCase ? 
+            var regExSearchOptions = ignoreCase ?
                 RegexOptions.IgnoreCase : RegexOptions.None;
-            var textSearchOptions = ignoreCase ? 
+            var textSearchOptions = ignoreCase ?
                 StringComparison.CurrentCultureIgnoreCase : StringComparison.Ordinal;
 
             bool success;
@@ -528,8 +588,8 @@ namespace MediaTools
                     success = match.Success;
                     break;
                 case FindType.Text:
-                    success = exactMatch ? 
-                        string.Equals(tester,  searchFor, textSearchOptions) : 
+                    success = exactMatch ?
+                        string.Equals(tester, searchFor, textSearchOptions) :
                         tester.Contains(searchFor, textSearchOptions);
                     break;
                 default:
@@ -549,20 +609,24 @@ namespace MediaTools
             mediaFilesTable.ClearSelection();
             mediaFilesTable.FirstDisplayedScrollingRowIndex = 0;
 
+            var itemsClone = items.ToArray().ToList();
+
             var lowestIndex = int.MaxValue;
-            foreach (var item in items)
+            foreach (DataGridViewRow row in mediaFilesTable.Rows)
             {
-                if (!_cache.TryGetValue(item, out var entry))
+                var entryHash = row.Cells["Hash"].Value.ToString()!;
+                if (!itemsClone.Contains(entryHash))
                 {
                     continue;
                 }
 
-                var index = entry.Index;
-                mediaFilesTable.Rows[index].Selected = true;
+                mediaFilesTable.Rows[row.Index].Selected = true;
+                lowestIndex = Math.Min(row.Index, lowestIndex);
 
-                if (index < lowestIndex)
+                itemsClone.RemoveAll(i => i == entryHash);
+                if (itemsClone.Count == 0)
                 {
-                    lowestIndex = index;
+                    break;
                 }
             }
 
@@ -573,78 +637,59 @@ namespace MediaTools
             }
         }
 
-        private async Task FillTable()
+        private async Task UpdateSourceList()
         {
             var directoryInfo = new DirectoryInfo(_fileUtils.GetMediaPath());
 
-            var results =
-                new List<(
-                    int RawDuration,
-                    string Duration,
-                    string LastModified,
-                    string Title,
-                    string FullPath
-                )>();
+            await ProcessDirectory(directoryInfo);
 
+            // Remove any entries for files that no longer exist.
+            RemoveDeletedItems();
+
+            // Finally, sort the list.
+            SortEntries();
+        }
+
+        private void RemoveDeletedItems()
+        {
+            _fileEntries = 
+                _fileEntries
+                    .Where(entry => Path.Exists(entry.FullPath))
+                    .ToList();
+        }
+
+        private async Task ProcessDirectory(DirectoryInfo directoryInfo)
+        {
             // Iterate over each file in the directory.
             foreach (var file in directoryInfo.GetFiles())
             {
-                var hash = Utils.ComputeMd5Hash(file.FullName);
-                if (_cache.ContainsKey(hash))
+                var entry = 
+                    _fileEntries
+                        .FirstOrDefault(e => e.Hash == Utils.ComputeMd5Hash(file.FullName));
+                if (entry is not null)
                 {
                     continue;
                 }
 
-                // Cache the durations to avoid the performance overhead of running the info
-                // tool when we already have the information at hand.
-                // Note that we DO NOT want to update the indices here as they will need to be
-                // recomputed after sorting either way.
-                int duration;
-                if (_cache.TryGetValue(hash, out var entry))
-                {
-                    duration = entry.Duration;
-                }
-                else
-                {
-                    duration = await ProcessUtils.RunMediaInfo(file.FullName);
-
-                    // Add the entry to the cache.
-                    _cache.Add(hash, (0, duration));
-                }
-
+                var duration = await ProcessUtils.RunMediaInfo(file.FullName);
                 if (duration == 0)
                 {
                     continue;
                 }
 
-                var filePath = Path.GetFileNameWithoutExtension(file.FullName);
-                var modified = file.LastWriteTime;
-
-                results.Add(
-                    (
-                        duration,
-                        Utils.SecondsToDuration(duration, false),
-                        modified.ToString(CultureInfo.CurrentCulture),
-                        filePath,
-                        file.FullName
-                    )
-                );
+                _fileEntries.Add(new MediaFileEntry(duration, file.LastWriteTime, file));
             }
 
-            // Ensure we update only on the UI thread.
-            mediaFilesTable.Invoke(() =>
+            // Recursively process subdirectories, if needed.
+            if (!Program.AppSettings.ShowMediaInSubFolders)
             {
-                foreach (var result in results)
-                {
-                    mediaFilesTable.Rows.Add(
-                        result.RawDuration,
-                        result.Duration,
-                        result.LastModified,
-                        result.Title,
-                        result.FullPath
-                    );
-                }
-            });
+                return;
+            }
+
+            foreach (var subdirectory in directoryInfo.GetDirectories())
+            {
+                await ProcessDirectory(subdirectory);
+            }
         }
 
         private void SetupConfigFile()
@@ -669,10 +714,6 @@ namespace MediaTools
             if (optionAddThumbnails.Checked)
             {
                 lines.Add("--embed-thumbnail");
-            }
-            if (optionMarkWatched.Checked)
-            {
-                lines.Add("--mark-watched");
             }
             if (optionSponsorBlock.Checked)
             {
@@ -709,38 +750,28 @@ namespace MediaTools
 
         private void WriteCacheData()
         {
-            var entries = (
-                from DataGridViewRow row in mediaFilesTable.Rows
-                let lastModified = row.Cells["LastModified"].Value.ToString()!
-                let date = DateTime.Parse(lastModified, CultureInfo.CurrentCulture).ToBinary()
-                let duration = int.Parse(row.Cells["RawDuration"].Value.ToString()!)
-                let path = row.Cells["FullPath"].Value.ToString()!
-                select new CacheEntry(date, duration, path)
-            ).ToArray();
-
-            if (!CacheFile.WriteCacheFile(entries, _cachePath))
-            {
-                // TODO - do something to notify the user here.
-                // TODO - I'm not sure what since this occurs as the application is closing...
-            }
-        }
-
-        private void LoadCacheData()
-        {
-            if (!Path.Exists(_cachePath))
+            if (!_isDirty)
             {
                 return;
             }
 
-            var rows = CacheFile.ReadCacheFile(_cachePath);
-            if (rows.Length == 0)
-            {
-                // The file may be corrupted and will need to be rebuilt.
-                FileUtils.TruncateFile(_cachePath);
-            }
+            var entries = (
+                from entry in _fileEntries
+                let date = DateTime.Parse(entry.LastModified, CultureInfo.CurrentCulture).ToBinary()
+                select new CacheEntry(date, entry.RawDuration, entry.FullPath)
+            ).ToArray();
 
-            var i = 0;
-            foreach (var row in rows)
+            if (!CacheFile.Write(entries))
+            {
+                // TODO - do something to notify the user here.
+                // TODO - I'm not sure what since this occurs as the application is closing...
+                MessageBox.Show("Something went wrong while writing the file.");
+            }
+        }
+
+        private void LoadCachedData()
+        {
+            foreach (var row in CacheFile.Read())
             {
                 var path = row.Path;
                 if (!Path.Exists(path))
@@ -748,22 +779,9 @@ namespace MediaTools
                     continue;
                 }
 
-                var hash = Utils.ComputeMd5Hash(path);
-                var fi = new FileInfo(path);
-                var title = Path.GetFileNameWithoutExtension(fi.FullName);
                 var modifiedDate = DateTime.FromBinary(row.LastModified);
 
-                // Populate the GridView.
-                mediaFilesTable.Rows.Add(
-                    row.Duration,
-                    Utils.SecondsToDuration(row.Duration, false),
-                    modifiedDate.ToString(CultureInfo.CurrentCulture),
-                    title,
-                    path
-                );
-
-                // Add the corresponding cache entry.
-                _cache.Add(hash, (i++, row.Duration));
+                _fileEntries.Add(new MediaFileEntry(row.Duration, modifiedDate, new FileInfo(path)));
             }
         }
 
@@ -774,13 +792,7 @@ namespace MediaTools
                 return;
             }
 
-            var totalDuration = 0;
-            foreach (var entry in _cache.Values)
-            {
-                var (_, dur) = entry;
-                totalDuration += dur;
-            }
-
+            var totalDuration = _fileEntries.Sum(entry => entry.RawDuration);
             var totalMediaFiles = mediaFilesTable.RowCount;
             var averageDur = totalDuration / totalMediaFiles;
             var message = DisplayBuilders.MediaInfoDuration.BuildPlain(

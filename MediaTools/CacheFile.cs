@@ -1,63 +1,86 @@
 ﻿using System.Text;
+using System.Text.Json;
 
 namespace MediaTools
 {
     internal class CacheEntry(long lastModified, int duration, string path)
     {
-        public long LastModified = lastModified;
-        public int Duration = duration;
-        public string Path = path;
+        public long LastModified { get; set; } = lastModified;
+        public int Duration { get; set; } = duration;
+        public string Path { get; set; } = path;
     }
 
     internal static class CacheFile
     {
         private const byte FileVersion = 0;
         private static readonly byte[] FileHeader = [0x4C, 0xA8, 0x3, 0x4B];
+        public const string CachePath = @"D:\Downloads\YouTube\tools\cache.dat";
 
-        public static bool WriteCacheFile(ReadOnlySpan<CacheEntry> entries, string filePath)
+        public static bool Exists()
         {
-            using var memoryStream = new MemoryStream();
+            return File.Exists(CachePath);
+        }
 
-            // Store each entry.
-            foreach (var entry in entries)
+        public static bool Write(CacheEntry[] entries)
+        {
+            if (FileUtils.IsFileLocked(CachePath))
             {
-                var pathBytes = Encoding.UTF8.GetBytes(entry.Path);
+                MessageBox.Show(
+                    DisplayBuilders.ErrorCacheFileOpen.BuildPlain(),
+                    DisplayBuilders.ErrorCacheFileOpenTitle.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1
+                );
 
-                memoryStream.Write(BitConverter.GetBytes((ushort)pathBytes.Length));
-                memoryStream.Write(BitConverter.GetBytes(entry.LastModified));
-                memoryStream.Write(BitConverter.GetBytes(entry.Duration));
-                memoryStream.Write(pathBytes);
+                return false;
             }
+
+            var json = JsonSerializer.Serialize(entries);
+            var compressed = Utils.Compress(Encoding.UTF8.GetBytes(json));
+
+            // Hash the compressed data.
+            var hash = Utils.ComputeMd5ByteHash(compressed);
 
             try
             {
-                // Compress the entries.
-                var compressed = Utils.Compress(memoryStream.ToArray());
+                using var stream = new FileStream(CachePath, FileMode.Create);
+                stream.Write(FileHeader);
+                stream.WriteByte(FileVersion);
+                stream.Write(hash);
+                stream.Write(compressed);
 
-                // Hash the compressed data.
-                var hash = Utils.ComputeMd5ByteHash(compressed);
-
-                // Write the file structure.
-                using var file = File.OpenWrite(filePath);
-                file.Write(FileHeader);
-                file.WriteByte(FileVersion);
-                file.Write(BitConverter.GetBytes(entries.Length));
-                file.Write(hash);
-                file.Write(compressed);
+                return true;
             }
             catch
             {
                 return false;
             }
-
-            return true;
         }
 
-        public static CacheEntry[] ReadCacheFile(string filePath)
+        public static CacheEntry[] Read()
         {
-            var readBytes = File.ReadAllBytes(filePath);
+            var entries = ReadInternal();
+            if (entries.Length == 0 && Path.Exists(CachePath))
+            {
+                // The file may be corrupted and may need to be rebuilt.
+                FileUtils.TruncateFile(CachePath);
+            }
+
+            return entries;
+        }
+
+        private static CacheEntry[] ReadInternal()
+        {
+            if (!Path.Exists(CachePath))
+            {
+                return [];
+            }
+
+            var readBytes = File.ReadAllBytes(CachePath);
             if (readBytes.Length < 21)
             {
+                Console.WriteLine("too small");
                 // There will be insufficient space for the file metadata.
                 return [];
             }
@@ -65,6 +88,7 @@ namespace MediaTools
             var hasHeader = readBytes[..4].SequenceEqual(FileHeader);
             if (!hasHeader)
             {
+                Console.WriteLine("invalid header");
                 return [];
             }
 
@@ -77,71 +101,26 @@ namespace MediaTools
 
         private static CacheEntry[] ReadVersion1File(ReadOnlySpan<byte> bytes)
         {
-            // The entry count comes before the hash.
-            var entryCount = BitConverter.ToInt32(bytes[..4]);
-
             // Validate the hash of the compressed data.
-            if (!ValidateVersion1Hash(bytes[20..], bytes[4..20]))
+            if (!ValidateVersion1Hash(bytes[16..], bytes[..16]))
             {
+                Console.WriteLine("bad hash");
                 return [];
             }
 
-            // The compressed data follows the hash.
             byte[] decompressed;
             try
             {
-                decompressed = Utils.Decompress(bytes[20..].ToArray());
+                decompressed = Utils.Decompress(bytes[16..].ToArray());
             }
             catch
             {
+                Console.WriteLine("unable to decompress");
                 return [];
             }
 
-            // We will be unable to get the number of stored cache entries.
-            var span = decompressed.AsSpan();
-
-            // The size of the length indicator, the last modified and duration, in bytes.
-            const int fixedEntryLength = 8 + 4;
-
-            var results = new CacheEntry[entryCount];
-
-            var entry = 0;
-            var index = 0;
-            while (index < span.Length)
-            {
-                // This would indicate a malformed cache file. We can't validate
-                // the integrity of the returned data, so it's safer to start
-                // over from scratch.
-                if ((index + 2) >= span.Length)
-                {
-                    return [];
-                }
-
-                // Read an individual entry.
-                // [Path Length][Last Modified][Duration][Path]
-
-                var pathLength = BitConverter.ToUInt16(span[index..(index + 2)]);
-                index += 2;
-
-                if ((index + fixedEntryLength + pathLength) > span.Length)
-                {
-                    // Insufficient space for the entry to be read.
-                    return [];
-                }
-
-                var lastModified = BitConverter.ToInt64(span[index..(index + 8)]);
-                index += 8;
-
-                var duration = BitConverter.ToInt32(span[index..(index + 4)]);
-                index += 4;
-
-                var path = Encoding.UTF8.GetString(span[index..(index + pathLength)]);
-                index += pathLength;
-
-                results[entry++] = new CacheEntry(lastModified, duration, path);
-            }
-
-            return results;
+            var jsonString = Encoding.UTF8.GetString(decompressed);
+            return JsonSerializer.Deserialize<CacheEntry[]>(jsonString) ?? [];
         }
 
         private static bool ValidateVersion1Hash(

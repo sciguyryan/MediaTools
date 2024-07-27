@@ -159,6 +159,12 @@ namespace MediaTools
 
         public static bool IsFileLocked(string path)
         {
+            if (!File.Exists(path))
+            {
+                // A file that doesn't exist can't be locked.
+                return false;
+            }
+
             FileStream? stream = null;
 
             try

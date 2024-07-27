@@ -37,6 +37,7 @@
 
         private const string InvalidFileNameTitleText = "Invalid File Name";
         private const string InvalidFileNameTailText = "The file name contains one or more invalid characters!";
+        private const string EmptyFileNameTailText = "The file name cannot be empty!";
 
         private const string ConfirmDeleteFileTitleText = "Delete File?";
         private const string ConfirmDeleteFileText =
@@ -166,6 +167,11 @@
             .Text(Error)
             .ResetForeground()
             .Text(InvalidFileNameTailText);
+        public static readonly OutputFormatBuilder EmptyFileName = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(EmptyFileNameTailText);
 
         public static readonly OutputFormatBuilder ConfirmDeleteFileTitle = new OutputFormatBuilder()
             .Text(ConfirmDeleteFileTitleText);
