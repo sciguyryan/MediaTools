@@ -29,18 +29,22 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            groupBox3 = new GroupBox();
+            optionAutoUpdate = new CheckBox();
+            optionCookieLogin = new CheckBox();
+            optionAddMetadata = new CheckBox();
+            optionSponsorBlock = new CheckBox();
+            optionMarkWatched = new CheckBox();
             groupBox2 = new GroupBox();
-            options2Resolution = new ComboBox();
+            optionResolution = new ComboBox();
             label4 = new Label();
             groupBox1 = new GroupBox();
-            optionSponsorBlock = new CheckBox();
             optionAddThumbnails = new CheckBox();
             optionAddChapters = new CheckBox();
-            optionAddMetadata = new CheckBox();
-            optionSubtitles = new CheckBox();
+            optionAddSubtitles = new CheckBox();
             optionAudioOnly = new CheckBox();
             downloadPlaylist = new RadioButton();
             downloadSingle = new RadioButton();
@@ -72,6 +76,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -93,6 +98,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(groupBox1);
             tabPage1.Controls.Add(downloadPlaylist);
@@ -112,26 +118,99 @@
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox3
+            // 
+            groupBox3.Controls.Add(optionAutoUpdate);
+            groupBox3.Controls.Add(optionCookieLogin);
+            groupBox3.Controls.Add(optionAddMetadata);
+            groupBox3.Controls.Add(optionSponsorBlock);
+            groupBox3.Controls.Add(optionMarkWatched);
+            groupBox3.Location = new Point(985, 111);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(218, 241);
+            groupBox3.TabIndex = 14;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "Other Options";
+            // 
+            // optionAutoUpdate
+            // 
+            optionAutoUpdate.AutoSize = true;
+            optionAutoUpdate.Checked = true;
+            optionAutoUpdate.CheckState = CheckState.Checked;
+            optionAutoUpdate.Location = new Point(7, 26);
+            optionAutoUpdate.Name = "optionAutoUpdate";
+            optionAutoUpdate.Size = new Size(116, 24);
+            optionAutoUpdate.TabIndex = 14;
+            optionAutoUpdate.Text = "&Auto Update";
+            optionAutoUpdate.UseVisualStyleBackColor = true;
+            // 
+            // optionCookieLogin
+            // 
+            optionCookieLogin.AutoSize = true;
+            optionCookieLogin.Location = new Point(8, 145);
+            optionCookieLogin.Name = "optionCookieLogin";
+            optionCookieLogin.Size = new Size(159, 24);
+            optionCookieLogin.TabIndex = 13;
+            optionCookieLogin.Text = "Login With Cookies";
+            optionCookieLogin.UseVisualStyleBackColor = true;
+            optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
+            // 
+            // optionAddMetadata
+            // 
+            optionAddMetadata.AutoSize = true;
+            optionAddMetadata.Checked = true;
+            optionAddMetadata.CheckState = CheckState.Checked;
+            optionAddMetadata.Location = new Point(7, 56);
+            optionAddMetadata.Name = "optionAddMetadata";
+            optionAddMetadata.Size = new Size(127, 24);
+            optionAddMetadata.TabIndex = 8;
+            optionAddMetadata.Text = "Add &Metadata";
+            optionAddMetadata.UseVisualStyleBackColor = true;
+            // 
+            // optionSponsorBlock
+            // 
+            optionSponsorBlock.AutoSize = true;
+            optionSponsorBlock.Checked = true;
+            optionSponsorBlock.CheckState = CheckState.Checked;
+            optionSponsorBlock.Location = new Point(8, 115);
+            optionSponsorBlock.Name = "optionSponsorBlock";
+            optionSponsorBlock.Size = new Size(149, 24);
+            optionSponsorBlock.TabIndex = 11;
+            optionSponsorBlock.Text = "Use &SponsorBlock";
+            optionSponsorBlock.UseVisualStyleBackColor = true;
+            // 
+            // optionMarkWatched
+            // 
+            optionMarkWatched.AutoSize = true;
+            optionMarkWatched.Checked = true;
+            optionMarkWatched.CheckState = CheckState.Checked;
+            optionMarkWatched.Location = new Point(8, 85);
+            optionMarkWatched.Name = "optionMarkWatched";
+            optionMarkWatched.Size = new Size(126, 24);
+            optionMarkWatched.TabIndex = 12;
+            optionMarkWatched.Text = "Mark &Watched";
+            optionMarkWatched.UseVisualStyleBackColor = true;
+            // 
             // groupBox2
             // 
-            groupBox2.Controls.Add(options2Resolution);
+            groupBox2.Controls.Add(optionResolution);
             groupBox2.Controls.Add(label4);
             groupBox2.Location = new Point(761, 111);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(218, 241);
             groupBox2.TabIndex = 13;
             groupBox2.TabStop = false;
-            groupBox2.Text = "Options 2";
+            groupBox2.Text = "Advanced Options";
             // 
-            // options2Resolution
+            // optionResolution
             // 
-            options2Resolution.DropDownStyle = ComboBoxStyle.DropDownList;
-            options2Resolution.FormattingEnabled = true;
-            options2Resolution.Items.AddRange(new object[] { "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "4320p" });
-            options2Resolution.Location = new Point(126, 21);
-            options2Resolution.Name = "options2Resolution";
-            options2Resolution.Size = new Size(86, 28);
-            options2Resolution.TabIndex = 12;
+            optionResolution.DropDownStyle = ComboBoxStyle.DropDownList;
+            optionResolution.FormattingEnabled = true;
+            optionResolution.Items.AddRange(new object[] { "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "4320p" });
+            optionResolution.Location = new Point(126, 21);
+            optionResolution.Name = "optionResolution";
+            optionResolution.Size = new Size(86, 28);
+            optionResolution.TabIndex = 12;
             // 
             // label4
             // 
@@ -144,39 +223,25 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(optionSponsorBlock);
             groupBox1.Controls.Add(optionAddThumbnails);
             groupBox1.Controls.Add(optionAddChapters);
-            groupBox1.Controls.Add(optionAddMetadata);
-            groupBox1.Controls.Add(optionSubtitles);
+            groupBox1.Controls.Add(optionAddSubtitles);
             groupBox1.Controls.Add(optionAudioOnly);
             groupBox1.Location = new Point(537, 111);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(218, 241);
             groupBox1.TabIndex = 6;
             groupBox1.TabStop = false;
-            groupBox1.Text = "Options";
-            // 
-            // optionSponsorBlock
-            // 
-            optionSponsorBlock.AutoSize = true;
-            optionSponsorBlock.Checked = true;
-            optionSponsorBlock.CheckState = CheckState.Checked;
-            optionSponsorBlock.Location = new Point(18, 175);
-            optionSponsorBlock.Name = "optionSponsorBlock";
-            optionSponsorBlock.Size = new Size(149, 24);
-            optionSponsorBlock.TabIndex = 11;
-            optionSponsorBlock.Text = "Use SponsorBlock";
-            optionSponsorBlock.UseVisualStyleBackColor = true;
+            groupBox1.Text = "Basic Options";
             // 
             // optionAddThumbnails
             // 
             optionAddThumbnails.AutoSize = true;
-            optionAddThumbnails.Location = new Point(18, 145);
+            optionAddThumbnails.Location = new Point(18, 115);
             optionAddThumbnails.Name = "optionAddThumbnails";
             optionAddThumbnails.Size = new Size(139, 24);
             optionAddThumbnails.TabIndex = 9;
-            optionAddThumbnails.Text = "Add Thumbnails";
+            optionAddThumbnails.Text = "Add &Thumbnails";
             optionAddThumbnails.UseVisualStyleBackColor = true;
             // 
             // optionAddChapters
@@ -188,30 +253,18 @@
             optionAddChapters.Name = "optionAddChapters";
             optionAddChapters.Size = new Size(121, 24);
             optionAddChapters.TabIndex = 6;
-            optionAddChapters.Text = "Add Chapters";
+            optionAddChapters.Text = "Add &Chapters";
             optionAddChapters.UseVisualStyleBackColor = true;
             // 
-            // optionAddMetadata
+            // optionAddSubtitles
             // 
-            optionAddMetadata.AutoSize = true;
-            optionAddMetadata.Checked = true;
-            optionAddMetadata.CheckState = CheckState.Checked;
-            optionAddMetadata.Location = new Point(18, 115);
-            optionAddMetadata.Name = "optionAddMetadata";
-            optionAddMetadata.Size = new Size(127, 24);
-            optionAddMetadata.TabIndex = 8;
-            optionAddMetadata.Text = "Add Metadata";
-            optionAddMetadata.UseVisualStyleBackColor = true;
-            // 
-            // optionSubtitles
-            // 
-            optionSubtitles.AutoSize = true;
-            optionSubtitles.Location = new Point(18, 85);
-            optionSubtitles.Name = "optionSubtitles";
-            optionSubtitles.Size = new Size(88, 24);
-            optionSubtitles.TabIndex = 7;
-            optionSubtitles.Text = "Subtitles";
-            optionSubtitles.UseVisualStyleBackColor = true;
+            optionAddSubtitles.AutoSize = true;
+            optionAddSubtitles.Location = new Point(18, 85);
+            optionAddSubtitles.Name = "optionAddSubtitles";
+            optionAddSubtitles.Size = new Size(120, 24);
+            optionAddSubtitles.TabIndex = 7;
+            optionAddSubtitles.Text = "Add &Subtitles";
+            optionAddSubtitles.UseVisualStyleBackColor = true;
             // 
             // optionAudioOnly
             // 
@@ -220,7 +273,7 @@
             optionAudioOnly.Name = "optionAudioOnly";
             optionAudioOnly.Size = new Size(105, 24);
             optionAudioOnly.TabIndex = 5;
-            optionAudioOnly.Text = "Audio Only";
+            optionAudioOnly.Text = "&Audio Only";
             optionAudioOnly.UseVisualStyleBackColor = true;
             optionAudioOnly.CheckedChanged += OptionAudioOnly_CheckedChanged;
             // 
@@ -325,14 +378,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -484,6 +537,8 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
@@ -523,13 +578,12 @@
         private CheckBox optionAddThumbnails;
         private CheckBox optionAddChapters;
         private CheckBox optionAddMetadata;
-        private CheckBox optionSubtitles;
+        private CheckBox optionAddSubtitles;
         private CheckBox optionAudioOnly;
         private ToolStripMenuItem showConsoleToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
-        private GroupBox groupBox2;
         private Label label4;
-        private ComboBox options2Resolution;
+        private ComboBox optionResolution;
         private ContextMenuStrip contextMenuStrip;
         private ToolStripMenuItem contextDelete;
         private StatusStrip statusStrip1;
@@ -541,5 +595,10 @@
         private ToolStripSeparator toolStripMenuItem2;
         private ToolStripSeparator toolStripMenuItem3;
         private ToolStripMenuItem optionsToolStripMenuItem;
+        private CheckBox optionMarkWatched;
+        private CheckBox optionCookieLogin;
+        private GroupBox groupBox3;
+        private GroupBox groupBox2;
+        private CheckBox optionAutoUpdate;
     }
 }

@@ -9,7 +9,6 @@ namespace MediaTools
     {
         private Point _contextMenuLocation;
         private readonly string _runFromPath;
-        private readonly string _configTemplatePath;
         private readonly string _configPath;
         private SortColumn _sortColumn = SortColumn.Duration;
         private SortDirection _sortOrder = SortDirection.Ascending;
@@ -25,13 +24,20 @@ namespace MediaTools
 
             _runFromPath = runFromPath;
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
-            _configTemplatePath = _configPath + "-template";
             _fileUtils = new FileUtils(runFromPath);
 
             InitializeComponent();
 
+            if (Program.AppSettings.RememberDownloadOptions)
+            {
+                RestoreDownloadOptions();
+            }
+            else
+            {
+                optionResolution.SelectedIndex = 5;
+            }
+
             source.SelectedIndex = 0;
-            options2Resolution.SelectedIndex = 5;
             toolStripStatusLabel1.Text = "";
 
             SetFoldersColumnVisibility(Program.AppSettings.ShowFolders);
@@ -42,6 +48,7 @@ namespace MediaTools
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
+            UpdateDownloadOptions();
             Program.AppSettings.WriteSettings();
 
             WriteCacheData();
@@ -118,6 +125,18 @@ namespace MediaTools
             {
                 optionAddThumbnails.Checked = false;
             }
+
+            optionAddThumbnails.Enabled = !optionAddThumbnails.Checked;
+        }
+
+        private void OptionLogin_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!optionCookieLogin.Checked)
+            {
+                optionMarkWatched.Checked = false;
+            }
+
+            optionMarkWatched.Enabled = !optionCookieLogin.Checked;
         }
 
         private void ShowConsoleToolStripMenuItem_Click(object sender, EventArgs e)
@@ -339,7 +358,7 @@ namespace MediaTools
             {
                 success = HandleDelete(path, trash);
             }
-            
+
             if (!success)
             {
                 return;
@@ -643,19 +662,39 @@ namespace MediaTools
 
             await ProcessDirectory(directoryInfo);
 
-            // Remove any entries for files that no longer exist.
-            RemoveDeletedItems();
+            // Remove any entries for files that no longer exist and
+            // if we are working with files in the root directory only
+            // then we need to remove any files from subdirectories too.
+            PruneUnwantedEntries();
 
             // Finally, sort the list.
             SortEntries();
         }
 
-        private void RemoveDeletedItems()
+        private void PruneUnwantedEntries()
         {
-            _fileEntries = 
-                _fileEntries
-                    .Where(entry => Path.Exists(entry.FullPath))
-                    .ToList();
+            var entries = new List<MediaFileEntry>();
+
+            foreach (var entry in _fileEntries)
+            {
+                // Skip any files that don't exist.
+                if (!File.Exists(entry.FullPath))
+                {
+                    continue;
+                }
+
+                // Skip any files in subdirectories, if the setting to show
+                // them isn't enabled.
+                if (!Program.AppSettings.ShowMediaInSubFolders &&
+                    !_fileUtils.IsMediaInRoot(entry))
+                {
+                    continue;
+                }
+
+                entries.Add(entry);
+            }
+
+            _fileEntries = entries;
         }
 
         private async Task ProcessDirectory(DirectoryInfo directoryInfo)
@@ -663,7 +702,7 @@ namespace MediaTools
             // Iterate over each file in the directory.
             foreach (var file in directoryInfo.GetFiles())
             {
-                var entry = 
+                var entry =
                     _fileEntries
                         .FirstOrDefault(e => e.Hash == Utils.ComputeMd5Hash(file.FullName));
                 if (entry is not null)
@@ -694,11 +733,16 @@ namespace MediaTools
 
         private void SetupConfigFile()
         {
-            var lines = new List<string>(File.ReadAllLines(_configTemplatePath));
+            var lines = new List<string>();
 
             // Build the config file.
-            if (optionSubtitles.Checked)
+            if (optionAutoUpdate.Checked)
             {
+                lines.Add("-U");
+            }
+            if (optionAddSubtitles.Checked)
+            {
+                // TODO - allow the languages to be selected?
                 lines.Add("--write-sub");
                 lines.Add("--sub-format best");
                 lines.Add("--sub-langs \"en.*\"");
@@ -715,8 +759,19 @@ namespace MediaTools
             {
                 lines.Add("--embed-thumbnail");
             }
+            if (optionCookieLogin.Checked && 
+                Program.AppSettings.CookiePath.Length > 0)
+            {
+                lines.Add($"--cookies-from-browser {Program.AppSettings.CookiePath}");
+
+                if (optionMarkWatched.Checked)
+                {
+                    lines.Add("--mark-watched");
+                }
+            }
             if (optionSponsorBlock.Checked)
             {
+                // TODO - allow the options to be selected?
                 lines.Add("--sponsorblock-remove sponsor,selfpromo");
             }
             if (downloadPlaylist.Checked)
@@ -724,7 +779,7 @@ namespace MediaTools
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
             }
 
-            var targetResolution = options2Resolution.Items[options2Resolution.SelectedIndex]!
+            var targetResolution = optionResolution.Items[optionResolution.SelectedIndex]!
                 .ToString()!
                 .Replace("p", "");
             lines.Add(optionAudioOnly.Checked ? "-f ba" : $"-S \"res:{targetResolution}\"");
@@ -809,6 +864,76 @@ namespace MediaTools
                 MessageBoxIcon.Information,
                 MessageBoxDefaultButton.Button1
             );
+        }
+
+        private void UpdateDownloadOptions()
+        {
+            if (!Program.AppSettings.RememberDownloadOptions)
+            {
+                return;
+            }
+
+            Program.AppSettings.DownloadOptions.AutoUpdate = 
+                optionAutoUpdate.Checked;
+
+            Program.AppSettings.DownloadOptions.AddSubtitles =
+                optionAddSubtitles.Checked;
+
+            Program.AppSettings.DownloadOptions.AddMetadata =
+                optionAddMetadata.Checked;
+
+            Program.AppSettings.DownloadOptions.AddChapters =
+                optionAddChapters.Checked;
+
+            Program.AppSettings.DownloadOptions.AddThumbnails =
+                optionAddThumbnails.Checked;
+
+            Program.AppSettings.DownloadOptions.CookieLogin =
+                optionCookieLogin.Checked;
+
+            Program.AppSettings.DownloadOptions.MarkWatched =
+                optionCookieLogin.Checked && optionMarkWatched.Checked;
+
+            Program.AppSettings.DownloadOptions.UseSponsorBlock =
+                optionSponsorBlock.Checked;
+
+            Program.AppSettings.DownloadOptions.TargetResolutionIndex =
+                optionResolution.SelectedIndex;
+        }
+
+        private void RestoreDownloadOptions()
+        {
+            if (!Program.AppSettings.RememberDownloadOptions)
+            {
+                return;
+            }
+
+            optionAutoUpdate.Checked = 
+                Program.AppSettings.DownloadOptions.AutoUpdate;
+
+            optionAddSubtitles.Checked = 
+                Program.AppSettings.DownloadOptions.AddSubtitles;
+
+            optionAddMetadata.Checked = 
+                Program.AppSettings.DownloadOptions.AddMetadata;
+
+            optionAddChapters.Checked = 
+                Program.AppSettings.DownloadOptions.AddChapters;
+
+            optionAddThumbnails.Checked = 
+                Program.AppSettings.DownloadOptions.AddThumbnails;
+
+            optionCookieLogin.Checked = 
+                Program.AppSettings.DownloadOptions.CookieLogin;
+
+            optionMarkWatched.Checked = 
+                Program.AppSettings.DownloadOptions.MarkWatched;
+
+            optionSponsorBlock.Checked = 
+                Program.AppSettings.DownloadOptions.UseSponsorBlock;
+
+            optionResolution.SelectedIndex = 
+                Program.AppSettings.DownloadOptions.TargetResolutionIndex;
         }
     }
 }

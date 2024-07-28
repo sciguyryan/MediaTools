@@ -14,7 +14,7 @@ namespace MediaTools
     {
         private const byte FileVersion = 0;
         private static readonly byte[] FileHeader = [0x4C, 0xA8, 0x3, 0x4B];
-        public const string CachePath = @"D:\Downloads\YouTube\tools\cache.dat";
+        public const string CachePath = @"\.cache.dat";
 
         public static bool Exists()
         {
@@ -78,9 +78,8 @@ namespace MediaTools
             }
 
             var readBytes = File.ReadAllBytes(CachePath);
-            if (readBytes.Length < 21)
+            if (readBytes.Length < 17)
             {
-                Console.WriteLine("too small");
                 // There will be insufficient space for the file metadata.
                 return [];
             }
@@ -88,7 +87,6 @@ namespace MediaTools
             var hasHeader = readBytes[..4].SequenceEqual(FileHeader);
             if (!hasHeader)
             {
-                Console.WriteLine("invalid header");
                 return [];
             }
 
@@ -104,7 +102,6 @@ namespace MediaTools
             // Validate the hash of the compressed data.
             if (!ValidateVersion1Hash(bytes[16..], bytes[..16]))
             {
-                Console.WriteLine("bad hash");
                 return [];
             }
 
@@ -115,7 +112,6 @@ namespace MediaTools
             }
             catch
             {
-                Console.WriteLine("unable to decompress");
                 return [];
             }
 

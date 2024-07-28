@@ -14,6 +14,8 @@
 
             optionIncludeFolders.Checked = Program.AppSettings.ShowFolders;
             optionIncludeSubMedia.Checked = Program.AppSettings.ShowMediaInSubFolders;
+            optionCookiePath.Text = Program.AppSettings.CookiePath;
+            optionRememberDownloadOpts.Checked = Program.AppSettings.RememberDownloadOptions;
 
             _parent = parent;
             _subMediaDirty = Program.AppSettings.ShowMediaInSubFolders;
@@ -23,6 +25,8 @@
         {
             Program.AppSettings.ShowFolders = optionIncludeFolders.Checked;
             Program.AppSettings.ShowMediaInSubFolders = optionIncludeSubMedia.Checked;
+            Program.AppSettings.CookiePath = optionCookiePath.Text;
+            Program.AppSettings.RememberDownloadOptions = optionRememberDownloadOpts.Checked;
 
             Program.AppSettings.WriteSettings();
 

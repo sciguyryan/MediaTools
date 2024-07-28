@@ -182,5 +182,20 @@ namespace MediaTools
 
             return false;
         }
+
+        public bool IsMediaInRoot(MediaFileEntry entry)
+        {
+            var entryDir = new FileInfo(entry.FullPath).DirectoryName!;
+
+            var path1Trimmed =
+                Path.GetFullPath(entryDir)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            var path2Trimmed =
+                Path.GetFullPath(GetMediaPath())
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            return string.Equals(path1Trimmed, path2Trimmed, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
