@@ -8,7 +8,7 @@
         {
             IconModifier.SetFormIcon(this);
 
-            this._parent = parent;
+            _parent = parent;
 
             InitializeComponent();
         }
@@ -17,7 +17,7 @@
         {
             var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
 
-            _parent.FindEntry(searchString.Text, "Title", findType, true,
+            _parent.FindEntry(searchString.Text, MainForm.ColumnName.Title, findType, true,
                 exactMatch.Checked, ignoreCase.Checked, true, true);
         }
 
@@ -25,7 +25,7 @@
         {
             var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
 
-            _parent.FindEntry(searchString.Text, "Title", findType, true,
+            _parent.FindEntry(searchString.Text, MainForm.ColumnName.Title, findType, true,
                 exactMatch.Checked, ignoreCase.Checked);
         }
 
@@ -33,7 +33,7 @@
         {
             var findType = regularExpression.Checked ? MainForm.FindType.Regex : MainForm.FindType.Text;
 
-            _parent.FindEntry(searchString.Text, "Title", findType, false,
+            _parent.FindEntry(searchString.Text, MainForm.ColumnName.Title, findType, false,
                 exactMatch.Checked, ignoreCase.Checked);
         }
 
@@ -63,6 +63,11 @@
                 exactMatch.Enabled = true;
                 ignoreCase.Enabled = true;
             }
+        }
+
+        private void SearchForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _parent.SetSearchOpen(false);
         }
     }
 }

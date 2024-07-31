@@ -10,20 +10,19 @@ namespace MediaTools
         public string Path { get; set; } = path;
     }
 
-    internal static class CacheFile
+    internal class CacheHandler(string path)
     {
         private const byte FileVersion = 0;
         private static readonly byte[] FileHeader = [0x4C, 0xA8, 0x3, 0x4B];
-        public const string CachePath = @"\.cache.dat";
 
-        public static bool Exists()
+        public bool Exists()
         {
-            return File.Exists(CachePath);
+            return File.Exists(path);
         }
 
-        public static bool Write(CacheEntry[] entries)
+        public bool Write(CacheEntry[] entries)
         {
-            if (FileUtils.IsFileLocked(CachePath))
+            if (FileUtils.IsFileLocked(path))
             {
                 MessageBox.Show(
                     DisplayBuilders.ErrorCacheFileOpen.BuildPlain(),
@@ -44,7 +43,7 @@ namespace MediaTools
 
             try
             {
-                using var stream = new FileStream(CachePath, FileMode.Create);
+                using var stream = new FileStream(path, FileMode.Create);
                 stream.Write(FileHeader);
                 stream.WriteByte(FileVersion);
                 stream.Write(hash);
@@ -58,26 +57,26 @@ namespace MediaTools
             }
         }
 
-        public static CacheEntry[] Read()
+        public CacheEntry[] Read()
         {
             var entries = ReadInternal();
-            if (entries.Length == 0 && Path.Exists(CachePath))
+            if (entries.Length == 0 && Path.Exists(path))
             {
                 // The file may be corrupted and may need to be rebuilt.
-                FileUtils.TruncateFile(CachePath);
+                FileUtils.TruncateFile(path);
             }
 
             return entries;
         }
 
-        private static CacheEntry[] ReadInternal()
+        private CacheEntry[] ReadInternal()
         {
-            if (!Path.Exists(CachePath))
+            if (!Path.Exists(path))
             {
                 return [];
             }
 
-            var readBytes = File.ReadAllBytes(CachePath);
+            var readBytes = File.ReadAllBytes(path);
             if (readBytes.Length < 17)
             {
                 // There will be insufficient space for the file metadata.

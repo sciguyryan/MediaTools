@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             groupBox3 = new GroupBox();
@@ -39,6 +39,9 @@
             optionSponsorBlock = new CheckBox();
             optionMarkWatched = new CheckBox();
             groupBox2 = new GroupBox();
+            optionDownloadRateLimitType = new ComboBox();
+            optionDownloadRateLimitVal = new NumericUpDown();
+            label5 = new Label();
             optionResolution = new ComboBox();
             label4 = new Label();
             groupBox1 = new GroupBox();
@@ -78,6 +81,7 @@
             tabPage1.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)optionDownloadRateLimitVal).BeginInit();
             groupBox1.SuspendLayout();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)mediaFilesTable).BeginInit();
@@ -125,7 +129,7 @@
             groupBox3.Controls.Add(optionAddMetadata);
             groupBox3.Controls.Add(optionSponsorBlock);
             groupBox3.Controls.Add(optionMarkWatched);
-            groupBox3.Location = new Point(985, 111);
+            groupBox3.Location = new Point(1072, 111);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(218, 241);
             groupBox3.TabIndex = 14;
@@ -147,7 +151,7 @@
             // optionCookieLogin
             // 
             optionCookieLogin.AutoSize = true;
-            optionCookieLogin.Location = new Point(8, 145);
+            optionCookieLogin.Location = new Point(8, 146);
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
             optionCookieLogin.TabIndex = 13;
@@ -160,7 +164,7 @@
             optionAddMetadata.AutoSize = true;
             optionAddMetadata.Checked = true;
             optionAddMetadata.CheckState = CheckState.Checked;
-            optionAddMetadata.Location = new Point(7, 56);
+            optionAddMetadata.Location = new Point(8, 56);
             optionAddMetadata.Name = "optionAddMetadata";
             optionAddMetadata.Size = new Size(127, 24);
             optionAddMetadata.TabIndex = 8;
@@ -172,7 +176,7 @@
             optionSponsorBlock.AutoSize = true;
             optionSponsorBlock.Checked = true;
             optionSponsorBlock.CheckState = CheckState.Checked;
-            optionSponsorBlock.Location = new Point(8, 115);
+            optionSponsorBlock.Location = new Point(8, 116);
             optionSponsorBlock.Name = "optionSponsorBlock";
             optionSponsorBlock.Size = new Size(149, 24);
             optionSponsorBlock.TabIndex = 11;
@@ -182,9 +186,7 @@
             // optionMarkWatched
             // 
             optionMarkWatched.AutoSize = true;
-            optionMarkWatched.Checked = true;
-            optionMarkWatched.CheckState = CheckState.Checked;
-            optionMarkWatched.Location = new Point(8, 85);
+            optionMarkWatched.Location = new Point(9, 86);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
             optionMarkWatched.TabIndex = 12;
@@ -193,21 +195,50 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(optionDownloadRateLimitType);
+            groupBox2.Controls.Add(optionDownloadRateLimitVal);
+            groupBox2.Controls.Add(label5);
             groupBox2.Controls.Add(optionResolution);
             groupBox2.Controls.Add(label4);
             groupBox2.Location = new Point(761, 111);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(218, 241);
+            groupBox2.Size = new Size(305, 241);
             groupBox2.TabIndex = 13;
             groupBox2.TabStop = false;
             groupBox2.Text = "Advanced Options";
+            // 
+            // optionDownloadRateLimitType
+            // 
+            optionDownloadRateLimitType.FormattingEnabled = true;
+            optionDownloadRateLimitType.Items.AddRange(new object[] { "K", "M" });
+            optionDownloadRateLimitType.Location = new Point(256, 51);
+            optionDownloadRateLimitType.Name = "optionDownloadRateLimitType";
+            optionDownloadRateLimitType.Size = new Size(43, 28);
+            optionDownloadRateLimitType.TabIndex = 15;
+            // 
+            // optionDownloadRateLimitVal
+            // 
+            optionDownloadRateLimitVal.DecimalPlaces = 1;
+            optionDownloadRateLimitVal.Location = new Point(164, 52);
+            optionDownloadRateLimitVal.Name = "optionDownloadRateLimitVal";
+            optionDownloadRateLimitVal.Size = new Size(86, 27);
+            optionDownloadRateLimitVal.TabIndex = 14;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(6, 54);
+            label5.Name = "label5";
+            label5.Size = new Size(152, 20);
+            label5.TabIndex = 13;
+            label5.Text = "Download Rate Limit:";
             // 
             // optionResolution
             // 
             optionResolution.DropDownStyle = ComboBoxStyle.DropDownList;
             optionResolution.FormattingEnabled = true;
             optionResolution.Items.AddRange(new object[] { "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p", "4320p" });
-            optionResolution.Location = new Point(126, 21);
+            optionResolution.Location = new Point(164, 18);
             optionResolution.Name = "optionResolution";
             optionResolution.Size = new Size(86, 28);
             optionResolution.TabIndex = 12;
@@ -237,7 +268,7 @@
             // optionAddThumbnails
             // 
             optionAddThumbnails.AutoSize = true;
-            optionAddThumbnails.Location = new Point(18, 115);
+            optionAddThumbnails.Location = new Point(18, 110);
             optionAddThumbnails.Name = "optionAddThumbnails";
             optionAddThumbnails.Size = new Size(139, 24);
             optionAddThumbnails.TabIndex = 9;
@@ -249,7 +280,7 @@
             optionAddChapters.AutoSize = true;
             optionAddChapters.Checked = true;
             optionAddChapters.CheckState = CheckState.Checked;
-            optionAddChapters.Location = new Point(18, 55);
+            optionAddChapters.Location = new Point(18, 50);
             optionAddChapters.Name = "optionAddChapters";
             optionAddChapters.Size = new Size(121, 24);
             optionAddChapters.TabIndex = 6;
@@ -259,7 +290,7 @@
             // optionAddSubtitles
             // 
             optionAddSubtitles.AutoSize = true;
-            optionAddSubtitles.Location = new Point(18, 85);
+            optionAddSubtitles.Location = new Point(18, 80);
             optionAddSubtitles.Name = "optionAddSubtitles";
             optionAddSubtitles.Size = new Size(120, 24);
             optionAddSubtitles.TabIndex = 7;
@@ -378,14 +409,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -541,6 +572,7 @@
             groupBox3.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)optionDownloadRateLimitVal).EndInit();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             tabPage2.ResumeLayout(false);
@@ -600,5 +632,8 @@
         private GroupBox groupBox3;
         private GroupBox groupBox2;
         private CheckBox optionAutoUpdate;
+        private Label label5;
+        private NumericUpDown optionDownloadRateLimitVal;
+        private ComboBox optionDownloadRateLimitType;
     }
 }

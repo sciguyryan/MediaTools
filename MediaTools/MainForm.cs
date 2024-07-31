@@ -10,13 +10,15 @@ namespace MediaTools
         private Point _contextMenuLocation;
         private readonly string _runFromPath;
         private readonly string _configPath;
-        private SortColumn _sortColumn = SortColumn.Duration;
+        private ColumnName _columnName = ColumnName.Duration;
         private SortDirection _sortOrder = SortDirection.Ascending;
         private readonly FileUtils _fileUtils;
-        private bool _consoleShown = true;
+        private bool _isConsoleShown = true;
         private bool _isUpdatingMediaList;
-        private bool _isDirty = !CacheFile.Exists();
+        private bool _isDirty;
+        private bool _searchOpen;
         private List<MediaFileEntry> _fileEntries = [];
+        private readonly CacheHandler _cacheHandler;
 
         public MainForm(string runFromPath)
         {
@@ -25,6 +27,9 @@ namespace MediaTools
             _runFromPath = runFromPath;
             _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
             _fileUtils = new FileUtils(runFromPath);
+            _cacheHandler = new CacheHandler(Path.Combine(runFromPath, "cache.dat"));
+
+            _isDirty = !_cacheHandler.Exists();
 
             InitializeComponent();
 
@@ -35,6 +40,7 @@ namespace MediaTools
             else
             {
                 optionResolution.SelectedIndex = 5;
+                optionDownloadRateLimitType.SelectedIndex = 1;
             }
 
             source.SelectedIndex = 0;
@@ -184,13 +190,19 @@ namespace MediaTools
             {
                 case { Control: true, KeyCode: Keys.F }:
                     {
+                        // We don't want to have multiple search forms open at once.
+                        if (_searchOpen)
+                        {
+                            e.Handled = true;
+                            return;
+                        }
+
                         tabControl1.SelectedIndex = 1;
 
-                        var form = new SearchForm(this)
-                        {
-                            StartPosition = FormStartPosition.CenterParent
-                        };
-                        form.Show();
+                        SetSearchOpen(true);
+
+                        var searchForm = new SearchForm(this);
+                        searchForm.Show();
                         break;
                     }
                 case { Control: true, KeyCode: Keys.I }:
@@ -215,13 +227,13 @@ namespace MediaTools
 
             var column = mediaFilesTable.Columns[e.ColumnIndex];
             var validColumn =
-                Enum.TryParse(column.Name, out SortColumn newColumn);
+                Enum.TryParse(column.Name, out ColumnName newColumn);
             if (!validColumn)
             {
                 return;
             }
 
-            if (newColumn == _sortColumn)
+            if (newColumn == _columnName)
             {
                 // Swap the sorting order.
                 _sortOrder =
@@ -230,7 +242,7 @@ namespace MediaTools
             }
 
             // Get the header title.
-            _sortColumn = newColumn;
+            _columnName = newColumn;
 
             SortEntries();
         }
@@ -423,10 +435,10 @@ namespace MediaTools
 
         private void HideShowConsole()
         {
-            var state = _consoleShown ? Interop.SW_HIDE : Interop.SW_SHOW;
+            var state = _isConsoleShown ? Interop.SW_HIDE : Interop.SW_SHOW;
             Interop.ShowWindow(Interop.GetConsoleWindow(), state);
-            _consoleShown = !_consoleShown;
-            showConsoleToolStripMenuItem.Text = _consoleShown
+            _isConsoleShown = !_isConsoleShown;
+            showConsoleToolStripMenuItem.Text = _isConsoleShown
                 ? "Hide &Console..."
                 : "Show &Console...";
         }
@@ -457,6 +469,9 @@ namespace MediaTools
             // Disable downloading while the list is being refreshed.
             download.Enabled = false;
 
+            // Store the number of entries in the list.
+            var oldEntryCount = _fileEntries.Count;
+
             if (!suppressMessages)
             {
                 UpdateStatus(DisplayBuilders.InfoMediaListReloaded);
@@ -475,6 +490,10 @@ namespace MediaTools
             RebindMediaEntries();
             SetUpColumns();
 
+            // Did we do any updating? If so, we'll need to rewrite the
+            // cache file on exit.
+            _isDirty = _fileEntries.Count != oldEntryCount;
+
             // Restore the selected rows.
             RestoreRowSelections(selectedPaths);
 
@@ -488,7 +507,7 @@ namespace MediaTools
             download.Enabled = true;
         }
 
-        public enum SortColumn
+        public enum ColumnName
         {
             Duration,
             LastModified,
@@ -498,19 +517,19 @@ namespace MediaTools
 
         private void SortEntries()
         {
-            _fileEntries = SortByColumn(_sortColumn, _sortOrder).ToList();
+            _fileEntries = SortByColumn(_columnName, _sortOrder).ToList();
             RebindMediaEntries();
         }
 
-        private IOrderedEnumerable<MediaFileEntry> SortByColumn(SortColumn column, SortDirection sortOrder)
+        private IOrderedEnumerable<MediaFileEntry> SortByColumn(ColumnName columnName, SortDirection sortOrder)
         {
-            return column switch
+            return columnName switch
             {
-                SortColumn.Duration => SortBy(_fileEntries, f => f.RawDuration, sortOrder),
-                SortColumn.LastModified => SortBy(_fileEntries, f => f.LastModified, sortOrder),
-                SortColumn.Folder => SortBy(_fileEntries, f => f.Folder, sortOrder),
-                SortColumn.Title => SortBy(_fileEntries, f => f.Title, sortOrder),
-                _ => throw new ArgumentOutOfRangeException(nameof(column), column, null)
+                ColumnName.Duration => SortBy(_fileEntries, f => f.RawDuration, sortOrder),
+                ColumnName.LastModified => SortBy(_fileEntries, f => f.LastModified, sortOrder),
+                ColumnName.Folder => SortBy(_fileEntries, f => f.Folder, sortOrder),
+                ColumnName.Title => SortBy(_fileEntries, f => f.Title, sortOrder),
+                _ => throw new ArgumentOutOfRangeException(nameof(columnName), columnName, null)
             };
         }
 
@@ -538,7 +557,7 @@ namespace MediaTools
 
         public void FindEntry(
             string searchString,
-            string column,
+            ColumnName column,
             FindType findType,
             bool single,
             bool exactMatch,
@@ -552,21 +571,31 @@ namespace MediaTools
                 return;
             }
 
-            var i = 0;
-            if (findNextEntry && mediaFilesTable.SelectedRows.Count > 0)
+            if (column != ColumnName.Title)
             {
-                // Start on the index after the first selection.
-                // This isn't intended to work with find all, what would be the point?
-                i = mediaFilesTable.SelectedRows[0].Index + 1;
+                throw new NotImplementedException();
             }
 
-            mediaFilesTable.ClearSelection();
+            var i = 0;
+            if (findNextEntry)
+            {
+                if (mediaFilesTable.SelectedRows.Count > 0)
+                {
+                    // Start on the index after the first selection.
+                    // This isn't intended to work with find all, what would be the point?
+                    i = mediaFilesTable.SelectedRows[0].Index + 1;
+                }
+            }
+            else
+            {
+                mediaFilesTable.ClearSelection();
+            }
 
             var hasChangedRow = false;
-            for (; i < mediaFilesTable.Rows.Count; i++)
+            for (; i < _fileEntries.Count; i++)
             {
-                var title = mediaFilesTable.Rows[i].Cells[column].Value.ToString()!;
-                if (!IsMatch(title, searchString, findType, exactMatch, ignoreCase))
+                // TODO - allow other columns to be used in the search.
+                if (!IsMatch(_fileEntries[i].Title, searchString, findType, exactMatch, ignoreCase))
                 {
                     continue;
                 }
@@ -774,6 +803,13 @@ namespace MediaTools
                 // TODO - allow the options to be selected?
                 lines.Add("--sponsorblock-remove sponsor,selfpromo");
             }
+            if (optionDownloadRateLimitVal.Value > 0)
+            {
+                var targetRateType = optionDownloadRateLimitType.Items[optionDownloadRateLimitType.SelectedIndex]!
+                    .ToString()!;
+
+                lines.Add($"-r {optionDownloadRateLimitVal.Value}{targetRateType}");
+            }
             if (downloadPlaylist.Checked)
             {
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
@@ -816,7 +852,7 @@ namespace MediaTools
                 select new CacheEntry(date, entry.RawDuration, entry.FullPath)
             ).ToArray();
 
-            if (!CacheFile.Write(entries))
+            if (!_cacheHandler.Write(entries))
             {
                 // TODO - do something to notify the user here.
                 // TODO - I'm not sure what since this occurs as the application is closing...
@@ -826,7 +862,7 @@ namespace MediaTools
 
         private void LoadCachedData()
         {
-            foreach (var row in CacheFile.Read())
+            foreach (var row in _cacheHandler.Read())
             {
                 var path = row.Path;
                 if (!Path.Exists(path))
@@ -899,6 +935,12 @@ namespace MediaTools
 
             Program.AppSettings.DownloadOptions.TargetResolutionIndex =
                 optionResolution.SelectedIndex;
+
+            Program.AppSettings.DownloadOptions.DownloadRateLimit =
+                optionDownloadRateLimitVal.Value;
+
+            Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex =
+                optionDownloadRateLimitType.SelectedIndex;
         }
 
         private void RestoreDownloadOptions()
@@ -934,6 +976,17 @@ namespace MediaTools
 
             optionResolution.SelectedIndex = 
                 Program.AppSettings.DownloadOptions.TargetResolutionIndex;
+
+            optionDownloadRateLimitVal.Value =
+                Program.AppSettings.DownloadOptions.DownloadRateLimit;
+
+            optionDownloadRateLimitType.SelectedIndex = 
+                Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex;
+        }
+
+        public void SetSearchOpen(bool status)
+        {
+            _searchOpen = status;
         }
     }
 }

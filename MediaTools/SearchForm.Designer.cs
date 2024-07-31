@@ -129,6 +129,7 @@
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.CenterParent;
             Text = "Media Tools :: Search";
+            FormClosed += SearchForm_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }

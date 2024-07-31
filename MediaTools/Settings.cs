@@ -49,7 +49,12 @@ namespace MediaTools
         public bool AddThumbnails { get; set; }
 
         // Advanced Options
+        
+        public int TargetResolutionIndex { get; set; }
 
+        public decimal DownloadRateLimit { get; set; }
+
+        public int DownloadRateLimitTypeIndex { get; set; }
 
 
         // Other Options
@@ -61,7 +66,5 @@ namespace MediaTools
         public bool MarkWatched { get; set; }
 
         public bool UseSponsorBlock { get; set; }
-
-        public int TargetResolutionIndex { get; set; }
     }
 }
