@@ -247,6 +247,30 @@ namespace MediaTools
             SortEntries();
         }
 
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            Program.AppSettings = Settings.ReadSettings();
+
+            LoadCachedData();
+            await UpdateMediaTable(true);
+        }
+
+        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var optionsForm = new OptionsForm(this);
+            optionsForm.ShowDialog();
+        }
+
+        public void SetFoldersColumnVisibility(bool visible)
+        {
+            if (mediaFilesTable.Columns["Folder"] is null)
+            {
+                return;
+            }
+
+            mediaFilesTable.Columns["Folder"]!.Visible = visible;
+        }
+
         private void SetUpColumns()
         {
             if (mediaFilesTable.Columns["RawDuration"] == null ||
@@ -281,30 +305,6 @@ namespace MediaTools
                 DataGridViewAutoSizeColumnMode.Fill;
 
             mediaFilesTable.Columns["Hash"]!.Visible = false;
-        }
-
-        private async void Form1_Load(object sender, EventArgs e)
-        {
-            Program.AppSettings = Settings.ReadSettings();
-
-            LoadCachedData();
-            await UpdateMediaTable(true);
-        }
-
-        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var optionsForm = new OptionsForm(this);
-            optionsForm.ShowDialog();
-        }
-
-        public void SetFoldersColumnVisibility(bool visible)
-        {
-            if (mediaFilesTable.Columns["Folder"] is null)
-            {
-                return;
-            }
-
-            mediaFilesTable.Columns["Folder"]!.Visible = visible;
         }
 
         private async void HandleFileRename()
@@ -545,8 +545,10 @@ namespace MediaTools
 
         public void RebindMediaEntries()
         {
-            mediaFilesTable.DataSource = _fileEntries;
-            mediaFilesTable.Refresh();
+            mediaFilesTable.DataSource = new BindingSource
+            {
+                DataSource = _fileEntries
+            };
         }
 
         public enum FindType
