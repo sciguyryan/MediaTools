@@ -56,6 +56,8 @@ namespace MediaTools
 
         public int DownloadRateLimitTypeIndex { get; set; }
 
+        public bool DownloadChat { get; set; }
+
 
         // Other Options
 
@@ -70,8 +72,6 @@ namespace MediaTools
         // Subtitle Options
 
         public bool EmbedSubtitles { get; set; }
-
-        public bool DownloadChat { get; set; }
 
         public string? SubtitleLanguages { get; set; }
     }

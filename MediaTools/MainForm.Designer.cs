@@ -33,11 +33,11 @@
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             subtitleGroupBox = new GroupBox();
-            optionDownloadChat = new CheckBox();
             optionSubtleLangs = new TextBox();
             label6 = new Label();
             optionEmbedSubs = new CheckBox();
             groupBox3 = new GroupBox();
+            optionDownloadChat = new CheckBox();
             optionAutoUpdate = new CheckBox();
             optionCookieLogin = new CheckBox();
             optionAddMetadata = new CheckBox();
@@ -131,7 +131,6 @@
             // 
             // subtitleGroupBox
             // 
-            subtitleGroupBox.Controls.Add(optionDownloadChat);
             subtitleGroupBox.Controls.Add(optionSubtleLangs);
             subtitleGroupBox.Controls.Add(label6);
             subtitleGroupBox.Controls.Add(optionEmbedSubs);
@@ -143,19 +142,9 @@
             subtitleGroupBox.TabStop = false;
             subtitleGroupBox.Text = "Subtitle Options";
             // 
-            // optionDownloadChat
-            // 
-            optionDownloadChat.AutoSize = true;
-            optionDownloadChat.Location = new Point(8, 56);
-            optionDownloadChat.Name = "optionDownloadChat";
-            optionDownloadChat.Size = new Size(134, 24);
-            optionDownloadChat.TabIndex = 11;
-            optionDownloadChat.Text = "Download &Chat";
-            optionDownloadChat.UseVisualStyleBackColor = true;
-            // 
             // optionSubtleLangs
             // 
-            optionSubtleLangs.Location = new Point(9, 106);
+            optionSubtleLangs.Location = new Point(9, 76);
             optionSubtleLangs.Name = "optionSubtleLangs";
             optionSubtleLangs.Size = new Size(196, 27);
             optionSubtleLangs.TabIndex = 10;
@@ -164,7 +153,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(8, 83);
+            label6.Location = new Point(8, 53);
             label6.Name = "label6";
             label6.Size = new Size(135, 20);
             label6.TabIndex = 9;
@@ -184,6 +173,7 @@
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(optionDownloadChat);
             groupBox3.Controls.Add(optionAutoUpdate);
             groupBox3.Controls.Add(optionCookieLogin);
             groupBox3.Controls.Add(optionAddMetadata);
@@ -195,6 +185,16 @@
             groupBox3.TabIndex = 14;
             groupBox3.TabStop = false;
             groupBox3.Text = "Other Options";
+            // 
+            // optionDownloadChat
+            // 
+            optionDownloadChat.AutoSize = true;
+            optionDownloadChat.Location = new Point(9, 176);
+            optionDownloadChat.Name = "optionDownloadChat";
+            optionDownloadChat.Size = new Size(134, 24);
+            optionDownloadChat.TabIndex = 11;
+            optionDownloadChat.Text = "Download &Chat";
+            optionDownloadChat.UseVisualStyleBackColor = true;
             // 
             // optionAutoUpdate
             // 
@@ -211,7 +211,7 @@
             // optionCookieLogin
             // 
             optionCookieLogin.AutoSize = true;
-            optionCookieLogin.Location = new Point(8, 146);
+            optionCookieLogin.Location = new Point(7, 116);
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
             optionCookieLogin.TabIndex = 13;
@@ -236,7 +236,7 @@
             optionSponsorBlock.AutoSize = true;
             optionSponsorBlock.Checked = true;
             optionSponsorBlock.CheckState = CheckState.Checked;
-            optionSponsorBlock.Location = new Point(8, 116);
+            optionSponsorBlock.Location = new Point(7, 86);
             optionSponsorBlock.Name = "optionSponsorBlock";
             optionSponsorBlock.Size = new Size(149, 24);
             optionSponsorBlock.TabIndex = 11;
@@ -246,7 +246,8 @@
             // optionMarkWatched
             // 
             optionMarkWatched.AutoSize = true;
-            optionMarkWatched.Location = new Point(9, 86);
+            optionMarkWatched.Enabled = false;
+            optionMarkWatched.Location = new Point(9, 146);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
             optionMarkWatched.TabIndex = 12;

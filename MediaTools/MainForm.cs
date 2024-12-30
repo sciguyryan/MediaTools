@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace MediaTools
 {
@@ -51,8 +50,6 @@ namespace MediaTools
 
             Interop.AllocConsole();
             Interop.SetConsoleMode();
-
-            mediaFilesTable.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 0, 20, 0);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -140,11 +137,6 @@ namespace MediaTools
 
         private void OptionLogin_CheckedChanged(object sender, EventArgs e)
         {
-            if (!optionCookieLogin.Checked)
-            {
-                optionMarkWatched.Checked = false;
-            }
-
             optionMarkWatched.Enabled = !optionCookieLogin.Checked;
         }
 
@@ -762,6 +754,12 @@ namespace MediaTools
             {
                 lines.Add("-U");
             }
+
+            if (optionDownloadChat.Checked)
+            {
+                lines.Add("--sub-langs live_chat");
+            }
+
             if (optionAddSubtitles.Checked)
             {
                 lines.Add("--sub-format best");
@@ -774,13 +772,9 @@ namespace MediaTools
                     lines.Add("--embed-subs");
                 }
 
-                var langs = optionSubtleLangs.Text;
-                if (optionDownloadChat.Checked)
-                {
-                    langs += ",live_chat";
-                }
-                lines.Add($"--sub-langs {langs}");
+                lines.Add($"--sub-langs {optionSubtleLangs.Text}");
             }
+
             if (optionAddMetadata.Checked)
             {
                 lines.Add("--add-metadata");
@@ -810,8 +804,10 @@ namespace MediaTools
             }
             if (optionDownloadRateLimitVal.Value > 0)
             {
-                var targetRateType = optionDownloadRateLimitType.Items[optionDownloadRateLimitType.SelectedIndex]!
-                    .ToString()!;
+                var targetRateType = 
+                    optionDownloadRateLimitType
+                        .Items[optionDownloadRateLimitType.SelectedIndex]!
+                        .ToString()!;
 
                 lines.Add($"-r {optionDownloadRateLimitVal.Value}{targetRateType}");
             }
@@ -820,9 +816,11 @@ namespace MediaTools
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
             }
 
-            var targetResolution = optionResolution.Items[optionResolution.SelectedIndex]!
-                .ToString()!
-                .Replace("p", "");
+            var targetResolution = 
+                optionResolution
+                    .Items[optionResolution.SelectedIndex]!
+                    .ToString()!
+                    .Replace("p", "");
             lines.Add(optionAudioOnly.Checked ? "-f ba" : $"-S \"res:{targetResolution}\"");
 
             // Write the config file.
@@ -947,10 +945,11 @@ namespace MediaTools
             Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex =
                 optionDownloadRateLimitType.SelectedIndex;
 
-            Program.AppSettings.DownloadOptions.EmbedSubtitles =
-                optionEmbedSubs.Checked;
             Program.AppSettings.DownloadOptions.DownloadChat =
                 optionDownloadChat.Checked;
+
+            Program.AppSettings.DownloadOptions.EmbedSubtitles =
+                optionEmbedSubs.Checked;
             Program.AppSettings.DownloadOptions.SubtitleLanguages =
                 optionSubtleLangs.Text;
         }
@@ -995,11 +994,13 @@ namespace MediaTools
             optionDownloadRateLimitType.SelectedIndex =
                 Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex;
 
-            optionEmbedSubs.Checked = Program.AppSettings.DownloadOptions.EmbedSubtitles;
-
             optionDownloadChat.Checked = Program.AppSettings.DownloadOptions.DownloadChat;
 
-            optionSubtleLangs.Text = Program.AppSettings.DownloadOptions.SubtitleLanguages;
+            optionEmbedSubs.Checked = 
+                Program.AppSettings.DownloadOptions.EmbedSubtitles;
+
+            optionSubtleLangs.Text = 
+                Program.AppSettings.DownloadOptions.SubtitleLanguages;
         }
 
         public void SetSearchOpen(bool status)
