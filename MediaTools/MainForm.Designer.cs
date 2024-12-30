@@ -32,6 +32,11 @@
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            subtitleGroupBox = new GroupBox();
+            optionDownloadChat = new CheckBox();
+            optionSubtleLangs = new TextBox();
+            label6 = new Label();
+            optionEmbedSubs = new CheckBox();
             groupBox3 = new GroupBox();
             optionAutoUpdate = new CheckBox();
             optionCookieLogin = new CheckBox();
@@ -79,6 +84,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            subtitleGroupBox.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)optionDownloadRateLimitVal).BeginInit();
@@ -102,6 +108,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(groupBox1);
@@ -121,6 +128,59 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // subtitleGroupBox
+            // 
+            subtitleGroupBox.Controls.Add(optionDownloadChat);
+            subtitleGroupBox.Controls.Add(optionSubtleLangs);
+            subtitleGroupBox.Controls.Add(label6);
+            subtitleGroupBox.Controls.Add(optionEmbedSubs);
+            subtitleGroupBox.Enabled = false;
+            subtitleGroupBox.Location = new Point(1079, 358);
+            subtitleGroupBox.Name = "subtitleGroupBox";
+            subtitleGroupBox.Size = new Size(211, 241);
+            subtitleGroupBox.TabIndex = 15;
+            subtitleGroupBox.TabStop = false;
+            subtitleGroupBox.Text = "Subtitle Options";
+            // 
+            // optionDownloadChat
+            // 
+            optionDownloadChat.AutoSize = true;
+            optionDownloadChat.Location = new Point(8, 56);
+            optionDownloadChat.Name = "optionDownloadChat";
+            optionDownloadChat.Size = new Size(134, 24);
+            optionDownloadChat.TabIndex = 11;
+            optionDownloadChat.Text = "Download &Chat";
+            optionDownloadChat.UseVisualStyleBackColor = true;
+            // 
+            // optionSubtleLangs
+            // 
+            optionSubtleLangs.Location = new Point(9, 106);
+            optionSubtleLangs.Name = "optionSubtleLangs";
+            optionSubtleLangs.Size = new Size(196, 27);
+            optionSubtleLangs.TabIndex = 10;
+            optionSubtleLangs.Text = "en.*";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(8, 83);
+            label6.Name = "label6";
+            label6.Size = new Size(135, 20);
+            label6.TabIndex = 9;
+            label6.Text = "Subtitle Languages";
+            // 
+            // optionEmbedSubs
+            // 
+            optionEmbedSubs.AutoSize = true;
+            optionEmbedSubs.Checked = true;
+            optionEmbedSubs.CheckState = CheckState.Checked;
+            optionEmbedSubs.Location = new Point(8, 26);
+            optionEmbedSubs.Name = "optionEmbedSubs";
+            optionEmbedSubs.Size = new Size(139, 24);
+            optionEmbedSubs.TabIndex = 8;
+            optionEmbedSubs.Text = "&Embed Subtitles";
+            optionEmbedSubs.UseVisualStyleBackColor = true;
             // 
             // groupBox3
             // 
@@ -296,6 +356,7 @@
             optionAddSubtitles.TabIndex = 7;
             optionAddSubtitles.Text = "Add &Subtitles";
             optionAddSubtitles.UseVisualStyleBackColor = true;
+            optionAddSubtitles.CheckedChanged += OptionAddSubtitles_CheckedChanged;
             // 
             // optionAudioOnly
             // 
@@ -568,6 +629,8 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            subtitleGroupBox.ResumeLayout(false);
+            subtitleGroupBox.PerformLayout();
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
             groupBox2.ResumeLayout(false);
@@ -635,5 +698,10 @@
         private Label label5;
         private NumericUpDown optionDownloadRateLimitVal;
         private ComboBox optionDownloadRateLimitType;
+        private GroupBox subtitleGroupBox;
+        private CheckBox optionEmbedSubs;
+        private Label label6;
+        private TextBox optionSubtleLangs;
+        private CheckBox optionDownloadChat;
     }
 }

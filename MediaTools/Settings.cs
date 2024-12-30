@@ -66,5 +66,13 @@ namespace MediaTools
         public bool MarkWatched { get; set; }
 
         public bool UseSponsorBlock { get; set; }
+
+        // Subtitle Options
+
+        public bool EmbedSubtitles { get; set; }
+
+        public bool DownloadChat { get; set; }
+
+        public string? SubtitleLanguages { get; set; }
     }
 }

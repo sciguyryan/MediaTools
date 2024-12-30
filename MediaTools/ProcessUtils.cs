@@ -5,7 +5,7 @@ namespace MediaTools
     internal class ProcessUtils
     {
         private const string FfProbePath =
-            @"D:\Projects\Video Encoding\ffmpeg-7.0.1\bin\ffprobe.exe";
+            @"D:\Projects\Video Encoding\ffmpeg-7.1\bin\ffprobe.exe";
 
         public static async Task<int> RunMediaInfo(string path)
         {

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace MediaTools
 {
@@ -50,6 +51,8 @@ namespace MediaTools
 
             Interop.AllocConsole();
             Interop.SetConsoleMode();
+
+            mediaFilesTable.ColumnHeadersDefaultCellStyle.Padding = new Padding(0, 0, 20, 0);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -70,7 +73,7 @@ namespace MediaTools
                 return;
             }
 
-            var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value.ToString()!;
+            var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value!.ToString()!;
             var processStartInfo = new ProcessStartInfo(file) { UseShellExecute = true };
             Process.Start(processStartInfo);
         }
@@ -237,8 +240,7 @@ namespace MediaTools
             {
                 // Swap the sorting order.
                 _sortOrder =
-                    (_sortOrder == SortDirection.Ascending) ?
-                        SortDirection.Descending : SortDirection.Ascending;
+                    (_sortOrder == SortDirection.Ascending) ? SortDirection.Descending : SortDirection.Ascending;
             }
 
             // Get the header title.
@@ -259,6 +261,11 @@ namespace MediaTools
         {
             var optionsForm = new OptionsForm(this);
             optionsForm.ShowDialog();
+        }
+
+        private void OptionAddSubtitles_CheckedChanged(object sender, EventArgs e)
+        {
+            subtitleGroupBox.Enabled = optionAddSubtitles.Checked;
         }
 
         public void SetFoldersColumnVisibility(bool visible)
@@ -317,8 +324,8 @@ namespace MediaTools
             }
 
             var index = hitTest.RowIndex;
-            var oldPath = mediaFilesTable.Rows[index].Cells["FullPath"].Value.ToString()!;
-            var oldName = mediaFilesTable.Rows[index].Cells["Title"].Value.ToString()!;
+            var oldPath = mediaFilesTable.Rows[index].Cells["FullPath"].Value!.ToString()!;
+            var oldName = mediaFilesTable.Rows[index].Cells["Title"].Value!.ToString()!;
 
             var rename = new RenameFileForm(oldName);
             rename.ShowDialog();
@@ -365,7 +372,7 @@ namespace MediaTools
 
             var success = true;
             var path =
-                mediaFilesTable.Rows[hitTest.RowIndex].Cells["FullPath"].Value.ToString();
+                mediaFilesTable.Rows[hitTest.RowIndex].Cells["FullPath"].Value!.ToString();
             if (Path.Exists(path))
             {
                 success = HandleDelete(path, trash);
@@ -481,7 +488,7 @@ namespace MediaTools
             var selectedPaths = (
                 from DataGridViewCell cell in mediaFilesTable.SelectedCells
                 select mediaFilesTable.Rows[cell.RowIndex] into row
-                select row.Cells["FullPath"].Value.ToString()! into path
+                select row.Cells["FullPath"].Value!.ToString() into path
                 select Utils.ComputeMd5Hash(path)
             ).ToArray();
 
@@ -664,7 +671,7 @@ namespace MediaTools
             var lowestIndex = int.MaxValue;
             foreach (DataGridViewRow row in mediaFilesTable.Rows)
             {
-                var entryHash = row.Cells["Hash"].Value.ToString()!;
+                var entryHash = row.Cells["Hash"].Value!.ToString()!;
                 if (!itemsClone.Contains(entryHash))
                 {
                     continue;
@@ -704,26 +711,10 @@ namespace MediaTools
 
         private void PruneUnwantedEntries()
         {
-            var entries = new List<MediaFileEntry>();
-
-            foreach (var entry in _fileEntries)
-            {
-                // Skip any files that don't exist.
-                if (!File.Exists(entry.FullPath))
-                {
-                    continue;
-                }
-
-                // Skip any files in subdirectories, if the setting to show
-                // them isn't enabled.
-                if (!Program.AppSettings.ShowMediaInSubFolders &&
-                    !_fileUtils.IsMediaInRoot(entry))
-                {
-                    continue;
-                }
-
-                entries.Add(entry);
-            }
+            var entries = 
+                _fileEntries.Where(entry => File.Exists(entry.FullPath))
+                    .Where(entry => Program.AppSettings.ShowMediaInSubFolders || _fileUtils.IsMediaInRoot(entry))
+                    .ToList();
 
             _fileEntries = entries;
         }
@@ -773,10 +764,22 @@ namespace MediaTools
             }
             if (optionAddSubtitles.Checked)
             {
-                // TODO - allow the languages to be selected?
-                lines.Add("--write-sub");
                 lines.Add("--sub-format best");
-                lines.Add("--sub-langs \"en.*\"");
+                //lines.Add("--convert-subs srt");
+                lines.Add("--write-sub");
+                lines.Add("--write-auto-subs");
+
+                if (optionEmbedSubs.Checked)
+                {
+                    lines.Add("--embed-subs");
+                }
+
+                var langs = optionSubtleLangs.Text;
+                if (optionDownloadChat.Checked)
+                {
+                    langs += ",live_chat";
+                }
+                lines.Add($"--sub-langs {langs}");
             }
             if (optionAddMetadata.Checked)
             {
@@ -790,7 +793,7 @@ namespace MediaTools
             {
                 lines.Add("--embed-thumbnail");
             }
-            if (optionCookieLogin.Checked && 
+            if (optionCookieLogin.Checked &&
                 Program.AppSettings.CookiePath.Length > 0)
             {
                 lines.Add($"--cookies-from-browser {Program.AppSettings.CookiePath}");
@@ -911,7 +914,7 @@ namespace MediaTools
                 return;
             }
 
-            Program.AppSettings.DownloadOptions.AutoUpdate = 
+            Program.AppSettings.DownloadOptions.AutoUpdate =
                 optionAutoUpdate.Checked;
 
             Program.AppSettings.DownloadOptions.AddSubtitles =
@@ -943,6 +946,13 @@ namespace MediaTools
 
             Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex =
                 optionDownloadRateLimitType.SelectedIndex;
+
+            Program.AppSettings.DownloadOptions.EmbedSubtitles =
+                optionEmbedSubs.Checked;
+            Program.AppSettings.DownloadOptions.DownloadChat =
+                optionDownloadChat.Checked;
+            Program.AppSettings.DownloadOptions.SubtitleLanguages =
+                optionSubtleLangs.Text;
         }
 
         private void RestoreDownloadOptions()
@@ -952,38 +962,44 @@ namespace MediaTools
                 return;
             }
 
-            optionAutoUpdate.Checked = 
+            optionAutoUpdate.Checked =
                 Program.AppSettings.DownloadOptions.AutoUpdate;
 
-            optionAddSubtitles.Checked = 
+            optionAddSubtitles.Checked =
                 Program.AppSettings.DownloadOptions.AddSubtitles;
 
-            optionAddMetadata.Checked = 
+            optionAddMetadata.Checked =
                 Program.AppSettings.DownloadOptions.AddMetadata;
 
-            optionAddChapters.Checked = 
+            optionAddChapters.Checked =
                 Program.AppSettings.DownloadOptions.AddChapters;
 
-            optionAddThumbnails.Checked = 
+            optionAddThumbnails.Checked =
                 Program.AppSettings.DownloadOptions.AddThumbnails;
 
-            optionCookieLogin.Checked = 
+            optionCookieLogin.Checked =
                 Program.AppSettings.DownloadOptions.CookieLogin;
 
-            optionMarkWatched.Checked = 
+            optionMarkWatched.Checked =
                 Program.AppSettings.DownloadOptions.MarkWatched;
 
-            optionSponsorBlock.Checked = 
+            optionSponsorBlock.Checked =
                 Program.AppSettings.DownloadOptions.UseSponsorBlock;
 
-            optionResolution.SelectedIndex = 
+            optionResolution.SelectedIndex =
                 Program.AppSettings.DownloadOptions.TargetResolutionIndex;
 
             optionDownloadRateLimitVal.Value =
                 Program.AppSettings.DownloadOptions.DownloadRateLimit;
 
-            optionDownloadRateLimitType.SelectedIndex = 
+            optionDownloadRateLimitType.SelectedIndex =
                 Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex;
+
+            optionEmbedSubs.Checked = Program.AppSettings.DownloadOptions.EmbedSubtitles;
+
+            optionDownloadChat.Checked = Program.AppSettings.DownloadOptions.DownloadChat;
+
+            optionSubtleLangs.Text = Program.AppSettings.DownloadOptions.SubtitleLanguages;
         }
 
         public void SetSearchOpen(bool status)
