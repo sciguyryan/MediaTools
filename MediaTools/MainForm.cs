@@ -754,12 +754,10 @@ namespace MediaTools
             {
                 lines.Add("-U");
             }
-
             if (optionDownloadChat.Checked)
             {
                 lines.Add("--sub-langs live_chat");
             }
-
             if (optionAddSubtitles.Checked)
             {
                 lines.Add("--sub-format best");
@@ -774,7 +772,6 @@ namespace MediaTools
 
                 lines.Add($"--sub-langs {optionSubtleLangs.Text}");
             }
-
             if (optionAddMetadata.Checked)
             {
                 lines.Add("--add-metadata");

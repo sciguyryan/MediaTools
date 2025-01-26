@@ -61,6 +61,10 @@ namespace MediaTools
 
         public void MoveTempFiles(string? destFolder)
         {
+            // Wait 1.5 seconds to ensure things are fully finished before attempting
+            // to move the files. This prevents incomplete files being moved.
+            Thread.Sleep(1500);
+
             var mediaDir = GetMediaPath();
             if (destFolder is not null)
             {
