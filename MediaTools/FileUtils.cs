@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
+using WindowsRecylceBin;
 
 namespace MediaTools
 {
@@ -8,11 +7,9 @@ namespace MediaTools
     {
         #region DLL Imports
 
-        private const uint FO_MOVE = 0x0001; // Move a file.
         private const uint FO_DELETE = 0x0003; // Trash a file.
         private const uint FOF_NOCONFIRMATION = 0x0010; // Show no confirmation dialog box to the user.
         private const uint FOF_ALLOWUNDO = 0x0040; // Preserve undo information, if possible.
-        private const uint FOF_RESTORE = 0x1000; // Restore a file from the trash.
 
         // Struct which contains information that the SHFileOperation
         // function uses to perform file operations.
@@ -35,34 +32,10 @@ namespace MediaTools
             public string lpszProgressTitle;
         }
 
-        // Struct which contains information that the SHQueryRecycleBinW
-        // function uses to perform recycling bin queries.
-        // See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shqueryrecyclebinw
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct LPSHQUERYRBINFO
-        {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint cbSize;
-            [MarshalAs(UnmanagedType.U8)]
-            public ulong i64Size;
-            [MarshalAs(UnmanagedType.U8)]
-            public ulong i64NumItems;
-        }
-
         [DllImport("shell32.dll", EntryPoint = "SHFileOperationW", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int SHFileOperationW(ref SHFILEOPSTRUCTW lpFileOp);
 
-        [DllImport("shell32.dll", EntryPoint = "SHQueryRecycleBinW", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int SHQueryRecycleBinW(string pszRootPath, ref LPSHQUERYRBINFO pSHQueryRBInfo);
-
-        [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SHGetSpecialFolderPath(IntPtr hwnd, StringBuilder lpszPath, int nFolder, bool fCreate);
-
         #endregion
-
-        private const string RecycleBinMetadataFilePrefix = "$I";
-        private const string RecycleBinBackupFilePrefix = "$R";
 
         public static int TrashPath(string path)
         {
@@ -78,55 +51,9 @@ namespace MediaTools
             return SHFileOperationW(ref fileOp);
         }
 
-        public static int TryUntrashPath(string path)
+        public static bool TryUntrashPath(string path)
         {
-            MessageBox.Show(path);
-
-            var rbInfo = new LPSHQUERYRBINFO
-            {
-                cbSize = (uint)Marshal.SizeOf(typeof(LPSHQUERYRBINFO))
-            };
-
-            // Query the Recycle Bin for any files.
-            var result = SHQueryRecycleBinW("", ref rbInfo);
-            if (result != 0)
-            {
-                return result;
-            }
-
-            // Note that the specification requires a double null termination here.
-            // See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructa
-            var fileOp = new SHFILEOPSTRUCTW
-            {
-                wFunc = FO_MOVE,
-                pFrom = $"{path}\0\0",
-                pTo = $"{path}\0\0",
-                fFlags = FOF_RESTORE | FOF_ALLOWUNDO
-            };
-
-            result = SHFileOperationW(ref fileOp);
-            MessageBox.Show(result.ToString());
-
-            return result;
-        }
-
-        public static string? GetRecyclePathForPath(string path)
-        {
-            // Get the recycling bin for the current user.
-            var sid =
-                WindowsIdentity.GetCurrent().Owner ?? throw new Exception("Could not retrieve SID for current user.");
-            var recycleBinPath = Path.Combine(@"C:\$Recycle.Bin", sid.ToString());
-
-            foreach (var entry in Directory.EnumerateFileSystemEntries(recycleBinPath, RecycleBinBackupFilePrefix + "*"))
-            {
-                var metaDataFileName = 
-                    RecycleBinMetadataFilePrefix + 
-                    Path.GetFileName(entry)[RecycleBinBackupFilePrefix.Length..];
-
-                var metadataFilePath = Path.Combine(recycleBinPath, metaDataFileName);
-
-
-            }
+            // I'll have to implement this myself, since the APIs and such aren't behaving.
         }
 
         public void EnsureTempExists()

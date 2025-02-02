@@ -12,7 +12,7 @@ namespace MediaTools
         private ColumnName _columnName = ColumnName.Duration;
         private SortDirection _sortOrder = SortDirection.Ascending;
         private readonly FileUtils _fileUtils;
-        private string _lastTrashedFilePath;
+        private string _lastTrashedFilePath = "";
         private bool _isConsoleShown = true;
         private bool _isUpdatingMediaList;
         private bool _isDirty;
@@ -85,9 +85,8 @@ namespace MediaTools
                         break;
                     }
 
-                    if (FileUtils.TryUntrashPath(_lastTrashedFilePath) == 0)
+                    if (FileUtils.TryUntrashPath(_lastTrashedFilePath))
                     {
-                        MessageBox.Show("here banana");
                         await UpdateMediaTable(false);
                     }
 
