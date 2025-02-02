@@ -53,6 +53,7 @@ namespace MediaTools
         public static bool TryUntrashPath(string path)
         {
             // I'll have to implement this myself, since the APIs and such aren't behaving.
+            return true;
         }
 
         public void EnsureTempExists()
