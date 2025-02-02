@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.DirectoryServices;
-using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace MediaTools
@@ -13,6 +12,7 @@ namespace MediaTools
         private ColumnName _columnName = ColumnName.Duration;
         private SortDirection _sortOrder = SortDirection.Ascending;
         private readonly FileUtils _fileUtils;
+        private string _lastTrashedFilePath;
         private bool _isConsoleShown = true;
         private bool _isUpdatingMediaList;
         private bool _isDirty;
@@ -73,6 +73,27 @@ namespace MediaTools
             var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value!.ToString()!;
             var processStartInfo = new ProcessStartInfo(file) { UseShellExecute = true };
             Process.Start(processStartInfo);
+        }
+
+        private async void MediaFilesTable_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e)
+            {
+                case { Control: true, KeyCode: Keys.Z }:
+                    if (_lastTrashedFilePath.Length == 0)
+                    {
+                        break;
+                    }
+
+                    if (FileUtils.TryUntrashPath(_lastTrashedFilePath) == 0)
+                    {
+                        MessageBox.Show("here banana");
+                        await UpdateMediaTable(false);
+                    }
+
+                    _lastTrashedFilePath = "";
+                    break;
+            }
         }
 
         private async void ReloadMediaFilesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -368,6 +389,9 @@ namespace MediaTools
             if (Path.Exists(path))
             {
                 success = HandleDelete(path, trash);
+
+                // Store the path, just in case we want to undo this later.
+                _lastTrashedFilePath = path;
             }
 
             if (!success)
@@ -706,7 +730,7 @@ namespace MediaTools
 
         private void PruneUnwantedEntries()
         {
-            var entries = 
+            var entries =
                 _fileEntries.Where(entry => File.Exists(entry.FullPath))
                     .Where(entry => Program.AppSettings.ShowMediaInSubFolders || _fileUtils.IsMediaInRoot(entry))
                     .ToList();
@@ -804,7 +828,7 @@ namespace MediaTools
             }
             if (optionDownloadRateLimitVal.Value > 0)
             {
-                var targetRateType = 
+                var targetRateType =
                     optionDownloadRateLimitType
                         .Items[optionDownloadRateLimitType.SelectedIndex]!
                         .ToString()!;
@@ -816,7 +840,7 @@ namespace MediaTools
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
             }
 
-            var targetResolution = 
+            var targetResolution =
                 optionResolution
                     .Items[optionResolution.SelectedIndex]!
                     .ToString()!
@@ -996,10 +1020,10 @@ namespace MediaTools
 
             optionDownloadChat.Checked = Program.AppSettings.DownloadOptions.DownloadChat;
 
-            optionEmbedSubs.Checked = 
+            optionEmbedSubs.Checked =
                 Program.AppSettings.DownloadOptions.EmbedSubtitles;
 
-            optionSubtleLangs.Text = 
+            optionSubtleLangs.Text =
                 Program.AppSettings.DownloadOptions.SubtitleLanguages;
         }
 

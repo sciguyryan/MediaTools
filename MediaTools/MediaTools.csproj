@@ -29,4 +29,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="WindowsRecylceBin" Version="1.1.4" />
+  </ItemGroup>
+
 </Project>

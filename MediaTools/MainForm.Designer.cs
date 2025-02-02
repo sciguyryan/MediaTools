@@ -488,6 +488,7 @@
             mediaFilesTable.TabIndex = 3;
             mediaFilesTable.CellContentDoubleClick += MediaFilesTable_CellContentDoubleClick;
             mediaFilesTable.ColumnHeaderMouseClick += MediaFilesTable_ColumnHeaderMouseClick;
+            mediaFilesTable.KeyDown += MediaFilesTable_KeyDown;
             mediaFilesTable.MouseClick += MediaFilesTable_MouseClick;
             // 
             // menuStrip1
