@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace MediaTools
+﻿namespace MediaTools
 {
     internal class MediaFileEntry(
         int rawDuration,
@@ -14,8 +12,7 @@ namespace MediaTools
         private string? _duration;
         public string Duration => _duration ??= Utils.SecondsToDuration(RawDuration, false);
 
-        private string? _lastModifiedString;
-        public string LastModified => _lastModifiedString ??= lastModified.ToString(CultureInfo.CurrentCulture);
+        public DateTime LastModified => lastModified;
 
         private string? _folder;
         public string Folder => _folder ??= Utils.TruncateString(FileInfo.Directory!.Name);

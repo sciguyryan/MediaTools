@@ -516,7 +516,7 @@ namespace MediaTools
 
         private void SortEntries()
         {
-            _fileEntries = SortByColumn(_columnName, _sortOrder).ToList();
+            _fileEntries = [.. SortByColumn(_columnName, _sortOrder)];
             RebindMediaEntries();
         }
 
@@ -848,7 +848,7 @@ namespace MediaTools
 
             var entries = (
                 from entry in _fileEntries
-                let date = DateTime.Parse(entry.LastModified, CultureInfo.CurrentCulture).ToBinary()
+                let date = entry.LastModified.ToBinary()
                 select new CacheEntry(date, entry.RawDuration, entry.FullPath)
             ).ToArray();
 
