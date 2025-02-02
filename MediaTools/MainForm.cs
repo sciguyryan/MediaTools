@@ -587,10 +587,8 @@ namespace MediaTools
                     i = mediaFilesTable.SelectedRows[0].Index + 1;
                 }
             }
-            else
-            {
-                mediaFilesTable.ClearSelection();
-            }
+
+            mediaFilesTable.ClearSelection();
 
             var hasChangedRow = false;
             for (; i < _fileEntries.Count; i++)
@@ -613,6 +611,11 @@ namespace MediaTools
                 {
                     break;
                 }
+            }
+
+            if (!hasChangedRow)
+            {
+                MessageBox.Show("No further matches were found.");
             }
         }
 
