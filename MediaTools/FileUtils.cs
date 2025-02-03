@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text;
 
 namespace MediaTools
 {
@@ -50,10 +53,80 @@ namespace MediaTools
             return SHFileOperationW(ref fileOp);
         }
 
+        private const string RecycleBinMetadataPrefix = "$I";
+        private const string RecycleBinBackupPrefix = "$R";
+
         public static bool TryUntrashPath(string path)
         {
-            // I'll have to implement this myself, since the APIs and such aren't behaving.
-            return true;
+            // There should always be a drive, but just in case...
+            var drive = Path.GetPathRoot(path);
+            if (drive == null)
+            {
+                return false;
+            }
+
+            var sid = 
+                WindowsIdentity.GetCurrent().Owner ?? throw new Exception("Unable to get SID for the current user.");
+            var recycleBinPath = Path.Combine(drive, "$Recycle.Bin", sid.ToString());
+            if (!Directory.Exists(recycleBinPath))
+            {
+                throw new IOException("The recycle bin path does not exist.");
+            }
+
+            var success = false;
+            foreach (var p in Directory.EnumerateFileSystemEntries(recycleBinPath, $"{RecycleBinBackupPrefix}*"))
+            {
+                var metaDataFileName =
+                    string.Concat(RecycleBinMetadataPrefix, Path.GetFileName(p).AsSpan(RecycleBinBackupPrefix.Length));
+                var metaDataFilePath = Path.Combine(recycleBinPath, metaDataFileName);
+
+                var originalFilePath = ParseRecycleBinMetadataFile(metaDataFilePath);
+                if (originalFilePath == path)
+                {
+                    // We found the file we're looking for. Attempt to restore it.
+                    try
+                    {
+                        File.Move(p, originalFilePath);
+                        success = true;
+                    }
+                    catch { }
+
+                    break;
+                }
+            }
+
+            return success;
+        }
+
+        private static string? ParseRecycleBinMetadataFile(string metaDataFilePath)
+        {
+            if (!File.Exists(metaDataFilePath))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var fileStream = 
+                    File.Open(metaDataFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                var buffer = new byte[fileStream.Length];
+                fileStream.ReadExactly(buffer);
+
+                // Windows 10 and above use a different format than earlier versions.
+                // Since we don't care about most of the data, we can simply ignore it.
+                // The file for Windows Vista, 7 and 8 are exactly 544 bytes in length,
+                // while the file for Windows 10 and 11 are varible in size.
+                // I'm not even touching XP or earier here.
+                var start = 
+                    (Environment.OSVersion.Version.Major == 6) ? 24 : 28;
+                return Encoding.Unicode
+                        .GetString(buffer, start, buffer.Length - start)
+                        .TrimEnd((char)0);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public void EnsureTempExists()

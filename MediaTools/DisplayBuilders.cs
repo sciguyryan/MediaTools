@@ -11,6 +11,7 @@
         private const string SuccessTrashFileTail = "the file '[0]' has been sent to the trash!";
         private const string SuccessDeleteFileTail = "the file '[0]' has been deleted!";
         private const string SuccessRenameFileTail = "the file '[0]' has been renamed to '[1]'!";
+        private const string SuccessRestoreFileTail = "the file '[0]' has been restored from the trash!";
 
         private const string Error = "Error: ";
         private const string ErrorNoValidUrlsTail = "no valid target download URLs specified.";
@@ -21,6 +22,7 @@
         private const string ErrorFailedCreateDirectoryTail = "the destination path '[0]' could not be created!";
         private const string ErrorFileMoveFailedTail = "failed to move the file at '[0]' to '[1]'!";
         private const string ErrorDeleteDirectoryFailedTail = "failed to delete the directory at '[0]'!";
+        private const string ErrorRestoreFileTail = "failed to restore the file '[0]' from the trash!";
 
         private const string Information = "Information: ";
         private const string InfoAttemptWriteConfigTail = "attempting to write download config file...";
@@ -81,6 +83,11 @@
             .Text(Success)
             .ResetForeground()
             .Text(SuccessRenameFileTail);
+        public static readonly OutputFormatBuilder SuccessRestoreFile = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Green)
+            .Text(Success)
+            .ResetForeground()
+            .Text(SuccessRestoreFileTail);
 
         public static readonly OutputFormatBuilder ErrorNoValidUrls = new OutputFormatBuilder()
             .Foreground(ConsoleColour.Red)
@@ -122,6 +129,11 @@
             .Text(Error)
             .ResetForeground()
             .Text(ErrorDeleteDirectoryFailedTail);
+        public static readonly OutputFormatBuilder ErrorRestoreFile = new OutputFormatBuilder()
+            .Foreground(ConsoleColour.Red)
+            .Text(Error)
+            .ResetForeground()
+            .Text(ErrorRestoreFileTail);
 
         public static readonly OutputFormatBuilder InfoMediaListReloading = new OutputFormatBuilder()
             .Foreground(ConsoleColour.Blue)

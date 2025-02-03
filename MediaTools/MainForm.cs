@@ -87,7 +87,11 @@ namespace MediaTools
 
                     if (FileUtils.TryUntrashPath(_lastTrashedFilePath))
                     {
+                        UpdateStatus(DisplayBuilders.SuccessRestoreFile, [_lastTrashedFilePath]);
                         await UpdateMediaTable(false);
+                    } else
+                    {
+                        UpdateStatus(DisplayBuilders.ErrorRestoreFile, [_lastTrashedFilePath]);
                     }
 
                     _lastTrashedFilePath = "";
