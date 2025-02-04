@@ -621,7 +621,6 @@
             KeyPreview = true;
             MainMenuStrip = menuStrip1;
             MaximizeBox = false;
-            MinimizeBox = false;
             Name = "MainForm";
             SizeGripStyle = SizeGripStyle.Hide;
             Text = "Media Tools";
