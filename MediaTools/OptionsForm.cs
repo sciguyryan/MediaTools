@@ -16,6 +16,8 @@
             optionIncludeSubMedia.Checked = Program.AppSettings.ShowMediaInSubFolders;
             optionCookiePath.Text = Program.AppSettings.CookiePath;
             optionRememberDownloadOpts.Checked = Program.AppSettings.RememberDownloadOptions;
+            optionFfprobePath.Text = Program.AppSettings.FfprobePath;
+            optionYtdlpPath.Text = Program.AppSettings.YtDlpPath;
 
             _parent = parent;
             _subMediaDirty = Program.AppSettings.ShowMediaInSubFolders;
@@ -27,6 +29,8 @@
             Program.AppSettings.ShowMediaInSubFolders = optionIncludeSubMedia.Checked;
             Program.AppSettings.CookiePath = optionCookiePath.Text;
             Program.AppSettings.RememberDownloadOptions = optionRememberDownloadOpts.Checked;
+            Program.AppSettings.FfprobePath = optionFfprobePath.Text;
+            Program.AppSettings.YtDlpPath = optionYtdlpPath.Text;
 
             Program.AppSettings.WriteSettings();
 
@@ -40,6 +44,22 @@
             }
 
             Close();
+        }
+
+        private void Browse_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            // Get the associated control and add the value to the relevant field.
+            var controlName = (string)((Button)sender).Tag!;
+            var foundControls = this.Controls.Find(controlName, true);
+            if (foundControls.Length > 0)
+            {
+                foundControls[0].Text = openFileDialog1.FileName;
+            }
         }
     }
 }

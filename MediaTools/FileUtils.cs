@@ -114,8 +114,8 @@ namespace MediaTools
                 // Windows 10 and above use a different format than earlier versions.
                 // Since we don't care about most of the data, we can simply ignore it.
                 // The file for Windows Vista, 7 and 8 are exactly 544 bytes in length,
-                // while the file for Windows 10 and 11 are varible in size.
-                // I'm not even touching XP or earier here.
+                // while the file for Windows 10 and 11 are variable in size.
+                // I'm not even touching XP or earlier here.
                 var start = 
                     (Environment.OSVersion.Version.Major == 6) ? 24 : 28;
                 return Encoding.Unicode

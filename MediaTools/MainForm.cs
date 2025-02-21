@@ -7,7 +7,6 @@ namespace MediaTools
     public partial class MainForm : Form
     {
         private Point _contextMenuLocation;
-        private readonly string _runFromPath;
         private readonly string _configPath;
         private ColumnName _columnName = ColumnName.Duration;
         private SortDirection _sortOrder = SortDirection.Ascending;
@@ -24,8 +23,8 @@ namespace MediaTools
         {
             IconModifier.SetFormIcon(this);
 
-            _runFromPath = runFromPath;
-            _configPath = Path.Combine(runFromPath, "yt-dlp.conf");
+            var ytDlpPath = new FileInfo(Program.AppSettings.YtDlpPath).DirectoryName!;
+            _configPath = Path.Combine(ytDlpPath, "yt-dlp.conf");
             _fileUtils = new FileUtils(runFromPath);
             _cacheHandler = new CacheHandler(Path.Combine(runFromPath, "cache.dat"));
 
@@ -89,7 +88,8 @@ namespace MediaTools
                     {
                         UpdateStatus(DisplayBuilders.SuccessRestoreFile, [_lastTrashedFilePath]);
                         await UpdateMediaTable(false);
-                    } else
+                    }
+                    else
                     {
                         UpdateStatus(DisplayBuilders.ErrorRestoreFile, [_lastTrashedFilePath]);
                     }
@@ -130,7 +130,7 @@ namespace MediaTools
                     DisplayBuilders.InfoAttemptDownload,
                     [downloadType, i + 1, urls.Length]
                 );
-                await ProcessUtils.RunDownloader(urls[i], _runFromPath, _fileUtils.GetTempPath());
+                await ProcessUtils.RunDownloader(urls[i], _fileUtils.GetTempPath());
                 UpdateStatus(DisplayBuilders.SuccessDownload, [downloadType, i + 1]);
 
                 // We could move all the files at the end instead, but if
@@ -282,6 +282,12 @@ namespace MediaTools
         private void OptionAddSubtitles_CheckedChanged(object sender, EventArgs e)
         {
             subtitleGroupBox.Enabled = optionAddSubtitles.Checked;
+        }
+
+        private void PlaylistBuilderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var playlistBuilderForm = new PlaylistBuilderForm();
+            playlistBuilderForm.ShowDialog();
         }
 
         public void SetFoldersColumnVisibility(bool visible)
@@ -473,13 +479,13 @@ namespace MediaTools
         {
             var isSingle = downloadSingle.Checked;
 
-            return (
+            return [.. (
                 from id in downloadIds.Lines
                 where id.Length != 0
                 select isSingle
                     ? $"https://www.youtube.com/watch?v={id}"
                     : $"https://www.youtube.com/playlist?list={id}"
-            ).Distinct().ToArray();
+            ).Distinct()];
         }
 
         public async Task UpdateMediaTable(bool suppressMessages)
@@ -754,7 +760,7 @@ namespace MediaTools
                     continue;
                 }
 
-                var duration = await ProcessUtils.RunMediaInfo(file.FullName);
+                var duration = await ProcessUtils.RunMediaDuration(file.FullName);
                 if (duration == 0)
                 {
                     continue;

@@ -82,6 +82,7 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            playlistBuilderToolStripMenuItem = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             subtitleGroupBox.SuspendLayout();
@@ -528,7 +529,7 @@
             // 
             // clearCacheToolStripMenuItem
             // 
-            clearCacheToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { reloadMediaListToolStripMenuItem, toolStripMenuItem3, optionsToolStripMenuItem });
+            clearCacheToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { playlistBuilderToolStripMenuItem, reloadMediaListToolStripMenuItem, toolStripMenuItem3, optionsToolStripMenuItem });
             clearCacheToolStripMenuItem.Name = "clearCacheToolStripMenuItem";
             clearCacheToolStripMenuItem.Size = new Size(58, 24);
             clearCacheToolStripMenuItem.Text = "&Tools";
@@ -536,19 +537,19 @@
             // reloadMediaListToolStripMenuItem
             // 
             reloadMediaListToolStripMenuItem.Name = "reloadMediaListToolStripMenuItem";
-            reloadMediaListToolStripMenuItem.Size = new Size(211, 26);
+            reloadMediaListToolStripMenuItem.Size = new Size(224, 26);
             reloadMediaListToolStripMenuItem.Text = "&Reload Media List";
             reloadMediaListToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
             // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(208, 6);
+            toolStripMenuItem3.Size = new Size(221, 6);
             // 
             // optionsToolStripMenuItem
             // 
             optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            optionsToolStripMenuItem.Size = new Size(211, 26);
+            optionsToolStripMenuItem.Size = new Size(224, 26);
             optionsToolStripMenuItem.Text = "&Options...";
             optionsToolStripMenuItem.Click += OptionsToolStripMenuItem_Click;
             // 
@@ -608,6 +609,13 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // playlistBuilderToolStripMenuItem
+            // 
+            playlistBuilderToolStripMenuItem.Name = "playlistBuilderToolStripMenuItem";
+            playlistBuilderToolStripMenuItem.Size = new Size(224, 26);
+            playlistBuilderToolStripMenuItem.Text = "&Playlist Builder...";
+            playlistBuilderToolStripMenuItem.Click += PlaylistBuilderToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -704,5 +712,6 @@
         private Label label6;
         private TextBox optionSubtleLangs;
         private CheckBox optionDownloadChat;
+        private ToolStripMenuItem playlistBuilderToolStripMenuItem;
     }
 }

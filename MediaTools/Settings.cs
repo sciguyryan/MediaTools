@@ -16,6 +16,10 @@ namespace MediaTools
 
         public DownloadSettings DownloadOptions { get; set; } = new();
 
+        public string FfprobePath { get; set; } = "";
+
+        public string YtDlpPath { get; set; } = "";
+
         public void WriteSettings()
         {
             var json = JsonSerializer.Serialize(this);
