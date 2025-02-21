@@ -225,7 +225,11 @@ namespace MediaTools
                         break;
                     }
                 case { Control: true, KeyCode: Keys.I }:
-                    MediaInfoDialog();
+                    ShowMediaInfoDialog();
+                    break;
+                case { Control: true, Shift: true, KeyCode: Keys.P }:
+                    ShowPlaylistBuilderDialog();
+                    e.Handled = true;
                     break;
                 case { KeyCode: Keys.F2 }:
                     HandleFileRename();
@@ -285,6 +289,11 @@ namespace MediaTools
         }
 
         private void PlaylistBuilderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowPlaylistBuilderDialog();
+        }
+
+        private static void ShowPlaylistBuilderDialog()
         {
             var playlistBuilderForm = new PlaylistBuilderForm();
             playlistBuilderForm.ShowDialog();
@@ -912,7 +921,7 @@ namespace MediaTools
             }
         }
 
-        private void MediaInfoDialog()
+        private void ShowMediaInfoDialog()
         {
             if (mediaFilesTable.RowCount == 0)
             {
