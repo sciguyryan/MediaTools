@@ -21,7 +21,12 @@
 
         private async void PlaylistBuilderForm_DragDrop(object sender, DragEventArgs e)
         {
-            if (!e.Data!.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data is null)
+            {
+                return;
+            }
+
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 return;
             }
@@ -29,17 +34,38 @@
             var files = (string[])e.Data.GetData(DataFormats.FileDrop)!;
             foreach (var file in files)
             {
-                var duration = await ProcessUtils.RunMediaDuration(file);
-                if (duration == 0)
+                var mi = await ProcessUtils.RunMediaInfoFull(file);
+                if (mi?.Format is null)
                 {
-                    // Not a media file we can recognise, we can skip this.
                     continue;
                 }
 
+                var duration = mi.Format.Duration;
+                if (duration == 0)
+                {
+                    continue;
+                }
+
+                var artist = mi.Format.Tags?.GetValueOrDefault("artist", "") ?? "";
+                var link = mi.Format.Tags?.GetValueOrDefault("purl", "") ?? "";
+
                 var fi = new FileInfo(file);
                 dataGridView1.Rows.Add(
-                    fi.LastWriteTime, file, fi.Name,
-                    Utils.SecondsToDuration(duration, false), duration);
+                    fi.LastWriteTime, file, fi.Name, artist,
+                    Utils.SecondsToDuration(duration, false), duration, link);
+            }
+        }
+
+        private void DataGridView1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e)
+            {
+                case { Control: true, Shift: true, KeyCode: Keys.Delete }:
+                    {
+                        dataGridView1.Rows.Clear();
+                        e.Handled = true;
+                        break;
+                    }
             }
         }
 
@@ -49,6 +75,9 @@
             {
                 case "M3U":
                     saveFileDialog1.Filter = "M3U Files (*.m3u8)|*.m3u8";
+                    break;
+                case "XSPF":
+                    saveFileDialog1.Filter = "XSPF Files (*.xspf)|*.xspf";
                     break;
                 default:
                     break;
@@ -61,46 +90,22 @@
 
             var outputPath = saveFileDialog1.FileName;
 
+            var builder = new PlaylistBuilder(ref dataGridView1, useAbsolutePaths.Checked, outputPath);
+
             switch (exportFormat.Text)
             {
                 case "M3U":
-                    WriteM3UFile(outputPath);
+                    builder.SerialiseM3U();
+                    break;
+                case "XSPF":
+                    builder.SerialiseXspf();
                     break;
             }
-        }
 
-        private const string M3UExInfoTemplate = "#EXTINF:{DURATION},{NAME}";
-
-        private void WriteM3UFile(string path)
-        {
-            var lines = new List<string>() { "#EXTM3U" };
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                var duration = row.Cells["RawDuration"].Value!.ToString();
-                var exInfo = 
-                    M3UExInfoTemplate.Replace("{DURATION}", duration);
-
-                var filePath = row.Cells["FullPath"].Value!.ToString()!;
-                // This is to avoid breaking the syntax of the information line,
-                // which uses a comma to separate values.
-                var fi = new FileInfo(filePath);
-                var name = Path.GetFileNameWithoutExtension(fi.Name).Replace(",", "，");
-                exInfo = exInfo.Replace("{NAME}", name);
-
-                lines.Add(exInfo);
-                lines.Add(filePath);
-            }
-
-            try
-            {
-                File.WriteAllLines(path, lines);
-                toolStripStatusLabel1.Text = "The playlist file was successfully written!";
-            }
-            catch (Exception ex)
-            {
-                toolStripStatusLabel1.Text = $"Failed to write playlist file: {ex.Message}";
-            }
+            toolStripStatusLabel1.Text =
+                builder.Write() ?
+                    "The playlist file was successfully written!" :
+                    "Failed to write playlist file!";
         }
     }
 }

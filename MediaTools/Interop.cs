@@ -20,7 +20,6 @@ namespace MediaTools
 
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-
         public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]

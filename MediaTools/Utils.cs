@@ -48,14 +48,10 @@ namespace MediaTools
         public static byte[] Decompress(byte[] bytes)
         {
             var compressedStream = new MemoryStream(bytes);
-
             using var decompressorStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
             using var decompressedStream = new MemoryStream();
             decompressorStream.CopyTo(decompressedStream);
-
-            var decompressedBytes = decompressedStream.ToArray();
-
-            return decompressedBytes;
+            return decompressedStream.ToArray();
         }
 
         public static string TruncateString(string str, int maxLength = 32)
