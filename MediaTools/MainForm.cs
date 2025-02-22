@@ -769,7 +769,13 @@ namespace MediaTools
                     continue;
                 }
 
-                var duration = await ProcessUtils.RunMediaDuration(file.FullName);
+                var info = await ProcessUtils.RunMediaInfoFull(file.FullName);
+                if (info is null)
+                {
+                    continue;
+                }
+
+                var duration = (int)Math.Round(info.Format?.Duration ?? 0);
                 if (duration == 0)
                 {
                     continue;

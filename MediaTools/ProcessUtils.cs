@@ -5,34 +5,6 @@ namespace MediaTools
 {
     internal class ProcessUtils
     {
-        public static async Task<int> RunMediaDuration(string path)
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    Arguments = $"-show_entries format=duration -v quiet -of csv=\"p=0\" \"{path}\"",
-                    CreateNoWindow = true,
-                    FileName = Program.AppSettings.FfprobePath,
-                    RedirectStandardOutput = true,
-                },
-            };
-
-            process.Start();
-
-            var output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
-
-            if (!double.TryParse(output, out var duration))
-            {
-                return 0;
-            }
-            else
-            {
-                return (int)Math.Round(duration);
-            }
-        }
-
         public static async Task<FfProbeJson?> RunMediaInfoFull(string path)
         {
             var process = new Process
