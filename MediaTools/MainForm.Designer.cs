@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             subtitleGroupBox = new GroupBox();
@@ -71,6 +71,7 @@
             toolStripMenuItem1 = new ToolStripSeparator();
             exitToolStripMenuItem = new ToolStripMenuItem();
             clearCacheToolStripMenuItem = new ToolStripMenuItem();
+            playlistBuilderToolStripMenuItem = new ToolStripMenuItem();
             reloadMediaListToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripSeparator();
             optionsToolStripMenuItem = new ToolStripMenuItem();
@@ -82,7 +83,7 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            playlistBuilderToolStripMenuItem = new ToolStripMenuItem();
+            downloadSmart = new RadioButton();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             subtitleGroupBox.SuspendLayout();
@@ -109,6 +110,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(downloadSmart);
             tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
@@ -148,7 +150,7 @@
             optionSubtleLangs.Location = new Point(9, 76);
             optionSubtleLangs.Name = "optionSubtleLangs";
             optionSubtleLangs.Size = new Size(196, 27);
-            optionSubtleLangs.TabIndex = 10;
+            optionSubtleLangs.TabIndex = 21;
             optionSubtleLangs.Text = "en.*";
             // 
             // label6
@@ -168,7 +170,7 @@
             optionEmbedSubs.Location = new Point(8, 26);
             optionEmbedSubs.Name = "optionEmbedSubs";
             optionEmbedSubs.Size = new Size(139, 24);
-            optionEmbedSubs.TabIndex = 8;
+            optionEmbedSubs.TabIndex = 20;
             optionEmbedSubs.Text = "&Embed Subtitles";
             optionEmbedSubs.UseVisualStyleBackColor = true;
             // 
@@ -193,7 +195,7 @@
             optionDownloadChat.Location = new Point(9, 176);
             optionDownloadChat.Name = "optionDownloadChat";
             optionDownloadChat.Size = new Size(134, 24);
-            optionDownloadChat.TabIndex = 11;
+            optionDownloadChat.TabIndex = 19;
             optionDownloadChat.Text = "Download &Chat";
             optionDownloadChat.UseVisualStyleBackColor = true;
             // 
@@ -215,7 +217,7 @@
             optionCookieLogin.Location = new Point(7, 116);
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
-            optionCookieLogin.TabIndex = 13;
+            optionCookieLogin.TabIndex = 17;
             optionCookieLogin.Text = "Login With Cookies";
             optionCookieLogin.UseVisualStyleBackColor = true;
             optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
@@ -228,7 +230,7 @@
             optionAddMetadata.Location = new Point(8, 56);
             optionAddMetadata.Name = "optionAddMetadata";
             optionAddMetadata.Size = new Size(127, 24);
-            optionAddMetadata.TabIndex = 8;
+            optionAddMetadata.TabIndex = 15;
             optionAddMetadata.Text = "Add &Metadata";
             optionAddMetadata.UseVisualStyleBackColor = true;
             // 
@@ -240,7 +242,7 @@
             optionSponsorBlock.Location = new Point(7, 86);
             optionSponsorBlock.Name = "optionSponsorBlock";
             optionSponsorBlock.Size = new Size(149, 24);
-            optionSponsorBlock.TabIndex = 11;
+            optionSponsorBlock.TabIndex = 16;
             optionSponsorBlock.Text = "Use &SponsorBlock";
             optionSponsorBlock.UseVisualStyleBackColor = true;
             // 
@@ -251,7 +253,7 @@
             optionMarkWatched.Location = new Point(9, 146);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
-            optionMarkWatched.TabIndex = 12;
+            optionMarkWatched.TabIndex = 18;
             optionMarkWatched.Text = "Mark &Watched";
             optionMarkWatched.UseVisualStyleBackColor = true;
             // 
@@ -276,7 +278,7 @@
             optionDownloadRateLimitType.Location = new Point(256, 51);
             optionDownloadRateLimitType.Name = "optionDownloadRateLimitType";
             optionDownloadRateLimitType.Size = new Size(43, 28);
-            optionDownloadRateLimitType.TabIndex = 15;
+            optionDownloadRateLimitType.TabIndex = 13;
             // 
             // optionDownloadRateLimitVal
             // 
@@ -284,7 +286,7 @@
             optionDownloadRateLimitVal.Location = new Point(164, 52);
             optionDownloadRateLimitVal.Name = "optionDownloadRateLimitVal";
             optionDownloadRateLimitVal.Size = new Size(86, 27);
-            optionDownloadRateLimitVal.TabIndex = 14;
+            optionDownloadRateLimitVal.TabIndex = 12;
             // 
             // label5
             // 
@@ -303,7 +305,7 @@
             optionResolution.Location = new Point(164, 18);
             optionResolution.Name = "optionResolution";
             optionResolution.Size = new Size(86, 28);
-            optionResolution.TabIndex = 12;
+            optionResolution.TabIndex = 11;
             // 
             // label4
             // 
@@ -333,7 +335,7 @@
             optionAddThumbnails.Location = new Point(18, 110);
             optionAddThumbnails.Name = "optionAddThumbnails";
             optionAddThumbnails.Size = new Size(139, 24);
-            optionAddThumbnails.TabIndex = 9;
+            optionAddThumbnails.TabIndex = 10;
             optionAddThumbnails.Text = "Add &Thumbnails";
             optionAddThumbnails.UseVisualStyleBackColor = true;
             // 
@@ -345,7 +347,7 @@
             optionAddChapters.Location = new Point(18, 50);
             optionAddChapters.Name = "optionAddChapters";
             optionAddChapters.Size = new Size(121, 24);
-            optionAddChapters.TabIndex = 6;
+            optionAddChapters.TabIndex = 8;
             optionAddChapters.Text = "Add &Chapters";
             optionAddChapters.UseVisualStyleBackColor = true;
             // 
@@ -355,7 +357,7 @@
             optionAddSubtitles.Location = new Point(18, 80);
             optionAddSubtitles.Name = "optionAddSubtitles";
             optionAddSubtitles.Size = new Size(120, 24);
-            optionAddSubtitles.TabIndex = 7;
+            optionAddSubtitles.TabIndex = 9;
             optionAddSubtitles.Text = "Add &Subtitles";
             optionAddSubtitles.UseVisualStyleBackColor = true;
             optionAddSubtitles.CheckedChanged += OptionAddSubtitles_CheckedChanged;
@@ -366,7 +368,7 @@
             optionAudioOnly.Location = new Point(18, 25);
             optionAudioOnly.Name = "optionAudioOnly";
             optionAudioOnly.Size = new Size(105, 24);
-            optionAudioOnly.TabIndex = 5;
+            optionAudioOnly.TabIndex = 7;
             optionAudioOnly.Text = "&Audio Only";
             optionAudioOnly.UseVisualStyleBackColor = true;
             optionAudioOnly.CheckedChanged += OptionAudioOnly_CheckedChanged;
@@ -374,11 +376,11 @@
             // downloadPlaylist
             // 
             downloadPlaylist.AutoSize = true;
-            downloadPlaylist.Location = new Point(677, 48);
+            downloadPlaylist.Location = new Point(675, 48);
             downloadPlaylist.Name = "downloadPlaylist";
             downloadPlaylist.Size = new Size(76, 24);
             downloadPlaylist.TabIndex = 4;
-            downloadPlaylist.Text = "Playlist";
+            downloadPlaylist.Text = "&Playlist";
             downloadPlaylist.UseVisualStyleBackColor = true;
             // 
             // downloadSingle
@@ -390,7 +392,7 @@
             downloadSingle.Size = new Size(71, 24);
             downloadSingle.TabIndex = 3;
             downloadSingle.TabStop = true;
-            downloadSingle.Text = "Single";
+            downloadSingle.Text = "&Single";
             downloadSingle.UseVisualStyleBackColor = true;
             // 
             // label3
@@ -407,12 +409,12 @@
             downloadFolder.Location = new Point(604, 78);
             downloadFolder.Name = "downloadFolder";
             downloadFolder.Size = new Size(151, 27);
-            downloadFolder.TabIndex = 5;
+            downloadFolder.TabIndex = 6;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(537, 47);
+            label2.Location = new Point(537, 50);
             label2.Name = "label2";
             label2.Size = new Size(43, 20);
             label2.TabIndex = 0;
@@ -441,7 +443,7 @@
             download.Location = new Point(537, 358);
             download.Name = "download";
             download.Size = new Size(94, 29);
-            download.TabIndex = 13;
+            download.TabIndex = 22;
             download.Text = "Download";
             download.UseVisualStyleBackColor = true;
             download.Click += Download_Click;
@@ -472,14 +474,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = SystemColors.Control;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -534,22 +536,29 @@
             clearCacheToolStripMenuItem.Size = new Size(58, 24);
             clearCacheToolStripMenuItem.Text = "&Tools";
             // 
+            // playlistBuilderToolStripMenuItem
+            // 
+            playlistBuilderToolStripMenuItem.Name = "playlistBuilderToolStripMenuItem";
+            playlistBuilderToolStripMenuItem.Size = new Size(211, 26);
+            playlistBuilderToolStripMenuItem.Text = "&Playlist Builder...";
+            playlistBuilderToolStripMenuItem.Click += PlaylistBuilderToolStripMenuItem_Click;
+            // 
             // reloadMediaListToolStripMenuItem
             // 
             reloadMediaListToolStripMenuItem.Name = "reloadMediaListToolStripMenuItem";
-            reloadMediaListToolStripMenuItem.Size = new Size(224, 26);
+            reloadMediaListToolStripMenuItem.Size = new Size(211, 26);
             reloadMediaListToolStripMenuItem.Text = "&Reload Media List";
             reloadMediaListToolStripMenuItem.Click += ReloadMediaFilesToolStripMenuItem_Click;
             // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(221, 6);
+            toolStripMenuItem3.Size = new Size(208, 6);
             // 
             // optionsToolStripMenuItem
             // 
             optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            optionsToolStripMenuItem.Size = new Size(224, 26);
+            optionsToolStripMenuItem.Size = new Size(211, 26);
             optionsToolStripMenuItem.Text = "&Options...";
             optionsToolStripMenuItem.Click += OptionsToolStripMenuItem_Click;
             // 
@@ -610,12 +619,17 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // playlistBuilderToolStripMenuItem
+            // downloadSmart
             // 
-            playlistBuilderToolStripMenuItem.Name = "playlistBuilderToolStripMenuItem";
-            playlistBuilderToolStripMenuItem.Size = new Size(224, 26);
-            playlistBuilderToolStripMenuItem.Text = "&Playlist Builder...";
-            playlistBuilderToolStripMenuItem.Click += PlaylistBuilderToolStripMenuItem_Click;
+            downloadSmart.AutoSize = true;
+            downloadSmart.Checked = true;
+            downloadSmart.Location = new Point(757, 48);
+            downloadSmart.Name = "downloadSmart";
+            downloadSmart.Size = new Size(69, 24);
+            downloadSmart.TabIndex = 5;
+            downloadSmart.TabStop = true;
+            downloadSmart.Text = "&Smart";
+            downloadSmart.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -713,5 +727,6 @@
         private TextBox optionSubtleLangs;
         private CheckBox optionDownloadChat;
         private ToolStripMenuItem playlistBuilderToolStripMenuItem;
+        private RadioButton downloadSmart;
     }
 }

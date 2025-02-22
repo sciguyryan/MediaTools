@@ -4,6 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace MediaTools
 {
+    internal enum DownloadType
+    {
+        Single,
+        Playlist,
+        Smart
+    }
+
     public partial class MainForm : Form
     {
         private Point _contextMenuLocation;
@@ -106,14 +113,25 @@ namespace MediaTools
 
         private async void Download_Click(object sender, EventArgs e)
         {
-            var urls = BuildDownloadUrlList();
+            var downloadType = DownloadType.Single;
+            if (downloadPlaylist.Checked)
+            {
+                downloadType = DownloadType.Playlist;
+            }
+            else if (downloadSmart.Checked)
+            {
+                downloadType = DownloadType.Smart;
+            }
+
+            var downloadTypeString = downloadType.ToString();
+
+            var urls = BuildDownloadUrlList(downloadType);
             if (urls.Length == 0)
             {
                 UpdateStatus(DisplayBuilders.ErrorNoValidUrls);
                 return;
             }
 
-            var downloadType = downloadSingle.Checked ? "video" : "playlist";
             download.Enabled = false;
 
             var subfolder = downloadFolder.Text;
@@ -126,12 +144,21 @@ namespace MediaTools
             {
                 _fileUtils.EnsureTempExists();
 
+                // TODO - this only applies to YouTube and will need to be tweaked if other sources are added.
+                if (downloadType == DownloadType.Smart)
+                {
+                    var downloadTypeSub = urls[i].Contains("playlist") ? "playlist" : "video";
+                    downloadTypeString += $" ({downloadTypeSub})";
+                }
+
+                downloadTypeString = downloadTypeString.ToLower();
+
                 UpdateStatus(
                     DisplayBuilders.InfoAttemptDownload,
-                    [downloadType, i + 1, urls.Length]
+                    [downloadTypeString, i + 1, urls.Length]
                 );
                 await ProcessUtils.RunDownloader(urls[i], _fileUtils.GetTempPath());
-                UpdateStatus(DisplayBuilders.SuccessDownload, [downloadType, i + 1]);
+                UpdateStatus(DisplayBuilders.SuccessDownload, [downloadTypeString, i + 1]);
 
                 // We could move all the files at the end instead, but if
                 // something went wrong then some of the files would be stuck
@@ -484,16 +511,20 @@ namespace MediaTools
                 : "Show &Console...";
         }
 
-        public string[] BuildDownloadUrlList()
+        private string[] BuildDownloadUrlList(DownloadType downloadType)
         {
-            var isSingle = downloadSingle.Checked;
-
             return [.. (
                 from id in downloadIds.Lines
                 where id.Length != 0
-                select isSingle
-                    ? $"https://www.youtube.com/watch?v={id}"
-                    : $"https://www.youtube.com/playlist?list={id}"
+                select downloadType switch
+                {
+                    DownloadType.Single => $"https://www.youtube.com/watch?v={id}",
+                    DownloadType.Playlist => $"https://www.youtube.com/playlist?list={id}",
+                    DownloadType.Smart => id.Length == 11
+                        ? $"https://www.youtube.com/watch?v={id}"
+                        : $"https://www.youtube.com/playlist?list={id}",
+                    _ => throw new ArgumentOutOfRangeException(nameof(downloadType), downloadType, null)
+                }
             ).Distinct()];
         }
 
