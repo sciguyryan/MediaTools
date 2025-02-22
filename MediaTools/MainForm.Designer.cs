@@ -29,9 +29,11 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            optionShutdownOnComplete = new CheckBox();
+            downloadSmart = new RadioButton();
             subtitleGroupBox = new GroupBox();
             optionSubtleLangs = new TextBox();
             label6 = new Label();
@@ -83,7 +85,6 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            downloadSmart = new RadioButton();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             subtitleGroupBox.SuspendLayout();
@@ -110,6 +111,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(optionShutdownOnComplete);
             tabPage1.Controls.Add(downloadSmart);
             tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
@@ -131,6 +133,27 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // optionShutdownOnComplete
+            // 
+            optionShutdownOnComplete.AutoSize = true;
+            optionShutdownOnComplete.Location = new Point(537, 393);
+            optionShutdownOnComplete.Name = "optionShutdownOnComplete";
+            optionShutdownOnComplete.Size = new Size(189, 24);
+            optionShutdownOnComplete.TabIndex = 22;
+            optionShutdownOnComplete.Text = "&Shutdown On Complete";
+            optionShutdownOnComplete.UseVisualStyleBackColor = true;
+            // 
+            // downloadSmart
+            // 
+            downloadSmart.AutoSize = true;
+            downloadSmart.Checked = true;
+            downloadSmart.Location = new Point(757, 48);
+            downloadSmart.Name = "downloadSmart";
+            downloadSmart.Size = new Size(69, 24);
+            downloadSmart.TabIndex = 5;
+            downloadSmart.Text = "&Smart";
+            downloadSmart.UseVisualStyleBackColor = true;
             // 
             // subtitleGroupBox
             // 
@@ -192,7 +215,7 @@
             // optionDownloadChat
             // 
             optionDownloadChat.AutoSize = true;
-            optionDownloadChat.Location = new Point(9, 176);
+            optionDownloadChat.Location = new Point(8, 176);
             optionDownloadChat.Name = "optionDownloadChat";
             optionDownloadChat.Size = new Size(134, 24);
             optionDownloadChat.TabIndex = 19;
@@ -218,7 +241,7 @@
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
             optionCookieLogin.TabIndex = 17;
-            optionCookieLogin.Text = "Login With Cookies";
+            optionCookieLogin.Text = "&Login With Cookies";
             optionCookieLogin.UseVisualStyleBackColor = true;
             optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
             // 
@@ -250,7 +273,7 @@
             // 
             optionMarkWatched.AutoSize = true;
             optionMarkWatched.Enabled = false;
-            optionMarkWatched.Location = new Point(9, 146);
+            optionMarkWatched.Location = new Point(8, 146);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
             optionMarkWatched.TabIndex = 18;
@@ -386,12 +409,10 @@
             // downloadSingle
             // 
             downloadSingle.AutoSize = true;
-            downloadSingle.Checked = true;
             downloadSingle.Location = new Point(600, 48);
             downloadSingle.Name = "downloadSingle";
             downloadSingle.Size = new Size(71, 24);
             downloadSingle.TabIndex = 3;
-            downloadSingle.TabStop = true;
             downloadSingle.Text = "&Single";
             downloadSingle.UseVisualStyleBackColor = true;
             // 
@@ -440,10 +461,10 @@
             // 
             // download
             // 
-            download.Location = new Point(537, 358);
+            download.Location = new Point(537, 423);
             download.Name = "download";
             download.Size = new Size(94, 29);
-            download.TabIndex = 22;
+            download.TabIndex = 23;
             download.Text = "Download";
             download.UseVisualStyleBackColor = true;
             download.Click += Download_Click;
@@ -474,14 +495,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = SystemColors.Control;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -619,18 +640,6 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // downloadSmart
-            // 
-            downloadSmart.AutoSize = true;
-            downloadSmart.Checked = true;
-            downloadSmart.Location = new Point(757, 48);
-            downloadSmart.Name = "downloadSmart";
-            downloadSmart.Size = new Size(69, 24);
-            downloadSmart.TabIndex = 5;
-            downloadSmart.TabStop = true;
-            downloadSmart.Text = "&Smart";
-            downloadSmart.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -728,5 +737,6 @@
         private CheckBox optionDownloadChat;
         private ToolStripMenuItem playlistBuilderToolStripMenuItem;
         private RadioButton downloadSmart;
+        private CheckBox optionShutdownOnComplete;
     }
 }

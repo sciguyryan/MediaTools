@@ -174,6 +174,12 @@ namespace MediaTools
             File.Delete(_configPath);
 
             await UpdateMediaTable(true);
+
+            // Execute the shutdown command, 120 seconds after the media list update has finished.
+            if (optionShutdownOnComplete.Checked)
+            {
+                Process.Start("shutdown", "/s /t 120");
+            }
         }
 
         private void OptionAudioOnly_CheckedChanged(object sender, EventArgs e)
