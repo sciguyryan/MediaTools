@@ -71,6 +71,12 @@
 
         private void Export_Click(object sender, EventArgs e)
         {
+            if (dataGridView1.Rows.Count == 0)
+            {
+                toolStripStatusLabel1.Text = "Unable to create a playlist containing no items.";
+                return;
+            }
+
             switch (exportFormat.Text)
             {
                 case "M3U":

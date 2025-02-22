@@ -13,10 +13,8 @@ namespace MediaTools
 
     internal class PlaylistBuilder
     {
-        // Processing properties.
         private readonly bool _useAbsolutePaths;
         private readonly string _outFilePath;
-
         private readonly List<string> _lines = [];
         private readonly List<PlaylistEntry> _data = [];
 
