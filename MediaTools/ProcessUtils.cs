@@ -5,7 +5,7 @@ namespace MediaTools
 {
     internal class ProcessUtils
     {
-        public static async Task<FfProbeJson?> RunMediaInfoFull(string path)
+        public static async Task<FfProbeJson?> RunMediaInfo(string path)
         {
             var process = new Process
             {
@@ -13,7 +13,7 @@ namespace MediaTools
                 {
                     Arguments = $"-v quiet -print_format json -show_format -show_streams \"{path}\"",
                     CreateNoWindow = true,
-                    FileName = Program.AppSettings.FfprobePath,
+                    FileName = Program.appAppSettings.FfprobePath,
                     RedirectStandardOutput = true,
                 },
             };
@@ -44,7 +44,7 @@ namespace MediaTools
                 StartInfo = new ProcessStartInfo()
                 {
                     Arguments = downloadUrl,
-                    FileName = Program.AppSettings.YtDlpPath,
+                    FileName = Program.appAppSettings.YtDlpPath,
                     WorkingDirectory = tempPath
                 }
             };
@@ -58,6 +58,37 @@ namespace MediaTools
             process.Start();
 
             await tcs.Task;
+        }
+
+        public static void RunMediaPlayer(string? path)
+        {
+            Process process;
+
+            var playerPath = Program.appAppSettings.MediaPlayerPath;
+            if (File.Exists(playerPath))
+            {
+                process = new Process()
+                {
+                    StartInfo = new ProcessStartInfo()
+                    {
+                        Arguments = path,
+                        FileName = playerPath,
+                    }
+                };
+            }
+            else
+            {
+                process = new Process()
+                {
+                    StartInfo = new ProcessStartInfo()
+                    {
+                        FileName = path,
+                        UseShellExecute = true,
+                    }
+                };
+            }
+
+            process.Start();
         }
     }
 }

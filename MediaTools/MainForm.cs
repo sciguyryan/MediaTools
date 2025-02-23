@@ -24,7 +24,7 @@ namespace MediaTools
         {
             IconModifier.SetFormIcon(this);
 
-            var ytDlpPath = new FileInfo(Program.AppSettings.YtDlpPath).DirectoryName!;
+            var ytDlpPath = new FileInfo(Program.appAppSettings.YtDlpPath).DirectoryName!;
             _configPath = Path.Combine(ytDlpPath, "yt-dlp.conf");
             _fileUtils = new FileUtils(runFromPath);
             _cacheHandler = new CacheHandler(Path.Combine(runFromPath, "cache.dat"));
@@ -33,7 +33,7 @@ namespace MediaTools
 
             InitializeComponent();
 
-            if (Program.AppSettings.RememberDownloadOptions)
+            if (Program.appAppSettings.RememberDownloadOptions)
             {
                 RestoreDownloadOptions();
             }
@@ -45,7 +45,7 @@ namespace MediaTools
 
             toolStripStatusLabel1.Text = "";
 
-            SetFoldersColumnVisibility(Program.AppSettings.ShowFolders);
+            SetFoldersColumnVisibility(Program.appAppSettings.ShowFolders);
 
             Interop.AllocConsole();
             Interop.SetConsoleMode();
@@ -54,7 +54,7 @@ namespace MediaTools
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             UpdateDownloadOptions();
-            Program.AppSettings.WriteSettings();
+            Program.appAppSettings.WriteSettings();
 
             WriteCacheData();
         }
@@ -69,9 +69,8 @@ namespace MediaTools
                 return;
             }
 
-            var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value!.ToString()!;
-            var processStartInfo = new ProcessStartInfo(file) { UseShellExecute = true };
-            Process.Start(processStartInfo);
+            var file = mediaFilesTable.Rows[e.RowIndex].Cells["FullPath"].Value!.ToString();
+            ProcessUtils.RunMediaPlayer(file);
         }
 
         private async void MediaFilesTable_KeyDown(object sender, KeyEventArgs e)
@@ -278,7 +277,7 @@ namespace MediaTools
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            Program.AppSettings = Settings.ReadSettings();
+            Program.appAppSettings = AppSettings.ReadSettings();
 
             LoadCachedData();
             await UpdateMediaTable(true);
@@ -762,7 +761,7 @@ namespace MediaTools
         {
             var entries =
                 _fileEntries.Where(entry => File.Exists(entry.FullPath))
-                    .Where(entry => Program.AppSettings.ShowMediaInSubFolders || _fileUtils.IsMediaInRoot(entry))
+                    .Where(entry => Program.appAppSettings.ShowMediaInSubFolders || _fileUtils.IsMediaInRoot(entry))
                     .ToList();
 
             _fileEntries = entries;
@@ -781,7 +780,7 @@ namespace MediaTools
                     continue;
                 }
 
-                var info = await ProcessUtils.RunMediaInfoFull(file.FullName);
+                var info = await ProcessUtils.RunMediaInfo(file.FullName);
                 if (info is null)
                 {
                     continue;
@@ -797,7 +796,7 @@ namespace MediaTools
             }
 
             // Recursively process subdirectories, if needed.
-            if (!Program.AppSettings.ShowMediaInSubFolders)
+            if (!Program.appAppSettings.ShowMediaInSubFolders)
             {
                 return;
             }
@@ -848,9 +847,9 @@ namespace MediaTools
                 lines.Add("--embed-thumbnail");
             }
             if (optionCookieLogin.Checked &&
-                Program.AppSettings.CookiePath.Length > 0)
+                Program.appAppSettings.CookiePath.Length > 0)
             {
-                lines.Add($"--cookies-from-browser {Program.AppSettings.CookiePath}");
+                lines.Add($"--cookies-from-browser {Program.appAppSettings.CookiePath}");
 
                 if (optionMarkWatched.Checked)
                 {
@@ -967,100 +966,100 @@ namespace MediaTools
 
         private void UpdateDownloadOptions()
         {
-            if (!Program.AppSettings.RememberDownloadOptions)
+            if (!Program.appAppSettings.RememberDownloadOptions)
             {
                 return;
             }
 
-            Program.AppSettings.DownloadOptions.AutoUpdate =
+            Program.appAppSettings.DownloadOptions.AutoUpdate =
                 optionAutoUpdate.Checked;
 
-            Program.AppSettings.DownloadOptions.AddSubtitles =
+            Program.appAppSettings.DownloadOptions.AddSubtitles =
                 optionAddSubtitles.Checked;
 
-            Program.AppSettings.DownloadOptions.AddMetadata =
+            Program.appAppSettings.DownloadOptions.AddMetadata =
                 optionAddMetadata.Checked;
 
-            Program.AppSettings.DownloadOptions.AddChapters =
+            Program.appAppSettings.DownloadOptions.AddChapters =
                 optionAddChapters.Checked;
 
-            Program.AppSettings.DownloadOptions.AddThumbnails =
+            Program.appAppSettings.DownloadOptions.AddThumbnails =
                 optionAddThumbnails.Checked;
 
-            Program.AppSettings.DownloadOptions.CookieLogin =
+            Program.appAppSettings.DownloadOptions.CookieLogin =
                 optionCookieLogin.Checked;
 
-            Program.AppSettings.DownloadOptions.MarkWatched =
+            Program.appAppSettings.DownloadOptions.MarkWatched =
                 optionCookieLogin.Checked && optionMarkWatched.Checked;
 
-            Program.AppSettings.DownloadOptions.UseSponsorBlock =
+            Program.appAppSettings.DownloadOptions.UseSponsorBlock =
                 optionSponsorBlock.Checked;
 
-            Program.AppSettings.DownloadOptions.TargetResolutionIndex =
+            Program.appAppSettings.DownloadOptions.TargetResolutionIndex =
                 optionResolution.SelectedIndex;
 
-            Program.AppSettings.DownloadOptions.DownloadRateLimit =
+            Program.appAppSettings.DownloadOptions.DownloadRateLimit =
                 optionDownloadRateLimitVal.Value;
 
-            Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex =
+            Program.appAppSettings.DownloadOptions.DownloadRateLimitTypeIndex =
                 optionDownloadRateLimitType.SelectedIndex;
 
-            Program.AppSettings.DownloadOptions.DownloadChat =
+            Program.appAppSettings.DownloadOptions.DownloadChat =
                 optionDownloadChat.Checked;
 
-            Program.AppSettings.DownloadOptions.EmbedSubtitles =
+            Program.appAppSettings.DownloadOptions.EmbedSubtitles =
                 optionEmbedSubs.Checked;
-            Program.AppSettings.DownloadOptions.SubtitleLanguages =
+            Program.appAppSettings.DownloadOptions.SubtitleLanguages =
                 optionSubtleLangs.Text;
         }
 
         private void RestoreDownloadOptions()
         {
-            if (!Program.AppSettings.RememberDownloadOptions)
+            if (!Program.appAppSettings.RememberDownloadOptions)
             {
                 return;
             }
 
             optionAutoUpdate.Checked =
-                Program.AppSettings.DownloadOptions.AutoUpdate;
+                Program.appAppSettings.DownloadOptions.AutoUpdate;
 
             optionAddSubtitles.Checked =
-                Program.AppSettings.DownloadOptions.AddSubtitles;
+                Program.appAppSettings.DownloadOptions.AddSubtitles;
 
             optionAddMetadata.Checked =
-                Program.AppSettings.DownloadOptions.AddMetadata;
+                Program.appAppSettings.DownloadOptions.AddMetadata;
 
             optionAddChapters.Checked =
-                Program.AppSettings.DownloadOptions.AddChapters;
+                Program.appAppSettings.DownloadOptions.AddChapters;
 
             optionAddThumbnails.Checked =
-                Program.AppSettings.DownloadOptions.AddThumbnails;
+                Program.appAppSettings.DownloadOptions.AddThumbnails;
 
             optionCookieLogin.Checked =
-                Program.AppSettings.DownloadOptions.CookieLogin;
+                Program.appAppSettings.DownloadOptions.CookieLogin;
 
             optionMarkWatched.Checked =
-                Program.AppSettings.DownloadOptions.MarkWatched;
+                Program.appAppSettings.DownloadOptions.MarkWatched;
 
             optionSponsorBlock.Checked =
-                Program.AppSettings.DownloadOptions.UseSponsorBlock;
+                Program.appAppSettings.DownloadOptions.UseSponsorBlock;
 
             optionResolution.SelectedIndex =
-                Program.AppSettings.DownloadOptions.TargetResolutionIndex;
+                Program.appAppSettings.DownloadOptions.TargetResolutionIndex;
 
             optionDownloadRateLimitVal.Value =
-                Program.AppSettings.DownloadOptions.DownloadRateLimit;
+                Program.appAppSettings.DownloadOptions.DownloadRateLimit;
 
             optionDownloadRateLimitType.SelectedIndex =
-                Program.AppSettings.DownloadOptions.DownloadRateLimitTypeIndex;
+                Program.appAppSettings.DownloadOptions.DownloadRateLimitTypeIndex;
 
-            optionDownloadChat.Checked = Program.AppSettings.DownloadOptions.DownloadChat;
+            optionDownloadChat.Checked = Program.appAppSettings.DownloadOptions.DownloadChat;
 
             optionEmbedSubs.Checked =
-                Program.AppSettings.DownloadOptions.EmbedSubtitles;
+                Program.appAppSettings.DownloadOptions.EmbedSubtitles;
 
             optionSubtleLangs.Text =
-                Program.AppSettings.DownloadOptions.SubtitleLanguages;
+                Program.appAppSettings.DownloadOptions.SubtitleLanguages;
         }
 
         public void SetSearchOpen(bool status)

@@ -34,7 +34,7 @@
             var files = (string[])e.Data.GetData(DataFormats.FileDrop)!;
             foreach (var file in files)
             {
-                var mi = await ProcessUtils.RunMediaInfoFull(file);
+                var mi = await ProcessUtils.RunMediaInfo(file);
                 if (mi?.Format is null)
                 {
                     continue;

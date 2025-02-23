@@ -2,7 +2,7 @@
 
 namespace MediaTools
 {
-    internal class Settings
+    internal class AppSettings
     {
         private const string FileName = "settings.json";
 
@@ -20,23 +20,25 @@ namespace MediaTools
 
         public string YtDlpPath { get; set; } = "";
 
+        public string MediaPlayerPath { get; set; } = "";
+
         public void WriteSettings()
         {
             var json = JsonSerializer.Serialize(this);
             File.WriteAllText($".\\{FileName}", json);
         }
 
-        public static Settings ReadSettings()
+        public static AppSettings ReadSettings()
         {
             if (!File.Exists(FileName))
             {
-                return new Settings();
+                return new AppSettings();
             }
 
             var json = File.ReadAllText(FileName);
-            var deserialized = JsonSerializer.Deserialize<Settings>(json);
+            var deserialized = JsonSerializer.Deserialize<AppSettings>(json);
 
-            return deserialized ?? new Settings();
+            return deserialized ?? new AppSettings();
         }
     }
 
@@ -53,7 +55,7 @@ namespace MediaTools
         public bool AddThumbnails { get; set; }
 
         // Advanced Options
-        
+
         public int TargetResolutionIndex { get; set; }
 
         public decimal DownloadRateLimit { get; set; }
