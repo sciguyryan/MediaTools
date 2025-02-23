@@ -87,6 +87,7 @@ namespace MediaTools
                 optionDownloadRateLimitType.SelectedIndex = 1;
             }
 
+            actionOnComplete.SelectedIndex = 1;
             toolStripStatusLabel1.Text = "";
 
             SetFoldersColumnVisibility(settings.ShowFolders);
@@ -206,20 +207,31 @@ namespace MediaTools
                 UpdateStatus(DisplayBuilders.InfoAttemptMoveDownloads);
                 _fileUtils.MoveTempFiles(downloadFolder.Text);
                 UpdateStatus(DisplayBuilders.SuccessMoveDownloads);
-
-                File.Delete(_configPath);
             }
+
+            // We don't need to delete the config file each time, we can overwrite
+            // it and just delete it after the tasks have ended.
+            File.Delete(_configPath);
 
             await UpdateMediaTable(true);
 
             SetDownloadsEnabled(true);
             SetOptionsEnabled(true);
 
-            // Execute the shutdown command, 120 seconds after the media list update has finished.
-            if (optionShutdownOnComplete.Checked)
+            switch (actionOnComplete.SelectedItem)
             {
-                UpdateStatus(DisplayBuilders.InfoShuttingDownComputer);
-                Shutdown();
+                case "0":
+                    // Do nothing.
+                    break;
+                case 1:
+                    // Close the application.
+                    Close();
+                    break;
+                case 2:
+                    // Shutdown.
+                    UpdateStatus(DisplayBuilders.InfoShuttingDownComputer);
+                    Shutdown();
+                    break;
             }
         }
 

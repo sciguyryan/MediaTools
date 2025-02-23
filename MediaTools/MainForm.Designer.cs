@@ -29,11 +29,14 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            actionOnComplete = new ComboBox();
+            label1 = new Label();
             groupBox4 = new GroupBox();
-            optionShutdownOnComplete = new CheckBox();
+            optionCookieLogin = new CheckBox();
+            optionMarkWatched = new CheckBox();
             subtitleGroupBox = new GroupBox();
             optionSubtleLangs = new TextBox();
             label6 = new Label();
@@ -41,11 +44,10 @@
             groupBox3 = new GroupBox();
             optionDownloadChat = new CheckBox();
             optionAutoUpdate = new CheckBox();
-            optionCookieLogin = new CheckBox();
             optionAddMetadata = new CheckBox();
             optionSponsorBlock = new CheckBox();
-            optionMarkWatched = new CheckBox();
             groupBox2 = new GroupBox();
+            optionForceKeyframeAtCuts = new CheckBox();
             optionDownloadRateLimitType = new ComboBox();
             optionDownloadRateLimitVal = new NumericUpDown();
             label5 = new Label();
@@ -80,7 +82,6 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            optionForceKeyframeAtCuts = new CheckBox();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -108,8 +109,9 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(actionOnComplete);
+            tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(groupBox4);
-            tabPage1.Controls.Add(optionShutdownOnComplete);
             tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
@@ -126,6 +128,26 @@
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // actionOnComplete
+            // 
+            actionOnComplete.DropDownStyle = ComboBoxStyle.DropDownList;
+            actionOnComplete.FormattingEnabled = true;
+            actionOnComplete.ItemHeight = 20;
+            actionOnComplete.Items.AddRange(new object[] { "Do Nothing", "Shutdown", "Exit Application" });
+            actionOnComplete.Location = new Point(643, 408);
+            actionOnComplete.Name = "actionOnComplete";
+            actionOnComplete.Size = new Size(147, 28);
+            actionOnComplete.TabIndex = 21;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(537, 411);
+            label1.Name = "label1";
+            label1.Size = new Size(100, 20);
+            label1.TabIndex = 20;
+            label1.Text = "On Complete:";
+            // 
             // groupBox4
             // 
             groupBox4.Controls.Add(optionCookieLogin);
@@ -138,15 +160,27 @@
             groupBox4.TabStop = false;
             groupBox4.Text = "Account Options";
             // 
-            // optionShutdownOnComplete
+            // optionCookieLogin
             // 
-            optionShutdownOnComplete.AutoSize = true;
-            optionShutdownOnComplete.Location = new Point(537, 407);
-            optionShutdownOnComplete.Name = "optionShutdownOnComplete";
-            optionShutdownOnComplete.Size = new Size(189, 24);
-            optionShutdownOnComplete.TabIndex = 17;
-            optionShutdownOnComplete.Text = "&Shutdown On Complete";
-            optionShutdownOnComplete.UseVisualStyleBackColor = true;
+            optionCookieLogin.AutoSize = true;
+            optionCookieLogin.Location = new Point(8, 26);
+            optionCookieLogin.Name = "optionCookieLogin";
+            optionCookieLogin.Size = new Size(159, 24);
+            optionCookieLogin.TabIndex = 16;
+            optionCookieLogin.Text = "&Login With Cookies";
+            optionCookieLogin.UseVisualStyleBackColor = true;
+            optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
+            // 
+            // optionMarkWatched
+            // 
+            optionMarkWatched.AutoSize = true;
+            optionMarkWatched.Enabled = false;
+            optionMarkWatched.Location = new Point(8, 56);
+            optionMarkWatched.Name = "optionMarkWatched";
+            optionMarkWatched.Size = new Size(126, 24);
+            optionMarkWatched.TabIndex = 17;
+            optionMarkWatched.Text = "Mark &Watched";
+            optionMarkWatched.UseVisualStyleBackColor = true;
             // 
             // subtitleGroupBox
             // 
@@ -166,7 +200,7 @@
             optionSubtleLangs.Location = new Point(9, 76);
             optionSubtleLangs.Name = "optionSubtleLangs";
             optionSubtleLangs.Size = new Size(196, 27);
-            optionSubtleLangs.TabIndex = 16;
+            optionSubtleLangs.TabIndex = 15;
             optionSubtleLangs.Text = "en.*";
             // 
             // label6
@@ -186,7 +220,7 @@
             optionEmbedSubs.Location = new Point(8, 26);
             optionEmbedSubs.Name = "optionEmbedSubs";
             optionEmbedSubs.Size = new Size(139, 24);
-            optionEmbedSubs.TabIndex = 15;
+            optionEmbedSubs.TabIndex = 14;
             optionEmbedSubs.Text = "&Embed Subtitles";
             optionEmbedSubs.UseVisualStyleBackColor = true;
             // 
@@ -209,7 +243,7 @@
             optionDownloadChat.Location = new Point(9, 86);
             optionDownloadChat.Name = "optionDownloadChat";
             optionDownloadChat.Size = new Size(134, 24);
-            optionDownloadChat.TabIndex = 14;
+            optionDownloadChat.TabIndex = 12;
             optionDownloadChat.Text = "Download &Chat";
             optionDownloadChat.UseVisualStyleBackColor = true;
             // 
@@ -221,20 +255,9 @@
             optionAutoUpdate.Location = new Point(9, 116);
             optionAutoUpdate.Name = "optionAutoUpdate";
             optionAutoUpdate.Size = new Size(116, 24);
-            optionAutoUpdate.TabIndex = 9;
+            optionAutoUpdate.TabIndex = 13;
             optionAutoUpdate.Text = "&Auto Update";
             optionAutoUpdate.UseVisualStyleBackColor = true;
-            // 
-            // optionCookieLogin
-            // 
-            optionCookieLogin.AutoSize = true;
-            optionCookieLogin.Location = new Point(8, 26);
-            optionCookieLogin.Name = "optionCookieLogin";
-            optionCookieLogin.Size = new Size(159, 24);
-            optionCookieLogin.TabIndex = 12;
-            optionCookieLogin.Text = "&Login With Cookies";
-            optionCookieLogin.UseVisualStyleBackColor = true;
-            optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
             // 
             // optionAddMetadata
             // 
@@ -260,17 +283,6 @@
             optionSponsorBlock.Text = "Use &SponsorBlock";
             optionSponsorBlock.UseVisualStyleBackColor = true;
             // 
-            // optionMarkWatched
-            // 
-            optionMarkWatched.AutoSize = true;
-            optionMarkWatched.Enabled = false;
-            optionMarkWatched.Location = new Point(8, 56);
-            optionMarkWatched.Name = "optionMarkWatched";
-            optionMarkWatched.Size = new Size(126, 24);
-            optionMarkWatched.TabIndex = 13;
-            optionMarkWatched.Text = "Mark &Watched";
-            optionMarkWatched.UseVisualStyleBackColor = true;
-            // 
             // groupBox2
             // 
             groupBox2.Controls.Add(optionForceKeyframeAtCuts);
@@ -285,6 +297,16 @@
             groupBox2.TabIndex = 13;
             groupBox2.TabStop = false;
             groupBox2.Text = "Advanced Options";
+            // 
+            // optionForceKeyframeAtCuts
+            // 
+            optionForceKeyframeAtCuts.AutoSize = true;
+            optionForceKeyframeAtCuts.Location = new Point(6, 86);
+            optionForceKeyframeAtCuts.Name = "optionForceKeyframeAtCuts";
+            optionForceKeyframeAtCuts.Size = new Size(189, 24);
+            optionForceKeyframeAtCuts.TabIndex = 9;
+            optionForceKeyframeAtCuts.Text = "Force &Keyframes at Cuts";
+            optionForceKeyframeAtCuts.UseVisualStyleBackColor = true;
             // 
             // optionDownloadRateLimitType
             // 
@@ -406,10 +428,10 @@
             // 
             // download
             // 
-            download.Location = new Point(537, 437);
+            download.Location = new Point(537, 443);
             download.Name = "download";
             download.Size = new Size(94, 29);
-            download.TabIndex = 18;
+            download.TabIndex = 19;
             download.Text = "Download";
             download.UseVisualStyleBackColor = true;
             download.Click += Download_Click;
@@ -420,7 +442,7 @@
             downloadIds.Multiline = true;
             downloadIds.Name = "downloadIds";
             downloadIds.Size = new Size(525, 750);
-            downloadIds.TabIndex = 1;
+            downloadIds.TabIndex = 0;
             // 
             // tabPage2
             // 
@@ -440,14 +462,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -585,16 +607,6 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // optionForceKeyframeAtCuts
-            // 
-            optionForceKeyframeAtCuts.AutoSize = true;
-            optionForceKeyframeAtCuts.Location = new Point(6, 86);
-            optionForceKeyframeAtCuts.Name = "optionForceKeyframeAtCuts";
-            optionForceKeyframeAtCuts.Size = new Size(189, 24);
-            optionForceKeyframeAtCuts.TabIndex = 14;
-            optionForceKeyframeAtCuts.Text = "Force &Keyframes at Cuts";
-            optionForceKeyframeAtCuts.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -688,8 +700,9 @@
         private TextBox optionSubtleLangs;
         private CheckBox optionDownloadChat;
         private ToolStripMenuItem playlistBuilderToolStripMenuItem;
-        private CheckBox optionShutdownOnComplete;
         private GroupBox groupBox4;
         private CheckBox optionForceKeyframeAtCuts;
+        private ComboBox actionOnComplete;
+        private Label label1;
     }
 }
