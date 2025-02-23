@@ -13,7 +13,7 @@ namespace MediaTools
                 {
                     Arguments = $"-v quiet -print_format json -show_format -show_streams \"{path}\"",
                     CreateNoWindow = true,
-                    FileName = Program.appAppSettings.FfprobePath,
+                    FileName = Program.appSettings.FfprobePath,
                     RedirectStandardOutput = true,
                 },
             };
@@ -44,7 +44,7 @@ namespace MediaTools
                 StartInfo = new ProcessStartInfo()
                 {
                     Arguments = downloadUrl,
-                    FileName = Program.appAppSettings.YtDlpPath,
+                    FileName = Program.appSettings.YtDlpPath,
                     WorkingDirectory = tempPath
                 }
             };
@@ -64,7 +64,7 @@ namespace MediaTools
         {
             Process process;
 
-            var playerPath = Program.appAppSettings.MediaPlayerPath;
+            var playerPath = Program.appSettings.MediaPlayerPath;
             if (File.Exists(playerPath))
             {
                 process = new Process()

@@ -4,15 +4,14 @@
     {
         private readonly MainForm _parent;
 
-        private readonly bool _subMediaDirty;
-
         public OptionsForm(MainForm parent)
         {
             IconModifier.SetFormIcon(this);
 
             InitializeComponent();
 
-            var settings = Program.appAppSettings;
+            var settings = Program.appSettings;
+            optionMediaDirectory.Text = settings.MediaDirectory;
             optionIncludeFolders.Checked = settings.ShowFolders;
             optionIncludeSubMedia.Checked = settings.ShowMediaInSubFolders;
             optionCookiePath.Text = settings.CookiePath;
@@ -22,13 +21,19 @@
             optionPlayerPath.Text = settings.MediaPlayerPath;
 
             _parent = parent;
-            _subMediaDirty = settings.ShowMediaInSubFolders;
         }
 
         private async void Ok_Click(object sender, EventArgs e)
         {
-            Program.appAppSettings = new AppSettings
+            var settings = Program.appSettings;
+
+            var mediaDirty =
+                settings.MediaDirectory != optionMediaDirectory.Text ||
+                settings.ShowMediaInSubFolders != optionIncludeSubMedia.Checked;
+
+            settings = new AppSettings
             {
+                MediaDirectory = optionMediaDirectory.Text,
                 ShowFolders = optionIncludeFolders.Checked,
                 ShowMediaInSubFolders = optionIncludeSubMedia.Checked,
                 CookiePath = optionCookiePath.Text,
@@ -38,13 +43,12 @@
                 MediaPlayerPath = optionPlayerPath.Text
             };
 
-            Program.appAppSettings.WriteSettings();
+            settings.WriteSettings();
 
             _parent.SetFoldersColumnVisibility(optionIncludeFolders.Checked);
 
-            // If this setting has been changed, we need to perform a full
-            // reload of the media list.
-            if (_subMediaDirty != Program.appAppSettings.ShowMediaInSubFolders)
+            // If the media list is now considered dirty, we need to reload it.
+            if (mediaDirty)
             {
                 await _parent.UpdateMediaTable(false);
             }
@@ -52,19 +56,33 @@
             Close();
         }
 
-        private void Browse_Click(object sender, EventArgs e)
+        private void BrowseFile_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() != DialogResult.OK)
             {
                 return;
             }
 
-            // Get the associated control and add the value to the relevant field.
-            var controlName = (string)((Button)sender).Tag!;
-            var foundControls = this.Controls.Find(controlName, true);
-            if (foundControls.Length > 0)
+            var name = (string)((Control)sender).Tag!;
+            var control = Controls.Find(name, true).FirstOrDefault();
+            if (control is not null)
             {
-                foundControls[0].Text = openFileDialog1.FileName;
+                ((TextBox)control).Text = openFileDialog1.FileName;
+            }
+        }
+
+        private void BrowseFolder_Click(object sender, EventArgs e)
+        {
+            if (folderBrowserDialog1.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            var name = (string)((Control)sender).Tag!;
+            var control = Controls.Find(name, true).FirstOrDefault();
+            if (control is not null)
+            {
+                ((TextBox)control).Text = folderBrowserDialog1.SelectedPath;
             }
         }
     }

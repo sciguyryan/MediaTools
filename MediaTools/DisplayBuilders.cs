@@ -7,7 +7,7 @@
         private const string Success = "Success: ";
         private const string SuccessConfigWriteTail = "download config file successfully written!";
         private const string SuccessMoveDownloadsTail = "downloaded files successfully moved!";
-        private const string SuccessDownloadTail = "[0] ([1] of [2]) successfully downloaded!";
+        private const string SuccessDownloadTail = "item [0] of [1] successfully downloaded!";
         private const string SuccessTrashFileTail = "the file '[0]' has been sent to the trash!";
         private const string SuccessDeleteFileTail = "the file '[0]' has been deleted!";
         private const string SuccessRenameFileTail = "the file '[0]' has been renamed to '[1]'!";
@@ -26,7 +26,7 @@
 
         private const string Information = "Information: ";
         private const string InfoAttemptWriteConfigTail = "attempting to write download config file...";
-        private const string InfoDownloadTail = "downloading [0] ([1] of [2])...";
+        private const string InfoDownloadTail = "downloading item [0] of [1]...";
         private const string InfoAttemptMoveDownloadsTail = "attempting to move files to specified folder...";
         private const string InfoReloadingMediaFilesTail = "reloading media file list...";
         private const string InfoMediaListReloadingTail = "media list successfully reloaded!";

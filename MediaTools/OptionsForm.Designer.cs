@@ -38,6 +38,9 @@
             groupBox3 = new GroupBox();
             optionRememberDownloadOpts = new CheckBox();
             groupBox4 = new GroupBox();
+            button3 = new Button();
+            optionMediaDirectory = new TextBox();
+            label4 = new Label();
             button2 = new Button();
             label5 = new Label();
             optionPlayerPath = new TextBox();
@@ -48,6 +51,7 @@
             optionFfprobePath = new TextBox();
             label2 = new Label();
             openFileDialog1 = new OpenFileDialog();
+            folderBrowserDialog1 = new FolderBrowserDialog();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -76,7 +80,7 @@
             // 
             // okButton
             // 
-            okButton.Location = new Point(12, 315);
+            okButton.Location = new Point(12, 349);
             okButton.Name = "okButton";
             okButton.Size = new Size(94, 29);
             okButton.TabIndex = 10;
@@ -146,6 +150,9 @@
             // 
             // groupBox4
             // 
+            groupBox4.Controls.Add(button3);
+            groupBox4.Controls.Add(optionMediaDirectory);
+            groupBox4.Controls.Add(label4);
             groupBox4.Controls.Add(button2);
             groupBox4.Controls.Add(label5);
             groupBox4.Controls.Add(optionPlayerPath);
@@ -157,14 +164,43 @@
             groupBox4.Controls.Add(label2);
             groupBox4.Location = new Point(12, 180);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(607, 129);
+            groupBox4.Size = new Size(607, 163);
             groupBox4.TabIndex = 7;
             groupBox4.TabStop = false;
             groupBox4.Text = "Paths";
             // 
+            // button3
+            // 
+            button3.Location = new Point(526, 19);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 29);
+            button3.TabIndex = 17;
+            button3.Tag = "optionMediaDirectory";
+            button3.Text = "&Browse...";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += BrowseFolder_Click;
+            // 
+            // optionMediaDirectory
+            // 
+            optionMediaDirectory.Enabled = false;
+            optionMediaDirectory.Location = new Point(136, 20);
+            optionMediaDirectory.Name = "optionMediaDirectory";
+            optionMediaDirectory.ReadOnly = true;
+            optionMediaDirectory.Size = new Size(384, 27);
+            optionMediaDirectory.TabIndex = 16;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(11, 23);
+            label4.Name = "label4";
+            label4.Size = new Size(119, 20);
+            label4.TabIndex = 15;
+            label4.Text = "Media Directory:";
+            // 
             // button2
             // 
-            button2.Location = new Point(526, 88);
+            button2.Location = new Point(526, 120);
             button2.Name = "button2";
             button2.Size = new Size(75, 29);
             button2.TabIndex = 9;
@@ -175,7 +211,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(11, 92);
+            label5.Location = new Point(11, 124);
             label5.Name = "label5";
             label5.Size = new Size(98, 20);
             label5.TabIndex = 14;
@@ -184,36 +220,36 @@
             // optionPlayerPath
             // 
             optionPlayerPath.Enabled = false;
-            optionPlayerPath.Location = new Point(115, 89);
+            optionPlayerPath.Location = new Point(136, 121);
             optionPlayerPath.Name = "optionPlayerPath";
             optionPlayerPath.ReadOnly = true;
-            optionPlayerPath.Size = new Size(405, 27);
+            optionPlayerPath.Size = new Size(384, 27);
             optionPlayerPath.TabIndex = 8;
             // 
             // optionYtdlpPath
             // 
             optionYtdlpPath.Enabled = false;
-            optionYtdlpPath.Location = new Point(115, 55);
+            optionYtdlpPath.Location = new Point(136, 86);
             optionYtdlpPath.Name = "optionYtdlpPath";
             optionYtdlpPath.ReadOnly = true;
-            optionYtdlpPath.Size = new Size(405, 27);
+            optionYtdlpPath.Size = new Size(384, 27);
             optionYtdlpPath.TabIndex = 6;
             // 
             // button1
             // 
-            button1.Location = new Point(526, 54);
+            button1.Location = new Point(526, 85);
             button1.Name = "button1";
             button1.Size = new Size(75, 29);
             button1.TabIndex = 7;
             button1.Tag = "optionYtdlpPath";
             button1.Text = "&Browse...";
             button1.UseVisualStyleBackColor = true;
-            button1.Click += Browse_Click;
+            button1.Click += BrowseFile_Click;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(11, 58);
+            label3.Location = new Point(11, 89);
             label3.Name = "label3";
             label3.Size = new Size(56, 20);
             label3.TabIndex = 9;
@@ -221,28 +257,28 @@
             // 
             // browseFfmpeg
             // 
-            browseFfmpeg.Location = new Point(526, 19);
+            browseFfmpeg.Location = new Point(526, 52);
             browseFfmpeg.Name = "browseFfmpeg";
             browseFfmpeg.Size = new Size(75, 29);
             browseFfmpeg.TabIndex = 5;
             browseFfmpeg.Tag = "optionFfprobePath";
             browseFfmpeg.Text = "&Browse...";
             browseFfmpeg.UseVisualStyleBackColor = true;
-            browseFfmpeg.Click += Browse_Click;
+            browseFfmpeg.Click += BrowseFile_Click;
             // 
             // optionFfprobePath
             // 
             optionFfprobePath.Enabled = false;
-            optionFfprobePath.Location = new Point(115, 20);
+            optionFfprobePath.Location = new Point(136, 53);
             optionFfprobePath.Name = "optionFfprobePath";
             optionFfprobePath.ReadOnly = true;
-            optionFfprobePath.Size = new Size(405, 27);
+            optionFfprobePath.Size = new Size(384, 27);
             optionFfprobePath.TabIndex = 4;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(6, 23);
+            label2.Location = new Point(11, 56);
             label2.Name = "label2";
             label2.Size = new Size(70, 20);
             label2.TabIndex = 0;
@@ -257,7 +293,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(637, 354);
+            ClientSize = new Size(637, 386);
             Controls.Add(groupBox4);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
@@ -303,5 +339,9 @@
         private TextBox optionPlayerPath;
         private Button button2;
         private Label label5;
+        private Button button3;
+        private TextBox optionMediaDirectory;
+        private Label label4;
+        private FolderBrowserDialog folderBrowserDialog1;
     }
 }

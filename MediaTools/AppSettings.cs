@@ -16,6 +16,8 @@ namespace MediaTools
 
         public DownloadSettings DownloadOptions { get; set; } = new();
 
+        public string MediaDirectory { get; set; } = "";
+
         public string FfprobePath { get; set; } = "";
 
         public string YtDlpPath { get; set; } = "";
