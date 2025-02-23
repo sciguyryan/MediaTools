@@ -29,11 +29,10 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             optionShutdownOnComplete = new CheckBox();
-            downloadSmart = new RadioButton();
             subtitleGroupBox = new GroupBox();
             optionSubtleLangs = new TextBox();
             label6 = new Label();
@@ -56,13 +55,8 @@
             optionAddChapters = new CheckBox();
             optionAddSubtitles = new CheckBox();
             optionAudioOnly = new CheckBox();
-            downloadPlaylist = new RadioButton();
-            downloadSingle = new RadioButton();
             label3 = new Label();
             downloadFolder = new TextBox();
-            label2 = new Label();
-            source = new ComboBox();
-            label1 = new Label();
             download = new Button();
             downloadIds = new TextBox();
             tabPage2 = new TabPage();
@@ -112,18 +106,12 @@
             // tabPage1
             // 
             tabPage1.Controls.Add(optionShutdownOnComplete);
-            tabPage1.Controls.Add(downloadSmart);
             tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(groupBox1);
-            tabPage1.Controls.Add(downloadPlaylist);
-            tabPage1.Controls.Add(downloadSingle);
             tabPage1.Controls.Add(label3);
             tabPage1.Controls.Add(downloadFolder);
-            tabPage1.Controls.Add(label2);
-            tabPage1.Controls.Add(source);
-            tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(download);
             tabPage1.Controls.Add(downloadIds);
             tabPage1.Location = new Point(4, 29);
@@ -137,23 +125,12 @@
             // optionShutdownOnComplete
             // 
             optionShutdownOnComplete.AutoSize = true;
-            optionShutdownOnComplete.Location = new Point(537, 393);
+            optionShutdownOnComplete.Location = new Point(537, 287);
             optionShutdownOnComplete.Name = "optionShutdownOnComplete";
             optionShutdownOnComplete.Size = new Size(189, 24);
-            optionShutdownOnComplete.TabIndex = 22;
+            optionShutdownOnComplete.TabIndex = 17;
             optionShutdownOnComplete.Text = "&Shutdown On Complete";
             optionShutdownOnComplete.UseVisualStyleBackColor = true;
-            // 
-            // downloadSmart
-            // 
-            downloadSmart.AutoSize = true;
-            downloadSmart.Checked = true;
-            downloadSmart.Location = new Point(757, 48);
-            downloadSmart.Name = "downloadSmart";
-            downloadSmart.Size = new Size(69, 24);
-            downloadSmart.TabIndex = 5;
-            downloadSmart.Text = "&Smart";
-            downloadSmart.UseVisualStyleBackColor = true;
             // 
             // subtitleGroupBox
             // 
@@ -161,9 +138,9 @@
             subtitleGroupBox.Controls.Add(label6);
             subtitleGroupBox.Controls.Add(optionEmbedSubs);
             subtitleGroupBox.Enabled = false;
-            subtitleGroupBox.Location = new Point(1079, 358);
+            subtitleGroupBox.Location = new Point(1079, 287);
             subtitleGroupBox.Name = "subtitleGroupBox";
-            subtitleGroupBox.Size = new Size(211, 241);
+            subtitleGroupBox.Size = new Size(218, 114);
             subtitleGroupBox.TabIndex = 15;
             subtitleGroupBox.TabStop = false;
             subtitleGroupBox.Text = "Subtitle Options";
@@ -173,7 +150,7 @@
             optionSubtleLangs.Location = new Point(9, 76);
             optionSubtleLangs.Name = "optionSubtleLangs";
             optionSubtleLangs.Size = new Size(196, 27);
-            optionSubtleLangs.TabIndex = 21;
+            optionSubtleLangs.TabIndex = 16;
             optionSubtleLangs.Text = "en.*";
             // 
             // label6
@@ -193,7 +170,7 @@
             optionEmbedSubs.Location = new Point(8, 26);
             optionEmbedSubs.Name = "optionEmbedSubs";
             optionEmbedSubs.Size = new Size(139, 24);
-            optionEmbedSubs.TabIndex = 20;
+            optionEmbedSubs.TabIndex = 15;
             optionEmbedSubs.Text = "&Embed Subtitles";
             optionEmbedSubs.UseVisualStyleBackColor = true;
             // 
@@ -205,7 +182,7 @@
             groupBox3.Controls.Add(optionAddMetadata);
             groupBox3.Controls.Add(optionSponsorBlock);
             groupBox3.Controls.Add(optionMarkWatched);
-            groupBox3.Location = new Point(1072, 111);
+            groupBox3.Location = new Point(1079, 40);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(218, 241);
             groupBox3.TabIndex = 14;
@@ -218,7 +195,7 @@
             optionDownloadChat.Location = new Point(8, 176);
             optionDownloadChat.Name = "optionDownloadChat";
             optionDownloadChat.Size = new Size(134, 24);
-            optionDownloadChat.TabIndex = 19;
+            optionDownloadChat.TabIndex = 14;
             optionDownloadChat.Text = "Download &Chat";
             optionDownloadChat.UseVisualStyleBackColor = true;
             // 
@@ -230,7 +207,7 @@
             optionAutoUpdate.Location = new Point(7, 26);
             optionAutoUpdate.Name = "optionAutoUpdate";
             optionAutoUpdate.Size = new Size(116, 24);
-            optionAutoUpdate.TabIndex = 14;
+            optionAutoUpdate.TabIndex = 9;
             optionAutoUpdate.Text = "&Auto Update";
             optionAutoUpdate.UseVisualStyleBackColor = true;
             // 
@@ -240,7 +217,7 @@
             optionCookieLogin.Location = new Point(7, 116);
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
-            optionCookieLogin.TabIndex = 17;
+            optionCookieLogin.TabIndex = 12;
             optionCookieLogin.Text = "&Login With Cookies";
             optionCookieLogin.UseVisualStyleBackColor = true;
             optionCookieLogin.CheckedChanged += OptionLogin_CheckedChanged;
@@ -253,7 +230,7 @@
             optionAddMetadata.Location = new Point(8, 56);
             optionAddMetadata.Name = "optionAddMetadata";
             optionAddMetadata.Size = new Size(127, 24);
-            optionAddMetadata.TabIndex = 15;
+            optionAddMetadata.TabIndex = 10;
             optionAddMetadata.Text = "Add &Metadata";
             optionAddMetadata.UseVisualStyleBackColor = true;
             // 
@@ -265,7 +242,7 @@
             optionSponsorBlock.Location = new Point(7, 86);
             optionSponsorBlock.Name = "optionSponsorBlock";
             optionSponsorBlock.Size = new Size(149, 24);
-            optionSponsorBlock.TabIndex = 16;
+            optionSponsorBlock.TabIndex = 11;
             optionSponsorBlock.Text = "Use &SponsorBlock";
             optionSponsorBlock.UseVisualStyleBackColor = true;
             // 
@@ -276,7 +253,7 @@
             optionMarkWatched.Location = new Point(8, 146);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
-            optionMarkWatched.TabIndex = 18;
+            optionMarkWatched.TabIndex = 13;
             optionMarkWatched.Text = "Mark &Watched";
             optionMarkWatched.UseVisualStyleBackColor = true;
             // 
@@ -287,7 +264,7 @@
             groupBox2.Controls.Add(label5);
             groupBox2.Controls.Add(optionResolution);
             groupBox2.Controls.Add(label4);
-            groupBox2.Location = new Point(761, 111);
+            groupBox2.Location = new Point(761, 40);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(305, 241);
             groupBox2.TabIndex = 13;
@@ -301,7 +278,7 @@
             optionDownloadRateLimitType.Location = new Point(256, 51);
             optionDownloadRateLimitType.Name = "optionDownloadRateLimitType";
             optionDownloadRateLimitType.Size = new Size(43, 28);
-            optionDownloadRateLimitType.TabIndex = 13;
+            optionDownloadRateLimitType.TabIndex = 8;
             // 
             // optionDownloadRateLimitVal
             // 
@@ -309,7 +286,7 @@
             optionDownloadRateLimitVal.Location = new Point(164, 52);
             optionDownloadRateLimitVal.Name = "optionDownloadRateLimitVal";
             optionDownloadRateLimitVal.Size = new Size(86, 27);
-            optionDownloadRateLimitVal.TabIndex = 12;
+            optionDownloadRateLimitVal.TabIndex = 7;
             // 
             // label5
             // 
@@ -328,7 +305,7 @@
             optionResolution.Location = new Point(164, 18);
             optionResolution.Name = "optionResolution";
             optionResolution.Size = new Size(86, 28);
-            optionResolution.TabIndex = 11;
+            optionResolution.TabIndex = 6;
             // 
             // label4
             // 
@@ -345,7 +322,7 @@
             groupBox1.Controls.Add(optionAddChapters);
             groupBox1.Controls.Add(optionAddSubtitles);
             groupBox1.Controls.Add(optionAudioOnly);
-            groupBox1.Location = new Point(537, 111);
+            groupBox1.Location = new Point(537, 40);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(218, 241);
             groupBox1.TabIndex = 6;
@@ -358,7 +335,7 @@
             optionAddThumbnails.Location = new Point(18, 110);
             optionAddThumbnails.Name = "optionAddThumbnails";
             optionAddThumbnails.Size = new Size(139, 24);
-            optionAddThumbnails.TabIndex = 10;
+            optionAddThumbnails.TabIndex = 5;
             optionAddThumbnails.Text = "Add &Thumbnails";
             optionAddThumbnails.UseVisualStyleBackColor = true;
             // 
@@ -370,7 +347,7 @@
             optionAddChapters.Location = new Point(18, 50);
             optionAddChapters.Name = "optionAddChapters";
             optionAddChapters.Size = new Size(121, 24);
-            optionAddChapters.TabIndex = 8;
+            optionAddChapters.TabIndex = 3;
             optionAddChapters.Text = "Add &Chapters";
             optionAddChapters.UseVisualStyleBackColor = true;
             // 
@@ -380,7 +357,7 @@
             optionAddSubtitles.Location = new Point(18, 80);
             optionAddSubtitles.Name = "optionAddSubtitles";
             optionAddSubtitles.Size = new Size(120, 24);
-            optionAddSubtitles.TabIndex = 9;
+            optionAddSubtitles.TabIndex = 4;
             optionAddSubtitles.Text = "Add &Subtitles";
             optionAddSubtitles.UseVisualStyleBackColor = true;
             optionAddSubtitles.CheckedChanged += OptionAddSubtitles_CheckedChanged;
@@ -391,35 +368,15 @@
             optionAudioOnly.Location = new Point(18, 25);
             optionAudioOnly.Name = "optionAudioOnly";
             optionAudioOnly.Size = new Size(105, 24);
-            optionAudioOnly.TabIndex = 7;
+            optionAudioOnly.TabIndex = 2;
             optionAudioOnly.Text = "&Audio Only";
             optionAudioOnly.UseVisualStyleBackColor = true;
             optionAudioOnly.CheckedChanged += OptionAudioOnly_CheckedChanged;
             // 
-            // downloadPlaylist
-            // 
-            downloadPlaylist.AutoSize = true;
-            downloadPlaylist.Location = new Point(675, 48);
-            downloadPlaylist.Name = "downloadPlaylist";
-            downloadPlaylist.Size = new Size(76, 24);
-            downloadPlaylist.TabIndex = 4;
-            downloadPlaylist.Text = "&Playlist";
-            downloadPlaylist.UseVisualStyleBackColor = true;
-            // 
-            // downloadSingle
-            // 
-            downloadSingle.AutoSize = true;
-            downloadSingle.Location = new Point(600, 48);
-            downloadSingle.Name = "downloadSingle";
-            downloadSingle.Size = new Size(71, 24);
-            downloadSingle.TabIndex = 3;
-            downloadSingle.Text = "&Single";
-            downloadSingle.UseVisualStyleBackColor = true;
-            // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(537, 81);
+            label3.Location = new Point(537, 9);
             label3.Name = "label3";
             label3.Size = new Size(54, 20);
             label3.TabIndex = 0;
@@ -427,44 +384,17 @@
             // 
             // downloadFolder
             // 
-            downloadFolder.Location = new Point(604, 78);
+            downloadFolder.Location = new Point(597, 6);
             downloadFolder.Name = "downloadFolder";
             downloadFolder.Size = new Size(151, 27);
-            downloadFolder.TabIndex = 6;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(537, 50);
-            label2.Name = "label2";
-            label2.Size = new Size(43, 20);
-            label2.TabIndex = 0;
-            label2.Text = "Type:";
-            // 
-            // source
-            // 
-            source.FormattingEnabled = true;
-            source.Items.AddRange(new object[] { "YouTube" });
-            source.Location = new Point(600, 14);
-            source.Name = "source";
-            source.Size = new Size(151, 28);
-            source.TabIndex = 2;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(537, 14);
-            label1.Name = "label1";
-            label1.Size = new Size(57, 20);
-            label1.TabIndex = 0;
-            label1.Text = "Source:";
+            downloadFolder.TabIndex = 1;
             // 
             // download
             // 
-            download.Location = new Point(537, 423);
+            download.Location = new Point(537, 317);
             download.Name = "download";
             download.Size = new Size(94, 29);
-            download.TabIndex = 23;
+            download.TabIndex = 18;
             download.Text = "Download";
             download.UseVisualStyleBackColor = true;
             download.Click += Download_Click;
@@ -495,14 +425,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -693,13 +623,8 @@
         private ToolStripMenuItem reloadMediaFilesToolStripMenuItem;
         private Button download;
         private TextBox downloadIds;
-        private Label label2;
-        private ComboBox source;
-        private Label label1;
         private Label label3;
         private TextBox downloadFolder;
-        private RadioButton downloadPlaylist;
-        private RadioButton downloadSingle;
         private GroupBox groupBox1;
         private CheckBox optionSponsorBlock;
         private CheckBox optionAddThumbnails;
@@ -736,7 +661,6 @@
         private TextBox optionSubtleLangs;
         private CheckBox optionDownloadChat;
         private ToolStripMenuItem playlistBuilderToolStripMenuItem;
-        private RadioButton downloadSmart;
         private CheckBox optionShutdownOnComplete;
     }
 }

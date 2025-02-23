@@ -1,16 +1,10 @@
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace MediaTools
 {
-    internal enum DownloadType
-    {
-        Single,
-        Playlist,
-        Smart
-    }
-
     public partial class MainForm : Form
     {
         private Point _contextMenuLocation;
@@ -49,7 +43,6 @@ namespace MediaTools
                 optionDownloadRateLimitType.SelectedIndex = 1;
             }
 
-            source.SelectedIndex = 0;
             toolStripStatusLabel1.Text = "";
 
             SetFoldersColumnVisibility(Program.AppSettings.ShowFolders);
@@ -113,19 +106,7 @@ namespace MediaTools
 
         private async void Download_Click(object sender, EventArgs e)
         {
-            var downloadType = DownloadType.Single;
-            if (downloadPlaylist.Checked)
-            {
-                downloadType = DownloadType.Playlist;
-            }
-            else if (downloadSmart.Checked)
-            {
-                downloadType = DownloadType.Smart;
-            }
-
-            var downloadTypeString = downloadType.ToString();
-
-            var urls = BuildDownloadUrlList(downloadType);
+            var urls = UrlProcessor.BuildDownloadUrlList(downloadIds.Lines);
             if (urls.Length == 0)
             {
                 UpdateStatus(DisplayBuilders.ErrorNoValidUrls);
@@ -136,29 +117,21 @@ namespace MediaTools
 
             var subfolder = downloadFolder.Text;
 
-            UpdateStatus(DisplayBuilders.InfoAttemptWriteConfig);
-            SetupConfigFile();
-            UpdateStatus(DisplayBuilders.SuccessConfigWrite);
-
             for (var i = 0; i < urls.Length; i++)
             {
                 _fileUtils.EnsureTempExists();
 
-                // TODO - this only applies to YouTube and will need to be tweaked if other sources are added.
-                if (downloadType == DownloadType.Smart)
-                {
-                    var downloadTypeSub = urls[i].Contains("playlist") ? "playlist" : "video";
-                    downloadTypeString += $" ({downloadTypeSub})";
-                }
+                var downloadType = urls[i].DownloadType;
+                var downloadTypeString = downloadType == DownloadType.Single ? "video" : "playlist";
 
-                downloadTypeString = downloadTypeString.ToLower();
+                UpdateStatus(DisplayBuilders.InfoAttemptWriteConfig, [], true);
+                SetupConfigFile(downloadType);
+                UpdateStatus(DisplayBuilders.SuccessConfigWrite, [], true);
 
-                UpdateStatus(
-                    DisplayBuilders.InfoAttemptDownload,
-                    [downloadTypeString, i + 1, urls.Length]
-                );
-                await ProcessUtils.RunDownloader(urls[i], _fileUtils.GetTempPath());
-                UpdateStatus(DisplayBuilders.SuccessDownload, [downloadTypeString, i + 1]);
+                object[] args = [downloadTypeString, i + 1, urls.Length];
+                UpdateStatus(DisplayBuilders.InfoAttemptDownload, args);
+                await ProcessUtils.RunDownloader(urls[i].Url, _fileUtils.GetTempPath());
+                UpdateStatus(DisplayBuilders.SuccessDownload, args);
 
                 // We could move all the files at the end instead, but if
                 // something went wrong then some of the files would be stuck
@@ -178,7 +151,8 @@ namespace MediaTools
             // Execute the shutdown command, 120 seconds after the media list update has finished.
             if (optionShutdownOnComplete.Checked)
             {
-                Process.Start("shutdown", "/s /t 120");
+                UpdateStatus(DisplayBuilders.InfoShuttingDownComputer);
+                Shutdown();
             }
         }
 
@@ -324,6 +298,24 @@ namespace MediaTools
         private void PlaylistBuilderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ShowPlaylistBuilderDialog();
+        }
+
+        private static void Shutdown()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start("shutdown", "/s /t 120");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Process.Start("shutdown", $"--wait {120} now");
+            }
+            else
+            {
+                // We don't know which OS this might be and so can't determine
+                // the correct shutdown command to execute.
+            }
         }
 
         private static void ShowPlaylistBuilderDialog()
@@ -515,23 +507,6 @@ namespace MediaTools
             showConsoleToolStripMenuItem.Text = _isConsoleShown
                 ? "Hide &Console..."
                 : "Show &Console...";
-        }
-
-        private string[] BuildDownloadUrlList(DownloadType downloadType)
-        {
-            return [.. (
-                from id in downloadIds.Lines
-                where id.Length != 0
-                select downloadType switch
-                {
-                    DownloadType.Single => $"https://www.youtube.com/watch?v={id}",
-                    DownloadType.Playlist => $"https://www.youtube.com/playlist?list={id}",
-                    DownloadType.Smart => id.Length == 11
-                        ? $"https://www.youtube.com/watch?v={id}"
-                        : $"https://www.youtube.com/playlist?list={id}",
-                    _ => throw new ArgumentOutOfRangeException(nameof(downloadType), downloadType, null)
-                }
-            ).Distinct()];
         }
 
         public async Task UpdateMediaTable(bool suppressMessages)
@@ -833,7 +808,7 @@ namespace MediaTools
             }
         }
 
-        private void SetupConfigFile()
+        private void SetupConfigFile(DownloadType downloadType)
         {
             var lines = new List<string>();
 
@@ -896,7 +871,7 @@ namespace MediaTools
 
                 lines.Add($"-r {optionDownloadRateLimitVal.Value}{targetRateType}");
             }
-            if (downloadPlaylist.Checked)
+            if (downloadType == DownloadType.Multiple)
             {
                 lines.Add("-o \"%(playlist)s/%(playlist_index)s - %(title)s [%(id)s].%(ext)s\"");
             }
