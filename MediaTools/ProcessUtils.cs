@@ -45,7 +45,7 @@ namespace MediaTools
                 {
                     Arguments = downloadUrl,
                     FileName = Program.appSettings.YtDlpPath,
-                    WorkingDirectory = tempPath
+                    WorkingDirectory = tempPath,
                 }
             };
 
@@ -71,7 +71,7 @@ namespace MediaTools
                 {
                     StartInfo = new ProcessStartInfo()
                     {
-                        Arguments = path,
+                        Arguments = $"\"{path}\"",
                         FileName = playerPath,
                     }
                 };

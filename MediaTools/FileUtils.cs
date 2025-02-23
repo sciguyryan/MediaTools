@@ -64,7 +64,7 @@ namespace MediaTools
                 return false;
             }
 
-            var sid = 
+            var sid =
                 WindowsIdentity.GetCurrent().Owner ?? throw new Exception("Unable to get SID for the current user.");
             var recycleBinPath = Path.Combine(drive, "$Recycle.Bin", sid.ToString());
             if (!Directory.Exists(recycleBinPath))
@@ -106,7 +106,7 @@ namespace MediaTools
 
             try
             {
-                using var fileStream = 
+                using var fileStream =
                     File.Open(metaDataFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 var buffer = new byte[fileStream.Length];
                 fileStream.ReadExactly(buffer);
@@ -116,7 +116,7 @@ namespace MediaTools
                 // The file for Windows Vista, 7 and 8 are exactly 544 bytes in length,
                 // while the file for Windows 10 and 11 are variable in size.
                 // I'm not even touching XP or earlier here.
-                var start = 
+                var start =
                     (Environment.OSVersion.Version.Major == 6) ? 24 : 28;
                 return Encoding.Unicode
                         .GetString(buffer, start, buffer.Length - start)
@@ -128,7 +128,7 @@ namespace MediaTools
             }
         }
 
-        public void EnsureTempExists()
+        public static void EnsureTempExists()
         {
             var tempDir = GetTempPath();
             if (!Directory.Exists(tempDir))
@@ -152,7 +152,7 @@ namespace MediaTools
             MoveDirectoryContents(GetTempPath(), mediaDir);
         }
 
-        private bool MoveDirectoryContents(string sourceDir, string destDir)
+        private static bool MoveDirectoryContents(string sourceDir, string destDir)
         {
             if (!Directory.Exists(sourceDir))
             {
@@ -224,14 +224,14 @@ namespace MediaTools
             return true;
         }
 
-        public string GetTempPath()
+        public static string GetTempPath()
         {
-            return Path.Combine(basePath, "temp");
+            return Path.GetFullPath(Environment.ExpandEnvironmentVariables(Program.appSettings.TempDirectory));
         }
 
         public string GetMediaPath()
         {
-            return Path.GetFullPath(Path.Combine(basePath, "..\\"));
+            return basePath;
         }
 
         public static void TruncateFile(string path)

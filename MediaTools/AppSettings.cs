@@ -18,6 +18,8 @@ namespace MediaTools
 
         public string MediaDirectory { get; set; } = "";
 
+        public string TempDirectory { get; set; } = "";
+
         public string FfprobePath { get; set; } = "";
 
         public string YtDlpPath { get; set; } = "";

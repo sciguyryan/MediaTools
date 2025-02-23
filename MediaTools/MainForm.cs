@@ -7,18 +7,18 @@ namespace MediaTools
 {
     public partial class MainForm : Form
     {
-        private Point _contextMenuLocation;
         private readonly string _configPath;
-        private ColumnName _columnName = ColumnName.Duration;
-        private SortDirection _sortOrder = SortDirection.Ascending;
-        private readonly FileUtils _fileUtils;
-        private string _lastTrashedFilePath = "";
-        private bool _isConsoleShown = true;
-        private bool _isUpdatingMediaList;
-        private bool _isDirty;
-        private bool _searchOpen;
-        private List<MediaFileEntry> _fileEntries = [];
         private readonly CacheHandler _cacheHandler;
+        private readonly FileUtils _fileUtils;
+        private ColumnName _columnName = ColumnName.Duration;
+        private List<MediaFileEntry> _fileEntries = [];
+        private Point _contextMenuLocation;
+        private SortDirection _sortOrder = SortDirection.Ascending;
+        private bool _isConsoleShown = true;
+        private bool _isDirty;
+        private bool _isSearchOpen;
+        private bool _isUpdatingMediaList;
+        private string _lastTrashedFilePath = "";
 
         public MainForm()
         {
@@ -28,23 +28,26 @@ namespace MediaTools
 
             // In the case where no media directory has been set, we will
             // try to use the parent of the application directory.
-            var settingMediaPath = settings.MediaDirectory;
-            if (!Path.Exists(settingMediaPath))
+            var mediaPath = settings.MediaDirectory;
+            if (!Path.Exists(mediaPath))
             {
+                Console.WriteLine("The specified media path doesn't exist, the default will be used instead.");
+
                 // Clear the existing option.
-                settings.MediaDirectory = "";
+                Program.appSettings.MediaDirectory = "";
 
                 // Set the parent of the directory that houses the executable to be
                 // the media source directory.
-                settingMediaPath = "..\\";
+                mediaPath = Path.Combine(AppContext.BaseDirectory, "..\\");
             }
-            var mediaDirectoryPath = Path.GetFullPath(settingMediaPath);
+
+            var resolvedMediaPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(mediaPath));
 
             var ytDlpPath = new FileInfo(settings.YtDlpPath).DirectoryName!;
             _configPath = Path.Combine(ytDlpPath, "yt-dlp.conf");
-            _fileUtils = new FileUtils(mediaDirectoryPath);
-            _cacheHandler = new CacheHandler(Path.Combine(mediaDirectoryPath, "cache.dat"));
-
+            _fileUtils = new FileUtils(resolvedMediaPath);
+            // The cache file will be held in the root media directory.
+            _cacheHandler = new CacheHandler(Path.Combine(resolvedMediaPath, "cache.dat"));
             _isDirty = !_cacheHandler.Exists();
 
             InitializeComponent();
@@ -65,6 +68,9 @@ namespace MediaTools
 
             Interop.AllocConsole();
             Interop.SetConsoleMode();
+
+            Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
+            Console.SetError(new StreamWriter(Console.OpenStandardError()) { AutoFlush = true });
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -130,11 +136,9 @@ namespace MediaTools
 
             download.Enabled = false;
 
-            var subfolder = downloadFolder.Text;
-
             for (var i = 0; i < urls.Length; i++)
             {
-                _fileUtils.EnsureTempExists();
+                FileUtils.EnsureTempExists();
 
                 var downloadType = urls[i].DownloadType;
 
@@ -144,21 +148,23 @@ namespace MediaTools
 
                 object[] args = [i + 1, urls.Length];
                 UpdateStatus(DisplayBuilders.InfoAttemptDownload, args);
-                await ProcessUtils.RunDownloader(urls[i].Url, _fileUtils.GetTempPath());
+                await ProcessUtils.RunDownloader(urls[i].Url, FileUtils.GetTempPath());
                 UpdateStatus(DisplayBuilders.SuccessDownload, args);
 
                 // We could move all the files at the end instead, but if
                 // something went wrong then some of the files would be stuck
                 // in the temporary folder.
                 // It seems to make more sense to move them as needed.
+                // We won't update the media list until the end to avoid
+                // the overhead and await locking.
                 UpdateStatus(DisplayBuilders.InfoAttemptMoveDownloads);
-                _fileUtils.MoveTempFiles(subfolder);
+                _fileUtils.MoveTempFiles(downloadFolder.Text);
                 UpdateStatus(DisplayBuilders.SuccessMoveDownloads);
+
+                File.Delete(_configPath);
             }
 
             download.Enabled = true;
-
-            File.Delete(_configPath);
 
             await UpdateMediaTable(true);
 
@@ -231,7 +237,7 @@ namespace MediaTools
                 case { Control: true, KeyCode: Keys.F }:
                     {
                         // We don't want to have multiple search forms open at once.
-                        if (_searchOpen)
+                        if (_isSearchOpen)
                         {
                             e.Handled = true;
                             return;
@@ -1079,7 +1085,7 @@ namespace MediaTools
 
         public void SetSearchOpen(bool status)
         {
-            _searchOpen = status;
+            _isSearchOpen = status;
         }
     }
 }
