@@ -42,7 +42,8 @@
             optionCookiePath = new TextBox();
             label1 = new Label();
             groupBox1 = new GroupBox();
-            optionIncludeFolders = new CheckBox();
+            optionShowConsole = new CheckBox();
+            optionShowFolders = new CheckBox();
             tabPage2 = new TabPage();
             button4 = new Button();
             optionTempDirectory = new TextBox();
@@ -57,7 +58,7 @@
             button1 = new Button();
             label3 = new Label();
             browseFfmpeg = new Button();
-            optionFfprobePath = new TextBox();
+            optionFfmpegDirectory = new TextBox();
             label2 = new Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
@@ -69,10 +70,10 @@
             // 
             // okButton
             // 
-            okButton.Location = new Point(16, 235);
+            okButton.Location = new Point(16, 256);
             okButton.Name = "okButton";
             okButton.Size = new Size(94, 29);
-            okButton.TabIndex = 11;
+            okButton.TabIndex = 5;
             okButton.Text = "&OK";
             okButton.UseVisualStyleBackColor = true;
             okButton.Click += Ok_Click;
@@ -89,7 +90,7 @@
             tabControl1.Location = new Point(12, 12);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(638, 217);
+            tabControl1.Size = new Size(638, 242);
             tabControl1.TabIndex = 9;
             // 
             // tabPage1
@@ -100,7 +101,7 @@
             tabPage1.Location = new Point(4, 29);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(630, 184);
+            tabPage1.Size = new Size(630, 209);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Main Options";
             tabPage1.UseVisualStyleBackColor = true;
@@ -109,7 +110,7 @@
             // 
             groupBox3.Controls.Add(optionIncludeSubMedia);
             groupBox3.Controls.Add(optionRememberDownloadOpts);
-            groupBox3.Location = new Point(6, 66);
+            groupBox3.Location = new Point(6, 103);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(250, 87);
             groupBox3.TabIndex = 9;
@@ -122,8 +123,8 @@
             optionIncludeSubMedia.Location = new Point(9, 56);
             optionIncludeSubMedia.Name = "optionIncludeSubMedia";
             optionIncludeSubMedia.Size = new Size(167, 24);
-            optionIncludeSubMedia.TabIndex = 2;
-            optionIncludeSubMedia.Text = "Include Sub Folders?";
+            optionIncludeSubMedia.TabIndex = 4;
+            optionIncludeSubMedia.Text = "Include &Sub Folders?";
             optionIncludeSubMedia.UseVisualStyleBackColor = true;
             // 
             // optionRememberDownloadOpts
@@ -134,8 +135,8 @@
             optionRememberDownloadOpts.Location = new Point(9, 26);
             optionRememberDownloadOpts.Name = "optionRememberDownloadOpts";
             optionRememberDownloadOpts.Size = new Size(241, 24);
-            optionRememberDownloadOpts.TabIndex = 1;
-            optionRememberDownloadOpts.Text = "Remember Download Settings?";
+            optionRememberDownloadOpts.TabIndex = 3;
+            optionRememberDownloadOpts.Text = "Remember &Download Settings?";
             optionRememberDownloadOpts.UseVisualStyleBackColor = true;
             // 
             // groupBox2
@@ -154,7 +155,7 @@
             optionCookiePath.Location = new Point(102, 27);
             optionCookiePath.Name = "optionCookiePath";
             optionCookiePath.Size = new Size(249, 27);
-            optionCookiePath.TabIndex = 3;
+            optionCookiePath.TabIndex = 2;
             // 
             // label1
             // 
@@ -167,23 +168,36 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(optionIncludeFolders);
+            groupBox1.Controls.Add(optionShowConsole);
+            groupBox1.Controls.Add(optionShowFolders);
             groupBox1.Location = new Point(6, 6);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(250, 54);
+            groupBox1.Size = new Size(250, 91);
             groupBox1.TabIndex = 7;
             groupBox1.TabStop = false;
             groupBox1.Text = "Display Options";
             // 
-            // optionIncludeFolders
+            // optionShowConsole
             // 
-            optionIncludeFolders.AutoSize = true;
-            optionIncludeFolders.Location = new Point(11, 27);
-            optionIncludeFolders.Name = "optionIncludeFolders";
-            optionIncludeFolders.Size = new Size(126, 24);
-            optionIncludeFolders.TabIndex = 1;
-            optionIncludeFolders.Text = "Show &Folders?";
-            optionIncludeFolders.UseVisualStyleBackColor = true;
+            optionShowConsole.AutoSize = true;
+            optionShowConsole.Checked = true;
+            optionShowConsole.CheckState = CheckState.Checked;
+            optionShowConsole.Location = new Point(11, 57);
+            optionShowConsole.Name = "optionShowConsole";
+            optionShowConsole.Size = new Size(131, 24);
+            optionShowConsole.TabIndex = 1;
+            optionShowConsole.Text = "Show &Console?";
+            optionShowConsole.UseVisualStyleBackColor = true;
+            // 
+            // optionShowFolders
+            // 
+            optionShowFolders.AutoSize = true;
+            optionShowFolders.Location = new Point(11, 27);
+            optionShowFolders.Name = "optionShowFolders";
+            optionShowFolders.Size = new Size(126, 24);
+            optionShowFolders.TabIndex = 0;
+            optionShowFolders.Text = "Show &Folders?";
+            optionShowFolders.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
@@ -200,19 +214,19 @@
             tabPage2.Controls.Add(button1);
             tabPage2.Controls.Add(label3);
             tabPage2.Controls.Add(browseFfmpeg);
-            tabPage2.Controls.Add(optionFfprobePath);
+            tabPage2.Controls.Add(optionFfmpegDirectory);
             tabPage2.Controls.Add(label2);
             tabPage2.Location = new Point(4, 29);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(630, 184);
+            tabPage2.Size = new Size(630, 209);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Paths";
             tabPage2.UseVisualStyleBackColor = true;
             // 
             // button4
             // 
-            button4.Location = new Point(514, 40);
+            button4.Location = new Point(532, 40);
             button4.Name = "button4";
             button4.Size = new Size(75, 29);
             button4.TabIndex = 4;
@@ -223,9 +237,9 @@
             // 
             // optionTempDirectory
             // 
-            optionTempDirectory.Location = new Point(124, 41);
+            optionTempDirectory.Location = new Point(142, 41);
             optionTempDirectory.Name = "optionTempDirectory";
-            optionTempDirectory.Size = new Size(384, 27);
+            optionTempDirectory.Size = new Size(366, 27);
             optionTempDirectory.TabIndex = 3;
             // 
             // label6
@@ -239,7 +253,7 @@
             // 
             // button3
             // 
-            button3.Location = new Point(514, 5);
+            button3.Location = new Point(532, 5);
             button3.Name = "button3";
             button3.Size = new Size(75, 29);
             button3.TabIndex = 2;
@@ -250,9 +264,9 @@
             // 
             // optionMediaDirectory
             // 
-            optionMediaDirectory.Location = new Point(124, 6);
+            optionMediaDirectory.Location = new Point(142, 6);
             optionMediaDirectory.Name = "optionMediaDirectory";
-            optionMediaDirectory.Size = new Size(384, 27);
+            optionMediaDirectory.Size = new Size(366, 27);
             optionMediaDirectory.TabIndex = 1;
             // 
             // label4
@@ -266,7 +280,7 @@
             // 
             // button2
             // 
-            button2.Location = new Point(514, 145);
+            button2.Location = new Point(532, 145);
             button2.Name = "button2";
             button2.Size = new Size(75, 29);
             button2.TabIndex = 10;
@@ -286,21 +300,21 @@
             // 
             // optionPlayerPath
             // 
-            optionPlayerPath.Location = new Point(124, 146);
+            optionPlayerPath.Location = new Point(142, 146);
             optionPlayerPath.Name = "optionPlayerPath";
-            optionPlayerPath.Size = new Size(384, 27);
+            optionPlayerPath.Size = new Size(366, 27);
             optionPlayerPath.TabIndex = 9;
             // 
             // optionYtdlpPath
             // 
-            optionYtdlpPath.Location = new Point(124, 111);
+            optionYtdlpPath.Location = new Point(142, 111);
             optionYtdlpPath.Name = "optionYtdlpPath";
-            optionYtdlpPath.Size = new Size(384, 27);
+            optionYtdlpPath.Size = new Size(366, 27);
             optionYtdlpPath.TabIndex = 7;
             // 
             // button1
             // 
-            button1.Location = new Point(514, 110);
+            button1.Location = new Point(532, 110);
             button1.Name = "button1";
             button1.Size = new Size(75, 29);
             button1.TabIndex = 8;
@@ -320,36 +334,36 @@
             // 
             // browseFfmpeg
             // 
-            browseFfmpeg.Location = new Point(514, 75);
+            browseFfmpeg.Location = new Point(532, 75);
             browseFfmpeg.Name = "browseFfmpeg";
             browseFfmpeg.Size = new Size(75, 29);
             browseFfmpeg.TabIndex = 6;
-            browseFfmpeg.Tag = "optionFfprobePath";
+            browseFfmpeg.Tag = "optionFfmpegDirectory";
             browseFfmpeg.Text = "&Browse...";
             browseFfmpeg.UseVisualStyleBackColor = true;
-            browseFfmpeg.Click += BrowseFile_Click;
+            browseFfmpeg.Click += BrowseFolder_Click;
             // 
-            // optionFfprobePath
+            // optionFfmpegDirectory
             // 
-            optionFfprobePath.Location = new Point(124, 76);
-            optionFfprobePath.Name = "optionFfprobePath";
-            optionFfprobePath.Size = new Size(384, 27);
-            optionFfprobePath.TabIndex = 5;
+            optionFfmpegDirectory.Location = new Point(142, 76);
+            optionFfmpegDirectory.Name = "optionFfmpegDirectory";
+            optionFfmpegDirectory.Size = new Size(366, 27);
+            optionFfmpegDirectory.TabIndex = 5;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(6, 76);
+            label2.Location = new Point(6, 79);
             label2.Name = "label2";
-            label2.Size = new Size(70, 20);
+            label2.Size = new Size(130, 20);
             label2.TabIndex = 16;
-            label2.Text = "FFprobe: ";
+            label2.Text = "FFmpeg Directory:";
             // 
             // OptionsForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(659, 275);
+            ClientSize = new Size(659, 297);
             Controls.Add(tabControl1);
             Controls.Add(okButton);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -386,7 +400,7 @@
         private TextBox optionCookiePath;
         private Label label1;
         private GroupBox groupBox1;
-        private CheckBox optionIncludeFolders;
+        private CheckBox optionShowFolders;
         private TabPage tabPage2;
         private Button button3;
         private TextBox optionMediaDirectory;
@@ -398,10 +412,11 @@
         private Button button1;
         private Label label3;
         private Button browseFfmpeg;
-        private TextBox optionFfprobePath;
+        private TextBox optionFfmpegDirectory;
         private Label label2;
         private Button button4;
         private TextBox optionTempDirectory;
         private Label label6;
+        private CheckBox optionShowConsole;
     }
 }

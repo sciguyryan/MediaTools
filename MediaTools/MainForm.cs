@@ -7,6 +7,7 @@ namespace MediaTools
 {
     public partial class MainForm : Form
     {
+        private readonly bool _missingKeyPaths;
         private readonly string _configPath;
         private readonly CacheHandler _cacheHandler;
         private readonly FileUtils _fileUtils;
@@ -17,7 +18,9 @@ namespace MediaTools
         private bool _isConsoleShown = true;
         private bool _isDirty;
         private bool _isSearchOpen;
-        private bool _isUpdatingMediaList;
+        private bool _mediaListUpdatingBlocked;
+        private bool _needsRestart;
+        private bool _playlistBuilderBlocked;
         private string _lastTrashedFilePath = "";
 
         public MainForm()
@@ -26,31 +29,53 @@ namespace MediaTools
 
             var settings = Program.appSettings;
 
-            // In the case where no media directory has been set, we will
-            // try to use the parent of the application directory.
-            var mediaPath = settings.MediaDirectory;
-            if (!Path.Exists(mediaPath))
+            var mediaDirectory = FileUtils.FullyResolvePath(settings.MediaDirectory);
+            if (Directory.Exists(mediaDirectory))
             {
-                Console.WriteLine("The specified media path doesn't exist, the default will be used instead.");
-
-                // Clear the existing option.
-                Program.appSettings.MediaDirectory = "";
-
-                // Set the parent of the directory that houses the executable to be
-                // the media source directory.
-                mediaPath = Path.Combine(AppContext.BaseDirectory, "..\\");
+                _fileUtils = new FileUtils(mediaDirectory);
+                // The cache file will be held in the root media directory.
+                _cacheHandler = new CacheHandler(Path.Combine(mediaDirectory, "cache.dat"));
+                _isDirty = !_cacheHandler.Exists();
+            }
+            else
+            {
+                _fileUtils = new FileUtils(AppContext.BaseDirectory);
+                _cacheHandler = new CacheHandler(AppContext.BaseDirectory);
+                _missingKeyPaths = true;
             }
 
-            var resolvedMediaPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(mediaPath));
-
-            var ytDlpPath = new FileInfo(settings.YtDlpPath).DirectoryName!;
-            _configPath = Path.Combine(ytDlpPath, "yt-dlp.conf");
-            _fileUtils = new FileUtils(resolvedMediaPath);
-            // The cache file will be held in the root media directory.
-            _cacheHandler = new CacheHandler(Path.Combine(resolvedMediaPath, "cache.dat"));
-            _isDirty = !_cacheHandler.Exists();
+            var ytDlpPath = FileUtils.FullyResolvePath(settings.YtDlpPath);
+            if (File.Exists(ytDlpPath))
+            {
+                var ytDlpDirectory = new FileInfo(ytDlpPath).DirectoryName!;
+                if (!string.IsNullOrWhiteSpace(ytDlpDirectory))
+                {
+                    _configPath = Path.Combine(ytDlpDirectory, "yt-dlp.conf");
+                }
+                else
+                {
+                    // This will never be used because we will require the data is updated
+                    // and the app restarted before it will be used.
+                    _configPath = AppContext.BaseDirectory;
+                    _missingKeyPaths = true;
+                }
+            }
+            else
+            {
+                // This will never be used because we will require the data is updated
+                // and the app restarted before it will be used.
+                _configPath = AppContext.BaseDirectory;
+                _missingKeyPaths = true;
+            }
 
             InitializeComponent();
+
+            if (_missingKeyPaths)
+            {
+                // The paths will need to be updated and the application restarted
+                // before normal functions can continue.
+                DisabledFunctionsDueToMissingComponents();
+            }
 
             if (settings.RememberDownloadOptions)
             {
@@ -71,6 +96,26 @@ namespace MediaTools
 
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
             Console.SetError(new StreamWriter(Console.OpenStandardError()) { AutoFlush = true });
+        }
+
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            Program.appSettings = AppSettings.ReadSettings();
+
+            if (_missingKeyPaths)
+            {
+                MessageBox.Show(
+                    DisplayBuilders.ErrorMissingKeyPaths.BuildPlain(),
+                    DisplayBuilders.ErrorMissingKeyPathsTitle.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                return;
+            }
+
+            LoadCachedData();
+            await UpdateMediaTable(true);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -134,7 +179,8 @@ namespace MediaTools
                 return;
             }
 
-            download.Enabled = false;
+            SetOptionsEnabled(false);
+            SetDownloadsEnabled(false);
 
             for (var i = 0; i < urls.Length; i++)
             {
@@ -164,9 +210,10 @@ namespace MediaTools
                 File.Delete(_configPath);
             }
 
-            download.Enabled = true;
-
             await UpdateMediaTable(true);
+
+            SetDownloadsEnabled(true);
+            SetOptionsEnabled(true);
 
             // Execute the shutdown command, 120 seconds after the media list update has finished.
             if (optionShutdownOnComplete.Checked)
@@ -193,7 +240,7 @@ namespace MediaTools
 
         private void ShowConsoleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            HideShowConsole();
+            ToggleConsole();
         }
 
         private void DeleteToolStripMenuItem_Click(object? sender, EventArgs e)
@@ -296,18 +343,29 @@ namespace MediaTools
             SortEntries();
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
-        {
-            Program.appSettings = AppSettings.ReadSettings();
-
-            LoadCachedData();
-            await UpdateMediaTable(true);
-        }
-
         private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var optionsForm = new OptionsForm(this);
             optionsForm.ShowDialog();
+
+            if (!_needsRestart)
+            {
+                return;
+            }
+
+            DisabledFunctionsDueToMissingComponents();
+
+            var result = MessageBox.Show(
+                DisplayBuilders.InfoRestartRequired.BuildPlain(),
+                DisplayBuilders.InfoRestartRequiredTitle.BuildPlain(),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Error,
+                MessageBoxDefaultButton.Button1
+            );
+            if (result == DialogResult.Yes)
+            {
+                Application.Restart();
+            }
         }
 
         private void OptionAddSubtitles_CheckedChanged(object sender, EventArgs e)
@@ -338,8 +396,13 @@ namespace MediaTools
             }
         }
 
-        private static void ShowPlaylistBuilderDialog()
+        private void ShowPlaylistBuilderDialog()
         {
+            if (_playlistBuilderBlocked)
+            {
+                return;
+            }
+
             var playlistBuilderForm = new PlaylistBuilderForm();
             playlistBuilderForm.ShowDialog();
         }
@@ -352,6 +415,11 @@ namespace MediaTools
             }
 
             mediaFilesTable.Columns["Folder"]!.Visible = visible;
+        }
+
+        public void SetNeedsRestart(bool state)
+        {
+            _needsRestart = state;
         }
 
         private void SetUpColumns()
@@ -390,11 +458,47 @@ namespace MediaTools
             mediaFilesTable.Columns["Hash"]!.Visible = false;
         }
 
+        private void SetDownloadsEnabled(bool state)
+        {
+            download.Enabled = state;
+        }
+
+        private void SetMediaListUpdateBlocked(bool state)
+        {
+            reloadMediaFilesToolStripMenuItem.Enabled = !state;
+            reloadMediaListToolStripMenuItem.Enabled = !state;
+            _mediaListUpdatingBlocked = state;
+        }
+
+        private void SetPlaylistBuilderEnabled(bool state)
+        {
+            _playlistBuilderBlocked = state;
+            playlistBuilderToolStripMenuItem.Enabled = state;
+        }
+
+        private void SetOptionsEnabled(bool state)
+        {
+            optionsToolStripMenuItem.Enabled = state;
+        }
+
+        private void DisabledFunctionsDueToMissingComponents()
+        {
+            SetDownloadsEnabled(false);
+            SetPlaylistBuilderEnabled(false);
+            SetMediaListUpdateBlocked(true);
+        }
+
+        public bool IsMediaListUpdatingBlocked()
+        {
+            return _mediaListUpdatingBlocked;
+        }
+
         private async void HandleFileRename()
         {
             var pos = _contextMenuLocation;
             var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
-            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
+            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader ||
+                hitTest.RowIndex == -1 || hitTest.ColumnX == -1)
             {
                 return;
             }
@@ -441,7 +545,8 @@ namespace MediaTools
         {
             var pos = _contextMenuLocation;
             var hitTest = mediaFilesTable.HitTest(pos.X, pos.Y);
-            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader)
+            if (hitTest.Type == DataGridViewHitTestType.ColumnHeader ||
+                hitTest.RowIndex == -1 || hitTest.ColumnX == -1)
             {
                 return;
             }
@@ -519,11 +624,16 @@ namespace MediaTools
             return success;
         }
 
-        private void HideShowConsole()
+        private void ToggleConsole()
         {
-            var state = _isConsoleShown ? Interop.SW_HIDE : Interop.SW_SHOW;
+            HideShowConsole(!_isConsoleShown);
+        }
+
+        public void HideShowConsole(bool newState)
+        {
+            var state = newState ? Interop.SW_SHOW : Interop.SW_HIDE;
             Interop.ShowWindow(Interop.GetConsoleWindow(), state);
-            _isConsoleShown = !_isConsoleShown;
+            _isConsoleShown = newState;
             showConsoleToolStripMenuItem.Text = _isConsoleShown
                 ? "Hide &Console..."
                 : "Show &Console...";
@@ -532,15 +642,15 @@ namespace MediaTools
         public async Task UpdateMediaTable(bool suppressMessages)
         {
             // We do not want to try to update the list, if there is an update in progress.
-            if (_isUpdatingMediaList)
+            if (IsMediaListUpdatingBlocked())
             {
                 return;
             }
 
-            _isUpdatingMediaList = true;
+            SetMediaListUpdateBlocked(true);
 
             // Disable downloading while the list is being refreshed.
-            download.Enabled = false;
+            SetDownloadsEnabled(false);
 
             // Store the number of entries in the list.
             var oldEntryCount = _fileEntries.Count;
@@ -575,9 +685,9 @@ namespace MediaTools
                 UpdateStatus(DisplayBuilders.InfoMediaListReloading);
             }
 
-            _isUpdatingMediaList = false;
+            SetMediaListUpdateBlocked(false);
 
-            download.Enabled = true;
+            SetDownloadsEnabled(true);
         }
 
         public enum ColumnName
@@ -689,7 +799,12 @@ namespace MediaTools
 
             if (!hasChangedRow)
             {
-                MessageBox.Show("No further matches were found.");
+                MessageBox.Show(
+                    DisplayBuilders.NoFurtherMatchesTitle.BuildPlain(),
+                    DisplayBuilders.NoFurtherMatches.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
             }
         }
 
@@ -863,6 +978,10 @@ namespace MediaTools
             {
                 lines.Add("--embed-chapters");
             }
+            if (optionForceKeyframeAtCuts.Checked)
+            {
+                lines.Add("--force-keyframes-at-cuts");
+            }
             if (optionAddThumbnails.Checked)
             {
                 lines.Add("--embed-thumbnail");
@@ -879,7 +998,7 @@ namespace MediaTools
             }
             if (optionSponsorBlock.Checked)
             {
-                // TODO - allow the options to be selected?
+                // TODO - allow the options to be selected.
                 lines.Add("--sponsorblock-remove sponsor,selfpromo");
             }
             if (optionDownloadRateLimitVal.Value > 0)
@@ -902,6 +1021,8 @@ namespace MediaTools
                     .ToString()!
                     .Replace("p", "");
             lines.Add(optionAudioOnly.Checked ? "-f ba" : $"-S \"res:{targetResolution}\"");
+            lines.Add($"--ffmpeg-location \"{Program.appSettings.FfmpegDirectory}\"");
+
 
             // Write the config file.
             File.WriteAllLines(_configPath, lines);
@@ -937,9 +1058,12 @@ namespace MediaTools
 
             if (!_cacheHandler.Write(entries))
             {
-                // TODO - do something to notify the user here.
-                // TODO - I'm not sure what since this occurs as the application is closing...
-                MessageBox.Show("Something went wrong while writing the file.");
+                MessageBox.Show(
+                    DisplayBuilders.ErrorWritingCacheTitle.BuildPlain(),
+                    DisplayBuilders.ErrorWritingCache.BuildPlain(),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
 
@@ -980,8 +1104,7 @@ namespace MediaTools
                 message,
                 DisplayBuilders.MediaInfoDurationTitle.BuildPlain(),
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1
+                MessageBoxIcon.Information
             );
         }
 
@@ -992,46 +1115,24 @@ namespace MediaTools
                 return;
             }
 
-            Program.appSettings.DownloadOptions.AutoUpdate =
-                optionAutoUpdate.Checked;
-
-            Program.appSettings.DownloadOptions.AddSubtitles =
-                optionAddSubtitles.Checked;
-
-            Program.appSettings.DownloadOptions.AddMetadata =
-                optionAddMetadata.Checked;
-
-            Program.appSettings.DownloadOptions.AddChapters =
-                optionAddChapters.Checked;
-
-            Program.appSettings.DownloadOptions.AddThumbnails =
-                optionAddThumbnails.Checked;
-
-            Program.appSettings.DownloadOptions.CookieLogin =
-                optionCookieLogin.Checked;
-
-            Program.appSettings.DownloadOptions.MarkWatched =
-                optionCookieLogin.Checked && optionMarkWatched.Checked;
-
-            Program.appSettings.DownloadOptions.UseSponsorBlock =
-                optionSponsorBlock.Checked;
-
-            Program.appSettings.DownloadOptions.TargetResolutionIndex =
-                optionResolution.SelectedIndex;
-
-            Program.appSettings.DownloadOptions.DownloadRateLimit =
-                optionDownloadRateLimitVal.Value;
-
-            Program.appSettings.DownloadOptions.DownloadRateLimitTypeIndex =
-                optionDownloadRateLimitType.SelectedIndex;
-
-            Program.appSettings.DownloadOptions.DownloadChat =
-                optionDownloadChat.Checked;
-
-            Program.appSettings.DownloadOptions.EmbedSubtitles =
-                optionEmbedSubs.Checked;
-            Program.appSettings.DownloadOptions.SubtitleLanguages =
-                optionSubtleLangs.Text;
+            Program.appSettings.DownloadOptions = new DownloadSettings
+            {
+                AutoUpdate = optionAutoUpdate.Checked,
+                AddSubtitles = optionAddSubtitles.Checked,
+                AddMetadata = optionAddMetadata.Checked,
+                AddChapters = optionAddChapters.Checked,
+                AddThumbnails = optionAddThumbnails.Checked,
+                CookieLogin = optionCookieLogin.Checked,
+                MarkWatched = optionCookieLogin.Checked && optionMarkWatched.Checked,
+                UseSponsorBlock = optionSponsorBlock.Checked,
+                TargetResolutionIndex = optionResolution.SelectedIndex,
+                DownloadRateLimit = optionDownloadRateLimitVal.Value,
+                DownloadRateLimitTypeIndex = optionDownloadRateLimitType.SelectedIndex,
+                DownloadChat = optionDownloadChat.Checked,
+                ForceKeyframesAtCuts = optionForceKeyframeAtCuts.Checked,
+                EmbedSubtitles = optionEmbedSubs.Checked,
+                SubtitleLanguages = optionSubtleLangs.Text
+            };
         }
 
         private void RestoreDownloadOptions()
@@ -1041,46 +1142,23 @@ namespace MediaTools
                 return;
             }
 
-            optionAutoUpdate.Checked =
-                Program.appSettings.DownloadOptions.AutoUpdate;
+            var options = Program.appSettings.DownloadOptions;
 
-            optionAddSubtitles.Checked =
-                Program.appSettings.DownloadOptions.AddSubtitles;
-
-            optionAddMetadata.Checked =
-                Program.appSettings.DownloadOptions.AddMetadata;
-
-            optionAddChapters.Checked =
-                Program.appSettings.DownloadOptions.AddChapters;
-
-            optionAddThumbnails.Checked =
-                Program.appSettings.DownloadOptions.AddThumbnails;
-
-            optionCookieLogin.Checked =
-                Program.appSettings.DownloadOptions.CookieLogin;
-
-            optionMarkWatched.Checked =
-                Program.appSettings.DownloadOptions.MarkWatched;
-
-            optionSponsorBlock.Checked =
-                Program.appSettings.DownloadOptions.UseSponsorBlock;
-
-            optionResolution.SelectedIndex =
-                Program.appSettings.DownloadOptions.TargetResolutionIndex;
-
-            optionDownloadRateLimitVal.Value =
-                Program.appSettings.DownloadOptions.DownloadRateLimit;
-
-            optionDownloadRateLimitType.SelectedIndex =
-                Program.appSettings.DownloadOptions.DownloadRateLimitTypeIndex;
-
-            optionDownloadChat.Checked = Program.appSettings.DownloadOptions.DownloadChat;
-
-            optionEmbedSubs.Checked =
-                Program.appSettings.DownloadOptions.EmbedSubtitles;
-
-            optionSubtleLangs.Text =
-                Program.appSettings.DownloadOptions.SubtitleLanguages;
+            optionAutoUpdate.Checked = options.AutoUpdate;
+            optionAddSubtitles.Checked = options.AddSubtitles;
+            optionAddMetadata.Checked = options.AddMetadata;
+            optionAddChapters.Checked = options.AddChapters;
+            optionAddThumbnails.Checked = options.AddThumbnails;
+            optionCookieLogin.Checked = options.CookieLogin;
+            optionMarkWatched.Checked = options.MarkWatched;
+            optionSponsorBlock.Checked = options.UseSponsorBlock;
+            optionResolution.SelectedIndex = options.TargetResolutionIndex;
+            optionDownloadRateLimitVal.Value = options.DownloadRateLimit;
+            optionDownloadRateLimitType.SelectedIndex = options.DownloadRateLimitTypeIndex;
+            optionForceKeyframeAtCuts.Checked = options.ForceKeyframesAtCuts;
+            optionDownloadChat.Checked = options.DownloadChat;
+            optionEmbedSubs.Checked = options.EmbedSubtitles;
+            optionSubtleLangs.Text = options.SubtitleLanguages;
         }
 
         public void SetSearchOpen(bool status)

@@ -8,6 +8,8 @@ namespace MediaTools
 
         public bool ShowFolders { get; set; } = true;
 
+        public bool ShowConsole { get; set; } = true;
+
         public bool ShowMediaInSubFolders { get; set; }
 
         public string CookiePath { get; set; } = "";
@@ -20,7 +22,7 @@ namespace MediaTools
 
         public string TempDirectory { get; set; } = "";
 
-        public string FfprobePath { get; set; } = "";
+        public string FfmpegDirectory { get; set; } = "";
 
         public string YtDlpPath { get; set; } = "";
 
@@ -48,8 +50,6 @@ namespace MediaTools
 
     internal class DownloadSettings
     {
-        // Basic Options
-
         public bool AddSubtitles { get; set; }
 
         public bool AddMetadata { get; set; }
@@ -58,18 +58,13 @@ namespace MediaTools
 
         public bool AddThumbnails { get; set; }
 
-        // Advanced Options
-
         public int TargetResolutionIndex { get; set; }
 
         public decimal DownloadRateLimit { get; set; }
 
         public int DownloadRateLimitTypeIndex { get; set; }
 
-        public bool DownloadChat { get; set; }
-
-
-        // Other Options
+        public bool ForceKeyframesAtCuts { get; set; }
 
         public bool AutoUpdate { get; set; }
 
@@ -79,7 +74,7 @@ namespace MediaTools
 
         public bool UseSponsorBlock { get; set; }
 
-        // Subtitle Options
+        public bool DownloadChat { get; set; }
 
         public bool EmbedSubtitles { get; set; }
 

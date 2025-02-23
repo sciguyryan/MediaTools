@@ -13,7 +13,7 @@ namespace MediaTools
                 {
                     Arguments = $"-v quiet -print_format json -show_format -show_streams \"{path}\"",
                     CreateNoWindow = true,
-                    FileName = Program.appSettings.FfprobePath,
+                    FileName = Path.Join(Program.appSettings.FfmpegDirectory, "ffprobe.exe"),
                     RedirectStandardOutput = true,
                 },
             };

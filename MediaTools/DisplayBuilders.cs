@@ -51,6 +51,19 @@
         private const string ErrorCacheFileOpenText =
             "the cache file is open in another application and can't be updated!";
 
+        private const string NoFurtherMatchesTitleText = "No Further Matches";
+        private const string NoFurtherMatchesText = "No further matches were found.";
+
+        private const string ErrorWritingCacheTitleText = "Error Writing Cache File";
+        private const string ErrorWritingCacheText = "An error occured while attempting to write the cache file.";
+
+        private const string ErrorMissingKeyPathsTitleText = "Key Component Paths Missing";
+        private const string ErrorMissingKeyPathsText =
+            "One or more critical paths are invalid, and as such many of the functions of the application are disabled.\r\n\r\nPlease go into the options to correct these errors.";
+
+        private const string InfoRestartRequiredTitleText = "One or more key component paths have been updated and so the application needs to restart to restore functionality.\r\n\r\nRestart now?";
+        private const string InfoRestartRequiredText = "Restart Required";
+
         #endregion
 
         #region Builders
@@ -178,7 +191,6 @@
         public static readonly OutputFormatBuilder MediaInfoDuration = new OutputFormatBuilder()
             .Text(MediaInfoDurationText);
 
-
         public static readonly OutputFormatBuilder InvalidFileNameTitle = new OutputFormatBuilder()
             .Text(InvalidFileNameTitleText);
         public static readonly OutputFormatBuilder InvalidFileName = new OutputFormatBuilder()
@@ -201,6 +213,26 @@
             .Text(ErrorCacheFileOpenTitleText);
         public static readonly OutputFormatBuilder ErrorCacheFileOpen = new OutputFormatBuilder()
             .Text(ErrorCacheFileOpenText);
+
+        public static readonly OutputFormatBuilder NoFurtherMatchesTitle = new OutputFormatBuilder()
+            .Text(NoFurtherMatchesTitleText);
+        public static readonly OutputFormatBuilder NoFurtherMatches = new OutputFormatBuilder()
+            .Text(NoFurtherMatchesText);
+
+        public static readonly OutputFormatBuilder ErrorWritingCacheTitle = new OutputFormatBuilder()
+            .Text(ErrorWritingCacheTitleText);
+        public static readonly OutputFormatBuilder ErrorWritingCache = new OutputFormatBuilder()
+            .Text(ErrorWritingCacheText);
+
+        public static readonly OutputFormatBuilder ErrorMissingKeyPathsTitle = new OutputFormatBuilder()
+            .Text(ErrorMissingKeyPathsTitleText);
+        public static readonly OutputFormatBuilder ErrorMissingKeyPaths = new OutputFormatBuilder()
+            .Text(ErrorMissingKeyPathsText);
+
+        public static readonly OutputFormatBuilder InfoRestartRequiredTitle = new OutputFormatBuilder()
+            .Text(InfoRestartRequiredTitleText);
+        public static readonly OutputFormatBuilder InfoRestartRequired = new OutputFormatBuilder()
+            .Text(InfoRestartRequiredText);
 
         #endregion
     }

@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            groupBox4 = new GroupBox();
             optionShutdownOnComplete = new CheckBox();
             subtitleGroupBox = new GroupBox();
             optionSubtleLangs = new TextBox();
@@ -79,8 +80,10 @@
             renameToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            optionForceKeyframeAtCuts = new CheckBox();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
+            groupBox4.SuspendLayout();
             subtitleGroupBox.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -105,6 +108,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(groupBox4);
             tabPage1.Controls.Add(optionShutdownOnComplete);
             tabPage1.Controls.Add(subtitleGroupBox);
             tabPage1.Controls.Add(groupBox3);
@@ -122,10 +126,22 @@
             tabPage1.Text = "Downloader";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // groupBox4
+            // 
+            groupBox4.Controls.Add(optionCookieLogin);
+            groupBox4.Controls.Add(optionMarkWatched);
+            groupBox4.Enabled = false;
+            groupBox4.Location = new Point(767, 287);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Size = new Size(299, 114);
+            groupBox4.TabIndex = 17;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Account Options";
+            // 
             // optionShutdownOnComplete
             // 
             optionShutdownOnComplete.AutoSize = true;
-            optionShutdownOnComplete.Location = new Point(537, 287);
+            optionShutdownOnComplete.Location = new Point(537, 407);
             optionShutdownOnComplete.Name = "optionShutdownOnComplete";
             optionShutdownOnComplete.Size = new Size(189, 24);
             optionShutdownOnComplete.TabIndex = 17;
@@ -138,7 +154,7 @@
             subtitleGroupBox.Controls.Add(label6);
             subtitleGroupBox.Controls.Add(optionEmbedSubs);
             subtitleGroupBox.Enabled = false;
-            subtitleGroupBox.Location = new Point(1079, 287);
+            subtitleGroupBox.Location = new Point(537, 287);
             subtitleGroupBox.Name = "subtitleGroupBox";
             subtitleGroupBox.Size = new Size(218, 114);
             subtitleGroupBox.TabIndex = 15;
@@ -178,10 +194,8 @@
             // 
             groupBox3.Controls.Add(optionDownloadChat);
             groupBox3.Controls.Add(optionAutoUpdate);
-            groupBox3.Controls.Add(optionCookieLogin);
             groupBox3.Controls.Add(optionAddMetadata);
             groupBox3.Controls.Add(optionSponsorBlock);
-            groupBox3.Controls.Add(optionMarkWatched);
             groupBox3.Location = new Point(1079, 40);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(218, 241);
@@ -192,7 +206,7 @@
             // optionDownloadChat
             // 
             optionDownloadChat.AutoSize = true;
-            optionDownloadChat.Location = new Point(8, 176);
+            optionDownloadChat.Location = new Point(9, 86);
             optionDownloadChat.Name = "optionDownloadChat";
             optionDownloadChat.Size = new Size(134, 24);
             optionDownloadChat.TabIndex = 14;
@@ -204,7 +218,7 @@
             optionAutoUpdate.AutoSize = true;
             optionAutoUpdate.Checked = true;
             optionAutoUpdate.CheckState = CheckState.Checked;
-            optionAutoUpdate.Location = new Point(7, 26);
+            optionAutoUpdate.Location = new Point(9, 116);
             optionAutoUpdate.Name = "optionAutoUpdate";
             optionAutoUpdate.Size = new Size(116, 24);
             optionAutoUpdate.TabIndex = 9;
@@ -214,7 +228,7 @@
             // optionCookieLogin
             // 
             optionCookieLogin.AutoSize = true;
-            optionCookieLogin.Location = new Point(7, 116);
+            optionCookieLogin.Location = new Point(8, 26);
             optionCookieLogin.Name = "optionCookieLogin";
             optionCookieLogin.Size = new Size(159, 24);
             optionCookieLogin.TabIndex = 12;
@@ -227,7 +241,7 @@
             optionAddMetadata.AutoSize = true;
             optionAddMetadata.Checked = true;
             optionAddMetadata.CheckState = CheckState.Checked;
-            optionAddMetadata.Location = new Point(8, 56);
+            optionAddMetadata.Location = new Point(9, 26);
             optionAddMetadata.Name = "optionAddMetadata";
             optionAddMetadata.Size = new Size(127, 24);
             optionAddMetadata.TabIndex = 10;
@@ -239,7 +253,7 @@
             optionSponsorBlock.AutoSize = true;
             optionSponsorBlock.Checked = true;
             optionSponsorBlock.CheckState = CheckState.Checked;
-            optionSponsorBlock.Location = new Point(7, 86);
+            optionSponsorBlock.Location = new Point(9, 56);
             optionSponsorBlock.Name = "optionSponsorBlock";
             optionSponsorBlock.Size = new Size(149, 24);
             optionSponsorBlock.TabIndex = 11;
@@ -250,7 +264,7 @@
             // 
             optionMarkWatched.AutoSize = true;
             optionMarkWatched.Enabled = false;
-            optionMarkWatched.Location = new Point(8, 146);
+            optionMarkWatched.Location = new Point(8, 56);
             optionMarkWatched.Name = "optionMarkWatched";
             optionMarkWatched.Size = new Size(126, 24);
             optionMarkWatched.TabIndex = 13;
@@ -259,6 +273,7 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(optionForceKeyframeAtCuts);
             groupBox2.Controls.Add(optionDownloadRateLimitType);
             groupBox2.Controls.Add(optionDownloadRateLimitVal);
             groupBox2.Controls.Add(label5);
@@ -391,7 +406,7 @@
             // 
             // download
             // 
-            download.Location = new Point(537, 317);
+            download.Location = new Point(537, 437);
             download.Name = "download";
             download.Size = new Size(94, 29);
             download.TabIndex = 18;
@@ -425,14 +440,14 @@
             mediaFilesTable.AllowUserToOrderColumns = true;
             mediaFilesTable.AllowUserToResizeColumns = false;
             mediaFilesTable.AllowUserToResizeRows = false;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            mediaFilesTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             mediaFilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             mediaFilesTable.Location = new Point(6, 6);
             mediaFilesTable.Name = "mediaFilesTable";
@@ -570,6 +585,16 @@
             toolStripStatusLabel1.Size = new Size(151, 20);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
+            // optionForceKeyframeAtCuts
+            // 
+            optionForceKeyframeAtCuts.AutoSize = true;
+            optionForceKeyframeAtCuts.Location = new Point(6, 86);
+            optionForceKeyframeAtCuts.Name = "optionForceKeyframeAtCuts";
+            optionForceKeyframeAtCuts.Size = new Size(189, 24);
+            optionForceKeyframeAtCuts.TabIndex = 14;
+            optionForceKeyframeAtCuts.Text = "Force &Keyframes at Cuts";
+            optionForceKeyframeAtCuts.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -591,6 +616,8 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
             subtitleGroupBox.ResumeLayout(false);
             subtitleGroupBox.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -662,5 +689,7 @@
         private CheckBox optionDownloadChat;
         private ToolStripMenuItem playlistBuilderToolStripMenuItem;
         private CheckBox optionShutdownOnComplete;
+        private GroupBox groupBox4;
+        private CheckBox optionForceKeyframeAtCuts;
     }
 }

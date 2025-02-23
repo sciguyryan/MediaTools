@@ -80,18 +80,20 @@ namespace MediaTools
                 var metaDataFilePath = Path.Combine(recycleBinPath, metaDataFileName);
 
                 var originalFilePath = ParseRecycleBinMetadataFile(metaDataFilePath);
-                if (originalFilePath == path)
+                if (originalFilePath != path)
                 {
-                    // We found the file we're looking for. Attempt to restore it.
-                    try
-                    {
-                        File.Move(p, originalFilePath);
-                        success = true;
-                    }
-                    catch { }
-
-                    break;
+                    continue;
                 }
+
+                // We found the file we're looking for. Attempt to restore it.
+                try
+                {
+                    File.Move(p, originalFilePath);
+                    success = true;
+                }
+                catch { }
+
+                break;
             }
 
             return success;
@@ -278,6 +280,11 @@ namespace MediaTools
                     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
             return string.Equals(path1Trimmed, path2Trimmed, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string FullyResolvePath(string path)
+        {
+            return string.IsNullOrWhiteSpace(path) ? path : Path.GetFullPath(Environment.ExpandEnvironmentVariables(path));
         }
     }
 }
