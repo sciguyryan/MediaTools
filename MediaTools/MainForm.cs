@@ -31,6 +31,11 @@ namespace MediaTools
             var settingMediaPath = settings.MediaDirectory;
             if (!Path.Exists(settingMediaPath))
             {
+                // Clear the existing option.
+                settings.MediaDirectory = "";
+
+                // Set the parent of the directory that houses the executable to be
+                // the media source directory.
                 settingMediaPath = "..\\";
             }
             var mediaDirectoryPath = Path.GetFullPath(settingMediaPath);
